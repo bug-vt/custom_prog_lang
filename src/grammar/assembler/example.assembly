@@ -1,0 +1,51 @@
+; Test script
+
+; Demonstrates the basic layout of an assembly language 
+; that will be used for the virtual machine.
+; This is an modified version of Varanese's example script
+; on his book.
+
+; ---- Globals -----
+var GLOBAL_VAL
+var GLOBAL_ARRAY[1024]
+
+; ---- Functions -----
+func mysteryFunc
+    ; parameters from stack
+    pop     y 
+    pop     x 
+    ; local data
+    var     sum
+    mov     sum, x
+    add     sum, y
+    ; put result in the _retVal register
+    mov     _retVal, sum
+    ret
+
+
+func myFunc
+    ; no parameters
+    ; local data
+    var     sum
+    ; push arguments for mysteryFunc
+    push    77
+    push    1
+    ; invoke mysteryFunc
+    call    mysteryFunc 
+    ; grab return value from _retval register
+    mov     sum, _retVal
+    ; transform the sum and store it in GLOBAL_VAL
+    mul     sum, 2
+    mov     GLOBAL_VAR, sum
+    ; initialize the GLOBAL_ARRAY
+    mov     GLOBAL_ARRAY[0], "Hello "
+    mov     GLOBAL_ARRAY[1], "World!"
+    mov     GLOBAL_ARRAY[2], "CS 4974"
+    mov     GLOBAL_ARRAY[3], "scripting design and implementation"
+    ret
+
+
+func _main
+    ; invoke myFunc
+    call myFunc
+
