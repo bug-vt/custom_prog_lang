@@ -1,42 +1,32 @@
 %{
     #include <stdio.h>
-    extern int yylex();
+    #include "asm_parser.tab.h"
 %}
-%option noyywrap
 %%
 ;.*                 ; // ignore comment
 [ \t]               ; // ignore white space
-\,                  { printf ("%s\t\tComma\n", yytext); }
-\:                  { printf ("%s\t\tColon\n", yytext); }
-\[                  { printf ("%s\t\tOpening bracket\n", yytext); }
-\]                  { printf ("%s\t\tClosing bracket\n", yytext); }
-\n                  { printf ("\\n\t\tLine break\n"); }
-[0-9]+\.[0-9]+      { printf ("%s\t\tFloating-point\n", yytext); }
-[0-9]+              { printf ("%s\t\tInteger\n", yytext); }
-setStackSize        { printf ("%s\t\tSetStackSize directive\n", yytext); }
-var                 { printf ("%s\t\tvar directive\n", yytext); }
-func                { printf ("%s\t\tfunc directive\n", yytext); }
-_retVal             { printf ("%s\t\t_retVal register\n", yytext); }
-mov|add|sub|mul|div|mod|exp|neg|inc|dec|and|or|xor|not|shl|shr|concat|getChar|setChar|jmp|je|jne|jg|jl|jge|jle|push|pop|call|ret|exit { printf ("%s\t\tInstruction\n", yytext); }
-[a-zA-Z_][a-zA-Z0-9_.]* { printf ("%s\t\tIdentifier\n", yytext); }
-\".*\"              { printf ("%s\t\tString\n", yytext); }
-.                   { printf ("Invalid\n"); exit (1); }
+\,                  { yylval.comma = strdup(yytext); return COMMA; }
+\:                  { yylval.colon = strdup(yytext); return COLON; }
+\[                  { yylval.open_bracket = strdup(yytext); return OPEN_BRACKET; }
+\]                  { yylval.close_bracket = strdup(yytext); return CLOSE_BRACKET; }
+\n                  { yylval.new_line = strdup(yytext); return NEW_LINE; }
+[0-9]+\.[0-9]+      { yylval.floating_point = atof(yytext); return FLOAT; }
+[0-9]+              { yylval.integer = atoi(yytext); return INT; }
+setStackSize        { yylval.set_stack_size = strdup(yytext); return SET_STACK_SIZE; }
+var                 { yylval.var = strdup(yytext); return VAR; }
+func                { yylval.func = strdup(yytext); return FUNC; }
+_retVal             { yylval.return_val = strdup(yytext); return RET_VAL; }
+push                { yylval.push = strdup(yytext); return PUSH; }
+call                { yylval.call = strdup(yytext); return CALL; }
+jmp                 { yylval.jump = strdup(yytext); return JUMP; }
+ret                 { yylval.inst0 = strdup(yytext); return INST0; } 
+neg|inc|dec|not|pop { yylval.inst1 = strdup(yytext); return INST1; }
+mov|add|sub|mul|div|mod|exp|and|or|xor|shl|shr { yylval.inst2 = strdup(yytext); return INST2; }
+je|jne|jg|jl|jge|jle { yylval.inst3 = strdup(yytext); return INST3; }
+concat              { yylval.concat = strdup(yytext); return CONCAT; }
+getChar             { yylval.getChar = strdup(yytext); return GETCHAR; }
+setChar             { yylval.setChar = strdup(yytext); return SETCHAR; }
+[a-zA-Z_][a-zA-Z0-9_.]* { yylval.ident = strdup(yytext); return IDENT; }
+\".*\"              { yylval.string = strdup(yytext); return STRING; }
+.                   ; 
 %%
-int main (int argc, char **argv)
-{
-    if (argc != 2)
-    {
-        printf ("usage: asm_lexer <Source file>\n");
-        return -1;
-    }
-    FILE *myfile = fopen (argv[1], "r");
-    if (!myfile)
-    {
-        printf ("File not found: example.source");
-        return -1;
-    }
-    yyin = myfile;
-
-    // lex through the input
-    while (yylex ());
-}
