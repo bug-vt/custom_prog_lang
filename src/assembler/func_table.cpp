@@ -4,11 +4,11 @@
 using std::unordered_map;
 using std::string;
 
-FuncNode::FuncNode ()
+FuncInfo::FuncInfo ()
 {
 }
 
-FuncNode::FuncNode (int index, int entry_pos)
+FuncInfo::FuncInfo (int index, int entry_pos)
 {
   func_index = index;
   entry_point = entry_pos;
@@ -23,7 +23,7 @@ FuncTable::FuncTable () : func_index (0), func_table ()
 
 
 // Add function to the function table.
-// If the function is already inside the table, return -1.
+// If the function is already exists inside the table, return -1.
 // Otherwise, return the assigned index that would use to locate 
 // the function inside the table.
 int FuncTable::addFunc (string func_name, int entry_point)
@@ -34,7 +34,7 @@ int FuncTable::addFunc (string func_name, int entry_point)
 
   // add the given function into the table.
   int curr_index = func_index;
-  FuncNode curr_func (curr_index, entry_point);
+  FuncInfo curr_func (curr_index, entry_point);
   func_table[func_name] = curr_func;
   func_index++;
 
@@ -42,7 +42,7 @@ int FuncTable::addFunc (string func_name, int entry_point)
 }
 
 // return function information for the given function name.
-void FuncTable::getFunc (string func_name)
+FuncInfo FuncTable::getFunc (string func_name)
 {
   return func_table[func_name];
 }

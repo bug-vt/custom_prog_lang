@@ -3,7 +3,7 @@
 using std::unordered_map;
 using std::string;
 
-StringTable::StringTable () : key (0), str_table ()
+StringTable::StringTable () : str_index (0), str_table ()
 {
 }
 
