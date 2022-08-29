@@ -24,12 +24,16 @@ class AsmLexer
     // lexer internal 
     int curr_lexeme_start;
     int curr_lexeme_end;
-    std::string curr_lexeme;
     int curr_lex_state;
+    std::string curr_lexeme;
 
     // helper functions
     char getNextChar ();
     void lexError (char input);
+
+    bool lexStateStart (char curr_char);
+    bool lexStateInt (char curr_char);
+    bool lexStateFloat (char curr_char);
 };
 
 

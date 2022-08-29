@@ -40,13 +40,12 @@ Token AsmLexer::getNextToken ()
 
   // initialize current lexeme and state
   curr_lexeme = "";
-  int curr_lex_state = LEX_STATE_START;
+  curr_lex_state = LEX_STATE_START;
 
   bool lexeme_done = false;
 
   // loop until a token is completed.
   char curr_char;       // current character
-  bool add_curr_char;   // flag for adding current character to lexeme
 
   while (true)
   {
@@ -54,56 +53,24 @@ Token AsmLexer::getNextToken ()
     if (curr_char == '\0')
       break;
     
-    add_curr_char = true;
     switch (curr_lex_state)
     {
       case LEX_STATE_START:
-        if (isspace (curr_char) && curr_char != '\n')
-        {
-          curr_lexeme_start++;
-          add_curr_char = false;
-        }
-
-        else if (isdigit (curr_char))
-          curr_lex_state = LEX_STATE_INT;
-
-        else if (curr_char == '.')
-          curr_lex_state = LEX_STATE_FLOAT;
-
-        else
-          lexError (curr_char);
+        lexeme_done = lexStateStart (curr_char);
         break;
 
       case LEX_STATE_INT:
-        if (isdigit (curr_char)) { }
-        else if (curr_char == '.')
-          curr_lex_state = LEX_STATE_FLOAT;
-
-        else if (isspace (curr_char) && curr_char != '\n')
-        {
-          add_curr_char = false;
-          lexeme_done = true;
-        }
-        else
-          lexError (curr_char);
+        lexeme_done = lexStateInt (curr_char);
         break;
 
       case LEX_STATE_FLOAT:
-        if (isdigit (curr_char)) { }
-        else if (isspace (curr_char) && curr_char != '\n')
-        {
-          add_curr_char = false;
-          lexeme_done = true;
-        }
-        else
-          lexError (curr_char);
+        lexeme_done = lexStateFloat (curr_char);
         break;
     }
 
-    if (add_curr_char)
+    if (!lexeme_done)
       curr_lexeme += curr_char;
-
-    if (lexeme_done)
+    else if (curr_lex_state != LEX_STATE_START)
       break;
   }
 
@@ -122,4 +89,55 @@ void AsmLexer::lexError (char input)
 {
   cout << "Error: unexpected character '" << input << "' found." << endl;
   exit (-1);
+}
+
+bool AsmLexer::lexStateStart (char curr_char)
+{
+  // flag for adding current character to lexeme
+  bool lexeme_done = false;   
+
+  if (isspace (curr_char) && curr_char != '\n')
+  {
+    curr_lexeme_start++;
+    lexeme_done = true;
+  }
+  else if (isdigit (curr_char))
+    curr_lex_state = LEX_STATE_INT;
+  else if (curr_char == '.')
+    curr_lex_state = LEX_STATE_FLOAT;
+  else
+    lexError (curr_char);
+
+  return lexeme_done;
+}
+
+bool AsmLexer::lexStateInt (char curr_char)
+{
+  // flag for adding current character to lexeme
+  bool lexeme_done = false;   
+
+  if (isdigit (curr_char)) { }
+  else if (curr_char == '.')
+    curr_lex_state = LEX_STATE_FLOAT;
+
+  else if (isspace (curr_char) && curr_char != '\n')
+    lexeme_done = true;
+  else
+    lexError (curr_char);
+
+  return lexeme_done;
+}
+
+bool AsmLexer::lexStateFloat (char curr_char)
+{
+  // flag for adding current character to lexeme
+  bool lexeme_done = false;   
+
+  if (isdigit (curr_char)) { }
+  else if (isspace (curr_char) && curr_char != '\n')
+    lexeme_done = true;
+  else
+    lexError (curr_char);
+
+  return lexeme_done;
 }
