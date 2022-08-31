@@ -37,6 +37,7 @@ class AsmLexer
   private:
     std::string source;
     std::map<std::string, Token> reserved_word; 
+    std::map<char, Token> delim;
 
     // lexer internal 
     int curr_lexeme_start;
@@ -52,6 +53,7 @@ class AsmLexer
     bool lexStateInt (char curr_char);
     bool lexStateFloat (char curr_char);
     bool lexStateIdent (char curr_char);
+    bool lexStateDelim (char curr_char);
 };
 
 

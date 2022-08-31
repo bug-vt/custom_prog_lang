@@ -13,13 +13,7 @@ enum LexState {LEX_STATE_START,
                LEX_STATE_FLOAT,
                LEX_STATE_STRING,
                LEX_STATE_IDENT,
-               LEX_STATE_COLON,
-               LEX_STATE_OPEN_BRACKET,
-               LEX_STATE_CLOSE_BRACKET,
-               LEX_STATE_COMMA,
-               LEX_STATE_OPEN_BRACE,
-               LEX_STATE_CLOSE_BRACE,
-               LEX_STATE_NEWLINE,
+               LEX_STATE_DELIM,
                LEX_STATE_INVALID};
 
 
@@ -35,6 +29,14 @@ AsmLexer::AsmLexer (string source)
   reserved_word["func"] = TOKEN_TYPE_FUNC;
   reserved_word["param"] = TOKEN_TYPE_PARAM;
   reserved_word["_retVal"] = TOKEN_TYPE_REG_RETVAL;
+
+  delim[':'] = TOKEN_TYPE_COLON;
+  delim['['] = TOKEN_TYPE_OPEN_BRACKET;
+  delim[']'] = TOKEN_TYPE_CLOSE_BRACKET;
+  delim[','] = TOKEN_TYPE_COMMA;
+  delim['{'] = TOKEN_TYPE_OPEN_BRACE;
+  delim['}'] = TOKEN_TYPE_CLOSE_BRACE;
+  delim['\n'] = TOKEN_TYPE_NEWLINE;
 }
 
 string AsmLexer::getCurrLexeme ()
@@ -83,6 +85,10 @@ Token AsmLexer::getNextToken ()
       case LEX_STATE_IDENT:
         lexeme_done = lexStateIdent (curr_char);
         break;
+
+      case LEX_STATE_DELIM:
+        lexeme_done = lexStateDelim (curr_char);
+        break;
     }
 
     if (!lexeme_done)
@@ -117,6 +123,10 @@ Token AsmLexer::getNextToken ()
       else
         token_type = TOKEN_TYPE_IDENT;
       break;
+
+    case LEX_STATE_DELIM:
+      token_type = delim[curr_lexeme[0]];
+      break;
   }
   
   return token_type;
@@ -150,6 +160,8 @@ bool AsmLexer::lexStateStart (char curr_char)
     curr_lex_state = LEX_STATE_FLOAT;
   else if (isalpha (curr_char) || curr_char == '_')
     curr_lex_state = LEX_STATE_IDENT;
+  else if (delim.find (curr_char) != delim.end ())
+    curr_lex_state = LEX_STATE_DELIM;
   else
     lexError (curr_char);
 
@@ -199,4 +211,10 @@ bool AsmLexer::lexStateIdent (char curr_char)
     lexError (curr_char);
 
   return lexeme_done;
+}
+
+bool AsmLexer::lexStateDelim (char curr_char)
+{
+  // lexeme should be done since all delim is one character.
+  return true;
 }

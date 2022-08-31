@@ -58,8 +58,7 @@ TEST_CASE ("Basic identifier lexing", "[lexer]")
   REQUIRE (lexer.getCurrLexeme () == "n123");
 }
 
-
-TEST_CASE ("Identifier, reserved word, and instruction", "[lexer]")
+TEST_CASE ("Lexing reserved word and instruction mnemonic", "[lexer]")
 {
   InstrLookupTable::init ();
   std::string input = " mov    _x12 var   func   ";
@@ -73,4 +72,19 @@ TEST_CASE ("Identifier, reserved word, and instruction", "[lexer]")
   REQUIRE (lexer.getCurrLexeme () == "var");
   REQUIRE (lexer.getNextToken () == TOKEN_TYPE_FUNC);
   REQUIRE (lexer.getCurrLexeme () == "func");
+}
+
+TEST_CASE ("Basic delim lexing", "[lexer]")
+{
+  std::string input = " :    , [   ]   ";
+  
+  AsmLexer lexer (input);
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_COLON);
+  REQUIRE (lexer.getCurrLexeme () == ":");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_COMMA);
+  REQUIRE (lexer.getCurrLexeme () == ",");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_OPEN_BRACKET);
+  REQUIRE (lexer.getCurrLexeme () == "[");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_CLOSE_BRACKET);
+  REQUIRE (lexer.getCurrLexeme () == "]");
 }
