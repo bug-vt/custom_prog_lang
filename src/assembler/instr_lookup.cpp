@@ -29,7 +29,7 @@ InstrLookup::InstrLookup (int opcode, vector<OpTypes> op_list)
   this->op_list = vector<OpTypes>(op_list);
 }
 
-InstrLookupTable::InstrLookupTable ()
+void InstrLookupTable::init ()
 {
   // memory
   instr_lookup["mov"] = {0, {DESTINATION, SOURCE}};
@@ -76,4 +76,12 @@ InstrLookupTable::InstrLookupTable ()
 InstrLookup InstrLookupTable::lookup (string mnemonic)
 {
   return instr_lookup[mnemonic];
+}
+
+bool InstrLookupTable::isInstr (string mnemonic)
+{
+  if (instr_lookup.find (mnemonic) == instr_lookup.end ())
+    return false;
+
+  return true;
 }
