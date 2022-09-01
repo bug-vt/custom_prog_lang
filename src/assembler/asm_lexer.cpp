@@ -216,7 +216,8 @@ void AsmLexer::lexStateInt (char curr_char)
   else if (curr_char == '.')
     curr_lex_state = LEX_STATE_FLOAT;
 
-  else if (isspace (curr_char))
+  else if (isspace (curr_char)
+           || delim.find (curr_char) != delim.end ())
   {
     add_curr_char = false;
     lexeme_done = true;
@@ -240,7 +241,8 @@ void AsmLexer::lexStateFloat (char curr_char)
 void AsmLexer::lexStateIdent (char curr_char)
 {
   if (isalpha (curr_char) || isdigit (curr_char) || curr_char == '_') {}
-  else if (isspace (curr_char))
+  else if (isspace (curr_char)
+           || delim.find (curr_char) != delim.end ())
   {
     add_curr_char = false;
     lexeme_done = true;
@@ -286,8 +288,8 @@ void AsmLexer::lexStateCloseQuote (char curr_char)
 
 void AsmLexer::lexStateComment (char curr_char)
 {
-  add_curr_char = false;
-
   if (curr_char == '\n')
-    curr_lex_state = LEX_STATE_START;
+    curr_lex_state = LEX_STATE_DELIM;
+  else
+    add_curr_char = false;
 }

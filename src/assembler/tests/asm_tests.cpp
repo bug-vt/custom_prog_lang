@@ -9,8 +9,74 @@ using std::ifstream;
 using std::stringstream;
 using std::cout;
 using std::endl;
+using std::string;
 
 std::unordered_map<std::string, InstrLookup> InstrLookupTable::instr_lookup;
+
+string token2string (Token token)
+{
+  string out;
+  switch (token)
+  {
+    case TOKEN_TYPE_EOF:
+      out = "EOF";
+      break;
+    case TOKEN_TYPE_INT:
+      out = "int";
+      break;
+    case TOKEN_TYPE_FLOAT:
+      out = "float";
+      break;
+    case TOKEN_TYPE_STRING:
+      out = "string";
+      break;
+    case TOKEN_TYPE_IDENT:
+      out = "ident";
+      break;
+    case TOKEN_TYPE_COLON:
+      out = "colon";
+      break;
+    case TOKEN_TYPE_OPEN_BRACKET:
+      out = "open bracket";
+      break;
+    case TOKEN_TYPE_CLOSE_BRACKET:
+      out = "close bracket";
+      break;
+    case TOKEN_TYPE_COMMA:
+      out = "comma";
+      break;
+    case TOKEN_TYPE_OPEN_BRACE:
+      out = "open brace";
+      break;
+    case TOKEN_TYPE_CLOSE_BRACE:
+      out = "close brace";
+      break;
+    case TOKEN_TYPE_NEWLINE:
+      out = "new line";
+      break;
+    case TOKEN_TYPE_INSTR:
+      out = "instruction";
+      break;
+    case TOKEN_TYPE_SETSTACKSIZE:
+      out = "setStackSize";
+      break;
+    case TOKEN_TYPE_VAR:
+      out = "var";
+      break;
+    case TOKEN_TYPE_FUNC:
+      out = "func";
+      break;
+    case TOKEN_TYPE_PARAM:
+      out = "param";
+      break;
+    case TOKEN_TYPE_REG_RETVAL:
+      out = "_retVal";
+      break;
+    default:
+      out = "invalid";
+  }
+  return out;
+}
 
 
 TEST_CASE ("Basic instruction lookup", "[instr_lookup]")
@@ -65,6 +131,39 @@ TEST_CASE ("Basic identifier lexing", "[lexer]")
   REQUIRE (lexer.getCurrLexeme () == "n123");
 }
 
+TEST_CASE ("Baisc array lexing", "[lexer]")
+{
+  std::string input = " xy[123]    qq [ 2 ]   hi[ 42] ";
+  
+  AsmLexer lexer (input);
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_IDENT);
+  REQUIRE (lexer.getCurrLexeme () == "xy");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_OPEN_BRACKET);
+  REQUIRE (lexer.getCurrLexeme () == "[");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_INT);
+  REQUIRE (lexer.getCurrLexeme () == "123");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_CLOSE_BRACKET);
+  REQUIRE (lexer.getCurrLexeme () == "]");
+
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_IDENT);
+  REQUIRE (lexer.getCurrLexeme () == "qq");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_OPEN_BRACKET);
+  REQUIRE (lexer.getCurrLexeme () == "[");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_INT);
+  REQUIRE (lexer.getCurrLexeme () == "2");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_CLOSE_BRACKET);
+  REQUIRE (lexer.getCurrLexeme () == "]");
+
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_IDENT);
+  REQUIRE (lexer.getCurrLexeme () == "hi");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_OPEN_BRACKET);
+  REQUIRE (lexer.getCurrLexeme () == "[");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_INT);
+  REQUIRE (lexer.getCurrLexeme () == "42");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_CLOSE_BRACKET);
+  REQUIRE (lexer.getCurrLexeme () == "]");
+}
+
 TEST_CASE ("Lexing reserved word and instruction mnemonic", "[lexer]")
 {
   InstrLookupTable::init ();
@@ -114,8 +213,12 @@ TEST_CASE ("Lexing comment", "[lexer]")
   std::string input = "; this is comment \n xyz ; another comment\n 123";
   
   AsmLexer lexer (input);
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_NEWLINE);
+  REQUIRE (lexer.getCurrLexeme () == "\n");
   REQUIRE (lexer.getNextToken () == TOKEN_TYPE_IDENT);
   REQUIRE (lexer.getCurrLexeme () == "xyz");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_NEWLINE);
+  REQUIRE (lexer.getCurrLexeme () == "\n");
   REQUIRE (lexer.getNextToken () == TOKEN_TYPE_INT);
   REQUIRE (lexer.getCurrLexeme () == "123");
 }
@@ -143,7 +246,6 @@ TEST_CASE ("Lexing multi-line input", "[lexer]")
   CHECK (lexer.getCurrLexeme () == "123");
 }
 
-/*
 TEST_CASE ("Lexing file", "[lexer]")
 {
   ifstream input ("example.assembly");
@@ -151,10 +253,19 @@ TEST_CASE ("Lexing file", "[lexer]")
   buffer << input.rdbuf ();
 
   AsmLexer lexer (buffer.str ());
-  while (lexer.getNextToken () != TOKEN_TYPE_EOF)
+  // loop until all tokens are consumed.
+  Token curr_token = lexer.getNextToken ();
+  while (curr_token != TOKEN_TYPE_EOF)
   {
-    cout << lexer.getCurrLexeme () << "\t\t"
-         << lexer.getNextToken () << endl;
+    string lexeme = lexer.getCurrLexeme ();
+    if (lexeme == "\n")
+      lexeme = "\\n";
+
+    // display lexmeme and token type for each token
+    cout << lexeme << "\t\t"
+         << token2string (curr_token) << endl;
+
+    // get next token
+    curr_token = lexer.getNextToken ();
   }
 }
-*/
