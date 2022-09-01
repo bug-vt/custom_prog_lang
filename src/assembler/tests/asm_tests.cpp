@@ -2,6 +2,13 @@
 #define CATCH_CONFIG_COLOUR_NONE
 #include "catch.hpp"
 #include "../asm_lexer.hpp"
+#include <fstream>
+#include <iostream>
+
+using std::ifstream;
+using std::stringstream;
+using std::cout;
+using std::endl;
 
 std::unordered_map<std::string, InstrLookup> InstrLookupTable::instr_lookup;
 
@@ -91,11 +98,63 @@ TEST_CASE ("Basic delim lexing", "[lexer]")
 
 TEST_CASE ("Basic string lexing", "[lexer]")
 {
-  std::string input = " \"Hello\"  \"say \\\"World\\\"\" ";
+  std::string input = " \"Hello\"  \"to \\\"World\\\"\" \"fall $ number  @sun\"";
   
   AsmLexer lexer (input);
   REQUIRE (lexer.getNextToken () == TOKEN_TYPE_STRING);
   REQUIRE (lexer.getCurrLexeme () == "Hello");
   REQUIRE (lexer.getNextToken () == TOKEN_TYPE_STRING);
-  REQUIRE (lexer.getCurrLexeme () == "say \"World\"");
+  REQUIRE (lexer.getCurrLexeme () == "to \"World\"");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_STRING);
+  REQUIRE (lexer.getCurrLexeme () == "fall $ number  @sun");
 }
+
+TEST_CASE ("Lexing comment", "[lexer]")
+{
+  std::string input = "; this is comment \n xyz ; another comment\n 123";
+  
+  AsmLexer lexer (input);
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_IDENT);
+  REQUIRE (lexer.getCurrLexeme () == "xyz");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_INT);
+  REQUIRE (lexer.getCurrLexeme () == "123");
+}
+
+TEST_CASE ("Lexing multi-line input", "[lexer]")
+{
+  std::string input = "; comment first line\n var xyz\nparam qqq \n123";
+  
+  AsmLexer lexer (input);
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_NEWLINE);
+  CHECK (lexer.getCurrLexeme () == "\n");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_VAR);
+  CHECK (lexer.getCurrLexeme () == "var");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_IDENT);
+  CHECK (lexer.getCurrLexeme () == "xyz");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_NEWLINE);
+  CHECK (lexer.getCurrLexeme () == "\n");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_PARAM);
+  CHECK (lexer.getCurrLexeme () == "param");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_IDENT);
+  CHECK (lexer.getCurrLexeme () == "qqq");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_NEWLINE);
+  CHECK (lexer.getCurrLexeme () == "\n");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_INT);
+  CHECK (lexer.getCurrLexeme () == "123");
+}
+
+/*
+TEST_CASE ("Lexing file", "[lexer]")
+{
+  ifstream input ("example.assembly");
+  stringstream buffer;
+  buffer << input.rdbuf ();
+
+  AsmLexer lexer (buffer.str ());
+  while (lexer.getNextToken () != TOKEN_TYPE_EOF)
+  {
+    cout << lexer.getCurrLexeme () << "\t\t"
+         << lexer.getNextToken () << endl;
+  }
+}
+*/

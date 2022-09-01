@@ -59,6 +59,7 @@ class AsmLexer
     void lexStateString (char curr_char);
     void lexStateStringEscape (char curr_char);
     void lexStateCloseQuote (char curr_char);
+    void lexStateComment (char curr_char);
 };
 
 

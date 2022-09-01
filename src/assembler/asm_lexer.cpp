@@ -16,6 +16,7 @@ enum LexState {LEX_STATE_START,
                LEX_STATE_CLOSE_QUOTE,
                LEX_STATE_IDENT,
                LEX_STATE_DELIM,
+               LEX_STATE_COMMENT,
                LEX_STATE_INVALID};
 
 
@@ -26,12 +27,14 @@ AsmLexer::AsmLexer (string source)
   curr_lexeme_end = 0;
   curr_lexeme = "";
 
+  // list of reserved words
   reserved_word["setStackSize"] = TOKEN_TYPE_SETSTACKSIZE;
   reserved_word["var"] = TOKEN_TYPE_VAR;
   reserved_word["func"] = TOKEN_TYPE_FUNC;
   reserved_word["param"] = TOKEN_TYPE_PARAM;
   reserved_word["_retVal"] = TOKEN_TYPE_REG_RETVAL;
 
+  // list of delimiters
   delim[':'] = TOKEN_TYPE_COLON;
   delim['['] = TOKEN_TYPE_OPEN_BRACKET;
   delim[']'] = TOKEN_TYPE_CLOSE_BRACKET;
@@ -104,6 +107,10 @@ Token AsmLexer::getNextToken ()
       case LEX_STATE_CLOSE_QUOTE:
         lexStateCloseQuote (curr_char);
         break;
+
+      case LEX_STATE_COMMENT:
+        lexStateComment (curr_char);
+        break;
     }
 
     if (add_curr_char)
@@ -116,9 +123,14 @@ Token AsmLexer::getNextToken ()
   // go back one character since it read one more to determine end of lexeme
   curr_lexeme_end--;
 
+  // determine token type from lexing state.
   Token token_type;
   switch (curr_lex_state)
   {
+    case LEX_STATE_START:
+      token_type = TOKEN_TYPE_EOF;
+      break;
+
     case LEX_STATE_INT:
       token_type = TOKEN_TYPE_INT;
       break;
@@ -128,7 +140,7 @@ Token AsmLexer::getNextToken ()
       break;
 
     case LEX_STATE_IDENT:
-      // check if lexeme match with instruction mnemonic or reserved word
+      // check if lexeme match with instruction mnemonic or reserved word.
       // instruction
       if (InstrLookupTable::isInstr (curr_lexeme))
         token_type = TOKEN_TYPE_INSTR;
@@ -166,6 +178,8 @@ void AsmLexer::lexError (char input)
   exit (-1);
 }
 
+// ---------------------------------------------------------------------
+// Lexer States
 
 void AsmLexer::lexStateStart (char curr_char)
 {
@@ -187,6 +201,11 @@ void AsmLexer::lexStateStart (char curr_char)
     curr_lex_state = LEX_STATE_STRING;
     add_curr_char = false;
   }
+  else if (curr_char == ';')
+  {
+    curr_lex_state = LEX_STATE_COMMENT;
+    add_curr_char = false;
+  }
   else
     lexError (curr_char);
 }
@@ -197,7 +216,7 @@ void AsmLexer::lexStateInt (char curr_char)
   else if (curr_char == '.')
     curr_lex_state = LEX_STATE_FLOAT;
 
-  else if (isspace (curr_char) && curr_char != '\n')
+  else if (isspace (curr_char))
   {
     add_curr_char = false;
     lexeme_done = true;
@@ -209,7 +228,7 @@ void AsmLexer::lexStateInt (char curr_char)
 void AsmLexer::lexStateFloat (char curr_char)
 {
   if (isdigit (curr_char)) { }
-  else if (isspace (curr_char) && curr_char != '\n')
+  else if (isspace (curr_char))
   {
     add_curr_char = false;
     lexeme_done = true;
@@ -221,7 +240,7 @@ void AsmLexer::lexStateFloat (char curr_char)
 void AsmLexer::lexStateIdent (char curr_char)
 {
   if (isalpha (curr_char) || isdigit (curr_char) || curr_char == '_') {}
-  else if (isspace (curr_char) && curr_char != '\n')
+  else if (isspace (curr_char))
   {
     add_curr_char = false;
     lexeme_done = true;
@@ -260,6 +279,15 @@ void AsmLexer::lexStateStringEscape (char curr_char)
 
 void AsmLexer::lexStateCloseQuote (char curr_char)
 {
+  // At this point, string lexeme is done.
   add_curr_char = false;
   lexeme_done = true;
+}
+
+void AsmLexer::lexStateComment (char curr_char)
+{
+  add_curr_char = false;
+
+  if (curr_char == '\n')
+    curr_lex_state = LEX_STATE_START;
 }
