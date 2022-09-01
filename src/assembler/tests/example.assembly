@@ -2,8 +2,7 @@
 
 ; Demonstrates the basic layout of an assembly language 
 ; that will be used for the virtual machine.
-; This is an modified version of Varanese's example script
-; on his book.
+; This is based on the example script from Varanese's book. 
 
 ; ---- Globals -----
 var GLOBAL_VAL
@@ -11,9 +10,10 @@ var GLOBAL_ARRAY[1024]
 
 ; ---- Functions -----
 func mysteryFunc
+{
     ; parameters from stack
-    pop     y 
-    pop     x 
+    param   y 
+    param   x 
     ; local data
     var     sum
     mov     sum, x
@@ -21,9 +21,11 @@ func mysteryFunc
     ; put result in the _retVal register
     mov     _retVal, sum
     ret
+}
 
 
 func myFunc
+{
     ; no parameters
     ; local data
     var     sum
@@ -42,10 +44,12 @@ func myFunc
     mov     GLOBAL_ARRAY[1], "World!"
     mov     GLOBAL_ARRAY[2], "CS 4974"
     mov     GLOBAL_ARRAY[3], "scripting design and implementation"
-    ret
+}
 
 
 func _main
+{
     ; invoke myFunc
     call myFunc
+}
 

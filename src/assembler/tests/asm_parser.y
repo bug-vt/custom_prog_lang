@@ -1,11 +1,14 @@
 %{
-    #include <stdio.h>
-    #include <stdlib.h>
+    #include <iostream>
+    #include <cstdio>
+    #include <cstdlib>
+    using namespace std;
     // stuff that need from flex
     extern int yylex ();
     extern int yyparse ();
     extern FILE *yyin;
     extern int line_num;
+    extern string lex_output;
 
     void yyerror (const char *s);
 %}
@@ -28,8 +31,11 @@
 %token COLON
 %token OPEN_BRACKET
 %token CLOSE_BRACKET
+%token OPEN_BRACE
+%token CLOSE_BRACE
 %token NEW_LINE
 %token SET_STACK_SIZE
+%token PARAM
 %token VAR
 %token FUNC
 %token RET_VAL
@@ -70,10 +76,12 @@ line:
     | PUSH source NEW_LINE
     | CALL IDENT NEW_LINE
     | SET_STACK_SIZE INT NEW_LINE
+    | PARAM identifier NEW_LINE
     | VAR identifier NEW_LINE
-    | FUNC IDENT NEW_LINE
+    | FUNC IDENT NEW_LINE OPEN_BRACE
     | label
     | NEW_LINE
+    | CLOSE_BRACE
     ;
 
 instruction3:
@@ -119,21 +127,34 @@ identifier:
 %%
 int main (int argc, char **argv)
 {
-    if (argc != 2)
+    bool run_parser = false;
+    if (argc != 3)
     {
-        printf ("usage: asm_lexer <assembly file>\n");
+        cout << "usage: asm_lexer option assembly_file" << endl
+             << "\toption: -l lexer" << endl
+             << "\t        -p parser" << endl;
         return -1;
     }
-    FILE *myfile = fopen (argv[1], "r");
+    if (string (argv[1]) == "-p")
+        run_parser = true;
+
+    FILE *myfile = fopen (argv[2], "r");
     if (!myfile)
     {
-        printf ("File not found: %s\n", argv[1]);
+        cout << "File not found: " << argv[1] << endl;
         return -1;
     }
     // set flex to read from specified file instead of STDIN.
     yyin = myfile;
-    // parse through the input
-    yyparse ();
+
+    if (run_parser)
+        // parse through the input
+        yyparse ();
+    else
+    {
+        while (yylex ());
+        cout << lex_output;
+    }
 }
 
 void yyerror (const char *s)

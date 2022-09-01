@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #define CATCH_CONFIG_COLOUR_NONE
 #include "catch.hpp"
-#include "asm_lexer.hpp"
+#include "../asm_lexer.hpp"
 
 std::unordered_map<std::string, InstrLookup> InstrLookupTable::instr_lookup;
 
