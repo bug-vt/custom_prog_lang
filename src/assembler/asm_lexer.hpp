@@ -44,16 +44,21 @@ class AsmLexer
     int curr_lexeme_end;
     int curr_lex_state;
     std::string curr_lexeme;
+    bool add_curr_char;
+    bool lexeme_done;
 
     // helper functions
     char getNextChar ();
     void lexError (char input);
 
-    bool lexStateStart (char curr_char);
-    bool lexStateInt (char curr_char);
-    bool lexStateFloat (char curr_char);
-    bool lexStateIdent (char curr_char);
-    bool lexStateDelim (char curr_char);
+    void lexStateStart (char curr_char);
+    void lexStateInt (char curr_char);
+    void lexStateFloat (char curr_char);
+    void lexStateIdent (char curr_char);
+    void lexStateDelim (char curr_char);
+    void lexStateString (char curr_char);
+    void lexStateStringEscape (char curr_char);
+    void lexStateCloseQuote (char curr_char);
 };
 
 

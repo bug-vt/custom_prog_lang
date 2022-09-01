@@ -12,6 +12,8 @@ enum LexState {LEX_STATE_START,
                LEX_STATE_INT,
                LEX_STATE_FLOAT,
                LEX_STATE_STRING,
+               LEX_STATE_STRING_ESCAPE,
+               LEX_STATE_CLOSE_QUOTE,
                LEX_STATE_IDENT,
                LEX_STATE_DELIM,
                LEX_STATE_INVALID};
@@ -56,8 +58,7 @@ Token AsmLexer::getNextToken ()
   // initialize current lexeme and state
   curr_lexeme = "";
   curr_lex_state = LEX_STATE_START;
-
-  bool lexeme_done = false;
+  lexeme_done = false;
 
   // loop until a token is completed.
   char curr_char;       // current character
@@ -67,33 +68,48 @@ Token AsmLexer::getNextToken ()
     curr_char = getNextChar ();
     if (curr_char == '\0')
       break;
+
+    add_curr_char = true;
     
     switch (curr_lex_state)
     {
       case LEX_STATE_START:
-        lexeme_done = lexStateStart (curr_char);
+        lexStateStart (curr_char);
         break;
 
       case LEX_STATE_INT:
-        lexeme_done = lexStateInt (curr_char);
+        lexStateInt (curr_char);
         break;
 
       case LEX_STATE_FLOAT:
-        lexeme_done = lexStateFloat (curr_char);
+        lexStateFloat (curr_char);
         break;
 
       case LEX_STATE_IDENT:
-        lexeme_done = lexStateIdent (curr_char);
+        lexStateIdent (curr_char);
         break;
 
       case LEX_STATE_DELIM:
-        lexeme_done = lexStateDelim (curr_char);
+        lexStateDelim (curr_char);
+        break;
+
+      case LEX_STATE_STRING:
+        lexStateString (curr_char);
+        break;
+
+      case LEX_STATE_STRING_ESCAPE:
+        lexStateStringEscape (curr_char);
+        break;
+
+      case LEX_STATE_CLOSE_QUOTE:
+        lexStateCloseQuote (curr_char);
         break;
     }
 
-    if (!lexeme_done)
+    if (add_curr_char)
       curr_lexeme += curr_char;
-    else if (curr_lex_state != LEX_STATE_START)
+
+    if (lexeme_done)
       break;
   }
 
@@ -127,6 +143,13 @@ Token AsmLexer::getNextToken ()
     case LEX_STATE_DELIM:
       token_type = delim[curr_lexeme[0]];
       break;
+
+    case LEX_STATE_CLOSE_QUOTE:
+      token_type = TOKEN_TYPE_STRING;
+      break;
+
+    default:
+      token_type = TOKEN_TYPE_INVALID;
   }
   
   return token_type;
@@ -144,15 +167,12 @@ void AsmLexer::lexError (char input)
 }
 
 
-bool AsmLexer::lexStateStart (char curr_char)
+void AsmLexer::lexStateStart (char curr_char)
 {
-  // flag for adding current character to lexeme
-  bool lexeme_done = false;   
-
   if (isspace (curr_char) && curr_char != '\n')
   {
     curr_lexeme_start++;
-    lexeme_done = true;
+    add_curr_char = false;
   }
   else if (isdigit (curr_char))
     curr_lex_state = LEX_STATE_INT;
@@ -162,59 +182,84 @@ bool AsmLexer::lexStateStart (char curr_char)
     curr_lex_state = LEX_STATE_IDENT;
   else if (delim.find (curr_char) != delim.end ())
     curr_lex_state = LEX_STATE_DELIM;
+  else if (curr_char == '"')
+  {
+    curr_lex_state = LEX_STATE_STRING;
+    add_curr_char = false;
+  }
   else
     lexError (curr_char);
-
-  return lexeme_done;
 }
 
-bool AsmLexer::lexStateInt (char curr_char)
+void AsmLexer::lexStateInt (char curr_char)
 {
-  // flag for adding current character to lexeme
-  bool lexeme_done = false;   
-
   if (isdigit (curr_char)) { }
   else if (curr_char == '.')
     curr_lex_state = LEX_STATE_FLOAT;
 
   else if (isspace (curr_char) && curr_char != '\n')
+  {
+    add_curr_char = false;
     lexeme_done = true;
+  }
   else
     lexError (curr_char);
-
-  return lexeme_done;
 }
 
-bool AsmLexer::lexStateFloat (char curr_char)
+void AsmLexer::lexStateFloat (char curr_char)
 {
-  // flag for adding current character to lexeme
-  bool lexeme_done = false;   
-
   if (isdigit (curr_char)) { }
   else if (isspace (curr_char) && curr_char != '\n')
+  {
+    add_curr_char = false;
     lexeme_done = true;
+  }
   else
     lexError (curr_char);
-
-  return lexeme_done;
 }
 
-bool AsmLexer::lexStateIdent (char curr_char)
+void AsmLexer::lexStateIdent (char curr_char)
 {
-  // flag for adding current character to lexeme
-  bool lexeme_done = false;   
-
   if (isalpha (curr_char) || isdigit (curr_char) || curr_char == '_') {}
   else if (isspace (curr_char) && curr_char != '\n')
+  {
+    add_curr_char = false;
     lexeme_done = true;
+  }
   else
     lexError (curr_char);
-
-  return lexeme_done;
 }
 
-bool AsmLexer::lexStateDelim (char curr_char)
+void AsmLexer::lexStateDelim (char curr_char)
 {
   // lexeme should be done since all delim is one character.
-  return true;
+  add_curr_char = false;
+  lexeme_done = true;
+}
+
+void AsmLexer::lexStateString (char curr_char)
+{
+  if (curr_char == '"')
+  {
+    add_curr_char = false;
+    curr_lex_state = LEX_STATE_CLOSE_QUOTE;
+  }
+  else if (curr_char == '\\')
+  {
+    curr_lex_state = LEX_STATE_STRING_ESCAPE;
+    add_curr_char = false;
+  }
+}
+
+void AsmLexer::lexStateStringEscape (char curr_char)
+{
+  // This let the escape character to be added,
+  // then switch back to the string state.
+  curr_lex_state = LEX_STATE_STRING;
+}
+
+void AsmLexer::lexStateCloseQuote (char curr_char)
+{
+  add_curr_char = false;
+  lexeme_done = true;
 }

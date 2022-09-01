@@ -88,3 +88,14 @@ TEST_CASE ("Basic delim lexing", "[lexer]")
   REQUIRE (lexer.getNextToken () == TOKEN_TYPE_CLOSE_BRACKET);
   REQUIRE (lexer.getCurrLexeme () == "]");
 }
+
+TEST_CASE ("Basic string lexing", "[lexer]")
+{
+  std::string input = " \"Hello\"  \"say \\\"World\\\"\" ";
+  
+  AsmLexer lexer (input);
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_STRING);
+  REQUIRE (lexer.getCurrLexeme () == "Hello");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_STRING);
+  REQUIRE (lexer.getCurrLexeme () == "say \"World\"");
+}
