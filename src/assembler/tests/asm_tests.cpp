@@ -225,7 +225,10 @@ TEST_CASE ("Lexing comment", "[lexer]")
 
 TEST_CASE ("Lexing multi-line input", "[lexer]")
 {
-  std::string input = "; comment first line\n var xyz\nparam qqq \n123";
+  std::string input = "; comment first line\n \
+                       var xyz\n \
+                       param qqq \n \
+                       jg 4.8, 7.3";
   
   AsmLexer lexer (input);
   CHECK (lexer.getNextToken () == TOKEN_TYPE_NEWLINE);
@@ -242,8 +245,14 @@ TEST_CASE ("Lexing multi-line input", "[lexer]")
   CHECK (lexer.getCurrLexeme () == "qqq");
   CHECK (lexer.getNextToken () == TOKEN_TYPE_NEWLINE);
   CHECK (lexer.getCurrLexeme () == "\n");
-  CHECK (lexer.getNextToken () == TOKEN_TYPE_INT);
-  CHECK (lexer.getCurrLexeme () == "123");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_INSTR);
+  CHECK (lexer.getCurrLexeme () == "jg");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_FLOAT);
+  CHECK (lexer.getCurrLexeme () == "4.8");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_COMMA);
+  CHECK (lexer.getCurrLexeme () == ",");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_FLOAT);
+  CHECK (lexer.getCurrLexeme () == "7.3");
 }
 
 TEST_CASE ("Look ahead and rewind", "[lexer]")
@@ -259,6 +268,34 @@ TEST_CASE ("Look ahead and rewind", "[lexer]")
   CHECK (lexer.getCurrLexeme () == "ahead");
   CHECK (lexer.getNextToken () == TOKEN_TYPE_INT);
   CHECK (lexer.getCurrLexeme () == "123");
+}
+
+TEST_CASE ("Lexing Invalid token", "[lexer]")
+{
+  std::string input = "  7ident  1.2. ident! @ \n";
+  
+  AsmLexer lexer (input);
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_INVALID);
+  CHECK (lexer.getCurrLexeme () == "7ident");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_INVALID);
+  CHECK (lexer.getCurrLexeme () == "1.2.");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_INVALID);
+  CHECK (lexer.getCurrLexeme () == "ident!");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_INVALID);
+  CHECK (lexer.getCurrLexeme () == "@");
+}
+
+TEST_CASE ("Lexing until EOF", "[lexer]")
+{
+  std::string input = "  123  hello world \n";
+
+  AsmLexer lexer (input);
+  lexer.getNextToken ();
+  lexer.getNextToken ();
+  lexer.getNextToken ();
+  lexer.getNextToken ();
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_EOF);
+  CHECK (lexer.getCurrLexeme () == "");
 }
 
 TEST_CASE ("Lexing file", "[lexer]")

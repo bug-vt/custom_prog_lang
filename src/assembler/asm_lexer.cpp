@@ -124,6 +124,10 @@ Token AsmLexer::getNextToken ()
       case LEX_STATE_COMMENT:
         lexStateComment (curr_char);
         break;
+
+      case LEX_STATE_INVALID:
+        lexStateInvalid (curr_char);
+        break;
     }
 
     if (add_curr_char)
@@ -230,6 +234,7 @@ void AsmLexer::lexError (char input)
 
 void AsmLexer::lexStateStart (char curr_char)
 {
+  // white space is read
   if (isspace (curr_char) && curr_char != '\n')
   {
     curr_lexeme.lexeme_start++;
@@ -253,8 +258,9 @@ void AsmLexer::lexStateStart (char curr_char)
     curr_lex_state = LEX_STATE_COMMENT;
     add_curr_char = false;
   }
+  // invalid character is read 
   else
-    lexError (curr_char);
+    curr_lex_state = LEX_STATE_INVALID;
 }
 
 void AsmLexer::lexStateInt (char curr_char)
@@ -262,40 +268,46 @@ void AsmLexer::lexStateInt (char curr_char)
   if (isdigit (curr_char)) { }
   else if (curr_char == '.')
     curr_lex_state = LEX_STATE_FLOAT;
-
+  // white space or delimiter is read
   else if (isspace (curr_char)
            || delim.find (curr_char) != delim.end ())
   {
     add_curr_char = false;
     lexeme_done = true;
   }
+  // invalid character is read 
   else
-    lexError (curr_char);
+    curr_lex_state = LEX_STATE_INVALID;
 }
 
 void AsmLexer::lexStateFloat (char curr_char)
 {
   if (isdigit (curr_char)) { }
-  else if (isspace (curr_char))
-  {
-    add_curr_char = false;
-    lexeme_done = true;
-  }
-  else
-    lexError (curr_char);
-}
-
-void AsmLexer::lexStateIdent (char curr_char)
-{
-  if (isalpha (curr_char) || isdigit (curr_char) || curr_char == '_') {}
+  // white space or delimiter is read
   else if (isspace (curr_char)
            || delim.find (curr_char) != delim.end ())
   {
     add_curr_char = false;
     lexeme_done = true;
   }
+  // invalid character is read 
   else
-    lexError (curr_char);
+    curr_lex_state = LEX_STATE_INVALID;
+}
+
+void AsmLexer::lexStateIdent (char curr_char)
+{
+  if (isalpha (curr_char) || isdigit (curr_char) || curr_char == '_') {}
+  // white space or delimiter is read
+  else if (isspace (curr_char)
+           || delim.find (curr_char) != delim.end ())
+  {
+    add_curr_char = false;
+    lexeme_done = true;
+  }
+  // invalid character is read 
+  else
+    curr_lex_state = LEX_STATE_INVALID;
 }
 
 void AsmLexer::lexStateDelim (char curr_char)
@@ -339,4 +351,14 @@ void AsmLexer::lexStateComment (char curr_char)
     curr_lex_state = LEX_STATE_DELIM;
   else
     add_curr_char = false;
+}
+
+void AsmLexer::lexStateInvalid (char curr_char)
+{
+  // white space or delimiter is read
+  if (isspace (curr_char) || delim.find (curr_char) != delim.end ())
+  {
+    add_curr_char = false;
+    lexeme_done = true;
+  }
 }
