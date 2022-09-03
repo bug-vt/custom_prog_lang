@@ -2,8 +2,11 @@
 #define CATCH_CONFIG_COLOUR_NONE
 #include "catch.hpp"
 #include "../asm_lexer.hpp"
+#include "../error.hpp"
 #include <fstream>
 #include <iostream>
+#include <sys/wait.h>
+#include <unistd.h>
 
 using std::ifstream;
 using std::stringstream;
@@ -210,7 +213,9 @@ TEST_CASE ("Basic string lexing", "[lexer]")
 
 TEST_CASE ("Lexing comment", "[lexer]")
 {
-  std::string input = "; this is comment \n xyz ; another comment\n 123";
+  std::string input = "; this is comment \n \
+                       xyz ; another comment\n \
+                       123";
   
   AsmLexer lexer (input);
   REQUIRE (lexer.getNextToken () == TOKEN_TYPE_NEWLINE);
@@ -298,6 +303,38 @@ TEST_CASE ("Lexing until EOF", "[lexer]")
   CHECK (lexer.getCurrLexeme () == "");
 }
 
+TEST_CASE ("Test displaying error", "[lexer]")
+{
+  std::string input = "var xyz\n \
+                       \t\t\t\tparam 0qqq \n \
+                       jg 4.8, 7.3";
+
+  pid_t pid = fork ();
+  // child
+  if (pid == 0)
+  {
+    cout << "Testing invalid token. Should display error message:" << endl;
+    AsmLexer lexer (input);
+    Token curr_token = lexer.getNextToken ();
+    while (curr_token != TOKEN_TYPE_EOF)
+    {
+      if (curr_token == TOKEN_TYPE_INVALID)
+        exitOnCodeError ("code error", lexer);
+
+      curr_token = lexer.getNextToken ();
+    }
+    exit (0);
+  }
+  // parent
+  else
+  {
+    int status;
+    wait (&status);
+    int ret_val = WEXITSTATUS (status);
+    CHECK (ret_val == 1);
+  }
+}
+
 TEST_CASE ("Lexing file", "[lexer]")
 {
   ifstream input ("example.assembly");
@@ -309,6 +346,7 @@ TEST_CASE ("Lexing file", "[lexer]")
   Token curr_token = lexer.getNextToken ();
   while (curr_token != TOKEN_TYPE_EOF)
   {
+    /*
     string lexeme = lexer.getCurrLexeme ();
     if (lexeme == "\n")
       lexeme = "\\n";
@@ -316,6 +354,8 @@ TEST_CASE ("Lexing file", "[lexer]")
     // display lexmeme and token type for each token
     cout << lexeme << "\t\t"
          << token2string (curr_token) << endl;
+    */
+    CHECK (curr_token != TOKEN_TYPE_INVALID);
 
     // get next token
     curr_token = lexer.getNextToken ();

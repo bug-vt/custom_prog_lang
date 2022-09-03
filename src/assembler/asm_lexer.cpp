@@ -38,7 +38,8 @@ AsmLexer::AsmLexer (string raw_source)
   curr_lexeme.lexeme_start = 0;
   curr_lexeme.lexeme_end = 0;
   curr_lexeme.lexeme = "";
-  curr_lexeme.line = source_code[0];
+  if (source_code.size () > 0)
+    curr_lexeme.line = source_code[0];
   curr_lexeme.line_index = 0;
 
   // list of reserved words
@@ -208,7 +209,10 @@ char AsmLexer::getNextChar ()
       curr_lexeme.lexeme_end = 0;
     }
     else
+    {
+      curr_lexeme.line = "";
       return '\0';
+    }
   }
 
   return curr_lexeme.line[curr_lexeme.lexeme_end++];
@@ -223,10 +227,19 @@ void AsmLexer::copyLexeme (Lexeme &dest, Lexeme &source)
   dest.line_index = source.line_index;
 }
 
-void AsmLexer::lexError (char input)
+string AsmLexer::getCurrLine ()
 {
-  cout << "Error: unexpected character '" << input << "' found." << endl;
-  exit (-1);
+  return curr_lexeme.line;
+}
+
+int AsmLexer::getCurrLineIndex ()
+{
+  return curr_lexeme.line_index;
+}
+
+int AsmLexer::getLexemeStartIndex ()
+{
+  return curr_lexeme.lexeme_start;
 }
 
 // ---------------------------------------------------------------------
