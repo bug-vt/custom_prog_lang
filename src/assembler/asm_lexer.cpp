@@ -2,10 +2,12 @@
 #include <cctype>
 #include <iostream>
 #include "instr_lookup.hpp"
+#include <sstream>
 
 using std::string;
 using std::cout;
 using std::endl;
+using std::istringstream;
 
 
 enum LexState {LEX_STATE_START,
@@ -20,12 +22,24 @@ enum LexState {LEX_STATE_START,
                LEX_STATE_INVALID};
 
 
-AsmLexer::AsmLexer (string source)
+AsmLexer::AsmLexer (string raw_source)
 {
-  this->source = source;
+  // store given source code line by line
+  // this help output the line that cause error
+  istringstream code_stream (raw_source);
+  string line;
+  while (getline (code_stream, line))
+  {
+    line += '\n';
+    source_code.push_back (line);
+  }
+
+  // initialize lexeme
   curr_lexeme.lexeme_start = 0;
   curr_lexeme.lexeme_end = 0;
   curr_lexeme.lexeme = "";
+  curr_lexeme.line = source_code[0];
+  curr_lexeme.line_index = 0;
 
   // list of reserved words
   reserved_word["setStackSize"] = TOKEN_TYPE_SETSTACKSIZE;
@@ -56,10 +70,6 @@ Token AsmLexer::getNextToken ()
 
   // start the new lexeme at the end of the last one
   curr_lexeme.lexeme_start = curr_lexeme.lexeme_end;
- 
-  // check if reached end of the character stream
-  if (curr_lexeme.lexeme_start >= source.length ())
-    return TOKEN_TYPE_EOF;
 
   // initialize current lexeme and state
   curr_lexeme.lexeme = "";
@@ -177,7 +187,27 @@ void AsmLexer::rewindTokenStream ()
 
 char AsmLexer::getNextChar ()
 {
-  return source[curr_lexeme.lexeme_end++];
+  // check if lexer reach end of source file
+  if (curr_lexeme.line_index >= source_code.size ())
+    return '\0';
+
+  // otherwise, when current lexeme end index go beyond of current line,
+  if (curr_lexeme.lexeme_end >= curr_lexeme.line.length ())
+  {
+    curr_lexeme.line_index++;
+    // make sure lexer did not reach end of source file,
+    // then move to next line.
+    if (curr_lexeme.line_index < source_code.size ())
+    {
+      curr_lexeme.line = source_code[curr_lexeme.line_index];
+      curr_lexeme.lexeme_start = 0;
+      curr_lexeme.lexeme_end = 0;
+    }
+    else
+      return '\0';
+  }
+
+  return curr_lexeme.line[curr_lexeme.lexeme_end++];
 }
 
 void AsmLexer::copyLexeme (Lexeme &dest, Lexeme &source)
@@ -185,6 +215,8 @@ void AsmLexer::copyLexeme (Lexeme &dest, Lexeme &source)
   dest.lexeme = source.lexeme;
   dest.lexeme_start = source.lexeme_start;
   dest.lexeme_end = source.lexeme_end;
+  dest.line = source.line;
+  dest.line_index = source.line_index;
 }
 
 void AsmLexer::lexError (char input)

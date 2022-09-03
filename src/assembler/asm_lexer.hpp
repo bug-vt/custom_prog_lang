@@ -3,6 +3,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 #include "instr_lookup.hpp"
 
 typedef int Token;
@@ -30,7 +31,7 @@ class AsmLexer
 {
   public:
     AsmLexer () { }
-    AsmLexer (std::string source);
+    AsmLexer (std::string raw_source);
     Token getNextToken (); 
     std::string getCurrLexeme ();
     void rewindTokenStream ();
@@ -38,14 +39,20 @@ class AsmLexer
   private:
     struct Lexeme
     {
+      std::string line;
+      int line_index;
       int lexeme_start;
       int lexeme_end;
       std::string lexeme;
     };
 
-    std::string source;
+    // source code
+    std::vector<std::string> source_code;
+
+    // reserved words/delimiters
     std::map<std::string, Token> reserved_word; 
     std::map<char, Token> delim;
+
 
     // lexer internal 
     Lexeme curr_lexeme;
@@ -59,6 +66,7 @@ class AsmLexer
     void copyLexeme (Lexeme &dest, Lexeme &source);
     void lexError (char input);
 
+    // lexer states
     void lexStateStart (char curr_char);
     void lexStateInt (char curr_char);
     void lexStateFloat (char curr_char);
