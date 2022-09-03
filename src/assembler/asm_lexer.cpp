@@ -242,6 +242,7 @@ int AsmLexer::getLexemeStartIndex ()
   return curr_lexeme.lexeme_start;
 }
 
+
 // ---------------------------------------------------------------------
 // Lexer States
 
