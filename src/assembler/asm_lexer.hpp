@@ -15,7 +15,7 @@ class AsmLexer
     AsmLexer (std::string raw_source);
     Token getNextToken (); 
     std::string getCurrLexeme ();
-    void rewindTokenStream ();
+    Token peekNextToken ();
     // used for displaying error
     std::string getCurrLine ();
     int getCurrLineIndex ();
@@ -48,6 +48,7 @@ class AsmLexer
     // helper functions
     char getNextChar ();
     void copyLexeme (Lexeme &dest, Lexeme &source);
+    void undoGetNextToken ();
 
     // lexer states
     void lexStateStart (char curr_char);

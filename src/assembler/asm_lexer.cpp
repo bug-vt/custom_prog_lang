@@ -160,7 +160,7 @@ Token AsmLexer::getNextToken ()
     case LEX_STATE_IDENT:
       // check if lexeme match with instruction mnemonic or reserved word.
       // instruction
-      if (InstrLookupTable::isInstr (curr_lexeme.lexeme))
+      if (InstrLookupTable::instance ().isInstr (curr_lexeme.lexeme))
         token_type = TOKEN_TYPE_INSTR;
       // reserved word
       else if (reserved_word.find (curr_lexeme.lexeme) != reserved_word.end ())
@@ -185,7 +185,21 @@ Token AsmLexer::getNextToken ()
   return token_type;
 }
 
-void AsmLexer::rewindTokenStream ()
+Token AsmLexer::peekNextToken ()
+{
+  // temporary save current lexeme
+  Lexeme tmp_lexeme;
+  copyLexeme (tmp_lexeme, curr_lexeme);
+
+  // read next lexeme/token
+  Token next_token = getNextToken ();
+ 
+  // restore back to current lexeme
+  copyLexeme (curr_lexeme, tmp_lexeme);
+  return next_token;
+}
+
+void AsmLexer::undoGetNextToken ()
 {
   copyLexeme (curr_lexeme, prev_lexeme);
 }

@@ -12,19 +12,19 @@ using std::cout;
 using std::endl;
 using std::string;
 
-std::unordered_map<std::string, InstrLookup> InstrLookupTable::instr_lookup;
+//std::unordered_map<std::string, InstrLookup> InstrLookupTable::instr_lookup;
 
 
 
 TEST_CASE ("Basic instruction lookup", "[instr_lookup]")
 {
-  InstrLookupTable::init ();
-  REQUIRE (InstrLookupTable::isInstr ("sub"));
-  REQUIRE (InstrLookupTable::isInstr ("mov"));
-  REQUIRE (InstrLookupTable::isInstr ("call"));
-  REQUIRE (InstrLookupTable::isInstr ("push"));
-  REQUIRE_FALSE (InstrLookupTable::isInstr ("ad"));
-  REQUIRE_FALSE (InstrLookupTable::isInstr ("addi"));
+  InstrLookupTable instr_table = InstrLookupTable::instance ();
+  REQUIRE (instr_table.isInstr ("sub"));
+  REQUIRE (instr_table.isInstr ("mov"));
+  REQUIRE (instr_table.isInstr ("call"));
+  REQUIRE (instr_table.isInstr ("push"));
+  REQUIRE_FALSE (instr_table.isInstr ("ad"));
+  REQUIRE_FALSE (instr_table.isInstr ("addi"));
 }
 
 TEST_CASE ("Basic integer lexing", "[lexer]")
@@ -103,7 +103,6 @@ TEST_CASE ("Baisc array lexing", "[lexer]")
 
 TEST_CASE ("Lexing reserved word and instruction mnemonic", "[lexer]")
 {
-  InstrLookupTable::init ();
   std::string input = " mov    _x12 var   func   ";
   
   AsmLexer lexer (input);
@@ -194,16 +193,14 @@ TEST_CASE ("Lexing multi-line input", "[lexer]")
   CHECK (lexer.getCurrLexeme () == "7.3");
 }
 
-TEST_CASE ("Look ahead and rewind", "[lexer]")
+TEST_CASE ("Peek next token", "[lexer]")
 {
   std::string input = "  ahead 123 rewind ";
   
   AsmLexer lexer (input);
   CHECK (lexer.getNextToken () == TOKEN_TYPE_IDENT);
   CHECK (lexer.getCurrLexeme () == "ahead");
-  CHECK (lexer.getNextToken () == TOKEN_TYPE_INT);
-  CHECK (lexer.getCurrLexeme () == "123");
-  lexer.rewindTokenStream ();
+  CHECK (lexer.peekNextToken () == TOKEN_TYPE_INT);
   CHECK (lexer.getCurrLexeme () == "ahead");
   CHECK (lexer.getNextToken () == TOKEN_TYPE_INT);
   CHECK (lexer.getCurrLexeme () == "123");

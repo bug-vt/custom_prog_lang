@@ -29,7 +29,13 @@ InstrLookup::InstrLookup (int opcode, vector<OpTypes> op_list)
   this->op_list = vector<OpTypes>(op_list);
 }
 
-void InstrLookupTable::init ()
+InstrLookupTable& InstrLookupTable::instance ()
+{
+  static InstrLookupTable *instance = new InstrLookupTable ();
+  return *instance;
+}
+
+InstrLookupTable::InstrLookupTable ()
 {
   // memory
   instr_lookup["mov"] = {0, {DESTINATION, SOURCE}};

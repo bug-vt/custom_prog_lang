@@ -20,13 +20,16 @@ struct InstrLookup
 class InstrLookupTable
 {
   public:
-    static void init ();
-    static InstrLookup lookup (std::string mnemonic);
-    static bool isInstr (std::string mnemonic);
+    // using singleton pattern to ensure the class has one instance
+    // and provide global access
+    static InstrLookupTable& instance ();
+    InstrLookup lookup (std::string mnemonic);
+    bool isInstr (std::string mnemonic);
 
   private:
-    static std::unordered_map<std::string, InstrLookup> instr_lookup;
+    std::unordered_map<std::string, InstrLookup> instr_lookup;
 
+    InstrLookupTable ();
 };
 
 #endif
