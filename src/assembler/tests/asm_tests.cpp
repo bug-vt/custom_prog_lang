@@ -246,6 +246,21 @@ TEST_CASE ("Lexing multi-line input", "[lexer]")
   CHECK (lexer.getCurrLexeme () == "123");
 }
 
+TEST_CASE ("Look ahead and rewind", "[lexer]")
+{
+  std::string input = "  ahead 123 rewind ";
+  
+  AsmLexer lexer (input);
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_IDENT);
+  CHECK (lexer.getCurrLexeme () == "ahead");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_INT);
+  CHECK (lexer.getCurrLexeme () == "123");
+  lexer.rewindTokenStream ();
+  CHECK (lexer.getCurrLexeme () == "ahead");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_INT);
+  CHECK (lexer.getCurrLexeme () == "123");
+}
+
 TEST_CASE ("Lexing file", "[lexer]")
 {
   ifstream input ("example.assembly");

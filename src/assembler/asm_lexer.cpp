@@ -23,9 +23,9 @@ enum LexState {LEX_STATE_START,
 AsmLexer::AsmLexer (string source)
 {
   this->source = source;
-  curr_lexeme_start = 0;
-  curr_lexeme_end = 0;
-  curr_lexeme = "";
+  curr_lexeme.lexeme_start = 0;
+  curr_lexeme.lexeme_end = 0;
+  curr_lexeme.lexeme = "";
 
   // list of reserved words
   reserved_word["setStackSize"] = TOKEN_TYPE_SETSTACKSIZE;
@@ -46,20 +46,23 @@ AsmLexer::AsmLexer (string source)
 
 string AsmLexer::getCurrLexeme ()
 {
-  return curr_lexeme;
+  return curr_lexeme.lexeme;
 }
 
 Token AsmLexer::getNextToken ()
 {
+  // save the current lexeme for future rewinding
+  copyLexeme (prev_lexeme, curr_lexeme);
+
   // start the new lexeme at the end of the last one
-  curr_lexeme_start = curr_lexeme_end;
+  curr_lexeme.lexeme_start = curr_lexeme.lexeme_end;
  
   // check if reached end of the character stream
-  if (curr_lexeme_start >= source.length ())
+  if (curr_lexeme.lexeme_start >= source.length ())
     return TOKEN_TYPE_EOF;
 
   // initialize current lexeme and state
-  curr_lexeme = "";
+  curr_lexeme.lexeme = "";
   curr_lex_state = LEX_STATE_START;
   lexeme_done = false;
 
@@ -114,14 +117,14 @@ Token AsmLexer::getNextToken ()
     }
 
     if (add_curr_char)
-      curr_lexeme += curr_char;
+      curr_lexeme.lexeme += curr_char;
 
     if (lexeme_done)
       break;
   }
 
   // go back one character since it read one more to determine end of lexeme
-  curr_lexeme_end--;
+  curr_lexeme.lexeme_end--;
 
   // determine token type from lexing state.
   Token token_type;
@@ -142,18 +145,18 @@ Token AsmLexer::getNextToken ()
     case LEX_STATE_IDENT:
       // check if lexeme match with instruction mnemonic or reserved word.
       // instruction
-      if (InstrLookupTable::isInstr (curr_lexeme))
+      if (InstrLookupTable::isInstr (curr_lexeme.lexeme))
         token_type = TOKEN_TYPE_INSTR;
       // reserved word
-      else if (reserved_word.find (curr_lexeme) != reserved_word.end ())
-        token_type = reserved_word[curr_lexeme];
+      else if (reserved_word.find (curr_lexeme.lexeme) != reserved_word.end ())
+        token_type = reserved_word[curr_lexeme.lexeme];
       // identifier
       else
         token_type = TOKEN_TYPE_IDENT;
       break;
 
     case LEX_STATE_DELIM:
-      token_type = delim[curr_lexeme[0]];
+      token_type = delim[curr_lexeme.lexeme[0]];
       break;
 
     case LEX_STATE_CLOSE_QUOTE:
@@ -167,9 +170,21 @@ Token AsmLexer::getNextToken ()
   return token_type;
 }
 
+void AsmLexer::rewindTokenStream ()
+{
+  copyLexeme (curr_lexeme, prev_lexeme);
+}
+
 char AsmLexer::getNextChar ()
 {
-  return source[curr_lexeme_end++];
+  return source[curr_lexeme.lexeme_end++];
+}
+
+void AsmLexer::copyLexeme (Lexeme &dest, Lexeme &source)
+{
+  dest.lexeme = source.lexeme;
+  dest.lexeme_start = source.lexeme_start;
+  dest.lexeme_end = source.lexeme_end;
 }
 
 void AsmLexer::lexError (char input)
@@ -185,7 +200,7 @@ void AsmLexer::lexStateStart (char curr_char)
 {
   if (isspace (curr_char) && curr_char != '\n')
   {
-    curr_lexeme_start++;
+    curr_lexeme.lexeme_start++;
     add_curr_char = false;
   }
   else if (isdigit (curr_char))

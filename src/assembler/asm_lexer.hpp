@@ -33,22 +33,30 @@ class AsmLexer
     AsmLexer (std::string source);
     Token getNextToken (); 
     std::string getCurrLexeme ();
+    void rewindTokenStream ();
   
   private:
+    struct Lexeme
+    {
+      int lexeme_start;
+      int lexeme_end;
+      std::string lexeme;
+    };
+
     std::string source;
     std::map<std::string, Token> reserved_word; 
     std::map<char, Token> delim;
 
     // lexer internal 
-    int curr_lexeme_start;
-    int curr_lexeme_end;
+    Lexeme curr_lexeme;
+    Lexeme prev_lexeme;
     int curr_lex_state;
-    std::string curr_lexeme;
     bool add_curr_char;
     bool lexeme_done;
 
     // helper functions
     char getNextChar ();
+    void copyLexeme (Lexeme &dest, Lexeme &source);
     void lexError (char input);
 
     void lexStateStart (char curr_char);
