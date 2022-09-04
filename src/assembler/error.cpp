@@ -11,7 +11,7 @@ using std::replace;
 void exitOnError (string msg)
 {
   cout << "Error: " << msg << endl;
-  exit (1);
+  exit (EXIT_FAILURE);
 }
 
 void exitOnCodeError (string msg, AsmLexer &lexer)
@@ -28,5 +28,5 @@ void exitOnCodeError (string msg, AsmLexer &lexer)
   cout << string (lexer.getLexemeStartIndex (), ' ') << '^' << endl;
 
   cout << "Fail to assemble" << endl;
-  exit (1);
+  exit (EXIT_FAILURE);
 }

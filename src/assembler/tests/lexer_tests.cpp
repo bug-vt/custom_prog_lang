@@ -12,8 +12,6 @@ using std::cout;
 using std::endl;
 using std::string;
 
-//std::unordered_map<std::string, InstrLookup> InstrLookupTable::instr_lookup;
-
 
 
 TEST_CASE ("Basic instruction lookup", "[instr_lookup]")
@@ -29,7 +27,7 @@ TEST_CASE ("Basic instruction lookup", "[instr_lookup]")
 
 TEST_CASE ("Basic integer lexing", "[lexer]")
 {
-  std::string input = "         1    333 5  ";
+  string input = "         1    333 5  ";
   
   AsmLexer lexer (input);
   REQUIRE (lexer.getNextToken () == TOKEN_TYPE_INT);
@@ -42,7 +40,7 @@ TEST_CASE ("Basic integer lexing", "[lexer]")
 
 TEST_CASE ("Basic float lexing", "[lexer]")
 {
-  std::string input = "2.996    .3 1.8450  ";
+  string input = "2.996    .3 1.8450  ";
   
   AsmLexer lexer (input);
   REQUIRE (lexer.getNextToken () == TOKEN_TYPE_FLOAT);
@@ -55,7 +53,7 @@ TEST_CASE ("Basic float lexing", "[lexer]")
 
 TEST_CASE ("Basic identifier lexing", "[lexer]")
 {
-  std::string input = " hello    x _y    n123  ";
+  string input = " hello    x _y    n123  ";
   
   AsmLexer lexer (input);
   REQUIRE (lexer.getNextToken () == TOKEN_TYPE_IDENT);
@@ -70,7 +68,7 @@ TEST_CASE ("Basic identifier lexing", "[lexer]")
 
 TEST_CASE ("Baisc array lexing", "[lexer]")
 {
-  std::string input = " xy[123]    qq [ 2 ]   hi[ 42] ";
+  string input = " xy[123]    qq [ 2 ]   hi[ 42] ";
   
   AsmLexer lexer (input);
   REQUIRE (lexer.getNextToken () == TOKEN_TYPE_IDENT);
@@ -103,7 +101,7 @@ TEST_CASE ("Baisc array lexing", "[lexer]")
 
 TEST_CASE ("Lexing reserved word and instruction mnemonic", "[lexer]")
 {
-  std::string input = " mov    _x12 var   func   ";
+  string input = " mov    _x12 var   func   ";
   
   AsmLexer lexer (input);
   REQUIRE (lexer.getNextToken () == TOKEN_TYPE_INSTR);
@@ -118,7 +116,7 @@ TEST_CASE ("Lexing reserved word and instruction mnemonic", "[lexer]")
 
 TEST_CASE ("Basic delim lexing", "[lexer]")
 {
-  std::string input = " :    , [   ]   ";
+  string input = " :    , [   ]   ";
   
   AsmLexer lexer (input);
   REQUIRE (lexer.getNextToken () == TOKEN_TYPE_COLON);
@@ -133,7 +131,7 @@ TEST_CASE ("Basic delim lexing", "[lexer]")
 
 TEST_CASE ("Basic string lexing", "[lexer]")
 {
-  std::string input = " \"Hello\"  \"to \\\"World\\\"\" \"fall $ number  @sun\"";
+  string input = " \"Hello\"  \"to \\\"World\\\"\" \"fall $ number  @sun\"";
   
   AsmLexer lexer (input);
   REQUIRE (lexer.getNextToken () == TOKEN_TYPE_STRING);
@@ -146,9 +144,9 @@ TEST_CASE ("Basic string lexing", "[lexer]")
 
 TEST_CASE ("Lexing comment", "[lexer]")
 {
-  std::string input = "; this is comment \n \
-                       xyz ; another comment\n \
-                       123";
+  string input = "; this is comment \n \
+                  xyz ; another comment\n \
+                  123";
   
   AsmLexer lexer (input);
   REQUIRE (lexer.getNextToken () == TOKEN_TYPE_NEWLINE);
@@ -163,10 +161,10 @@ TEST_CASE ("Lexing comment", "[lexer]")
 
 TEST_CASE ("Lexing multi-line input", "[lexer]")
 {
-  std::string input = "; comment first line\n \
-                       var xyz\n \
-                       param qqq \n \
-                       jg 4.8, 7.3";
+  string input = "; comment first line\n \
+                  var xyz\n \
+                  param qqq \n \
+                  jg 4.8, 7.3";
   
   AsmLexer lexer (input);
   CHECK (lexer.getNextToken () == TOKEN_TYPE_NEWLINE);
@@ -195,7 +193,7 @@ TEST_CASE ("Lexing multi-line input", "[lexer]")
 
 TEST_CASE ("Peek next token", "[lexer]")
 {
-  std::string input = "  ahead 123 rewind ";
+  string input = "  ahead 123 rewind ";
   
   AsmLexer lexer (input);
   CHECK (lexer.getNextToken () == TOKEN_TYPE_IDENT);
@@ -208,7 +206,7 @@ TEST_CASE ("Peek next token", "[lexer]")
 
 TEST_CASE ("Lexing Invalid token", "[lexer]")
 {
-  std::string input = "  7ident  1.2. ident! @ \n";
+  string input = "  7ident  1.2. ident! @ \n";
   
   AsmLexer lexer (input);
   CHECK (lexer.getNextToken () == TOKEN_TYPE_INVALID);
@@ -223,7 +221,7 @@ TEST_CASE ("Lexing Invalid token", "[lexer]")
 
 TEST_CASE ("Lexing until EOF", "[lexer]")
 {
-  std::string input = "  123  hello world \n";
+  string input = "  123  hello world \n";
 
   AsmLexer lexer (input);
   lexer.getNextToken ();
@@ -236,9 +234,9 @@ TEST_CASE ("Lexing until EOF", "[lexer]")
 
 TEST_CASE ("Test displaying error", "[lexer]")
 {
-  std::string input = "var xyz\n \
-                       \t\t\t\tparam 0qqq \n \
-                       jg 4.8, 7.3";
+  string input = "var xyz\n \
+                  \t\t\t\tparam 0qqq \n \
+                  jg 4.8, 7.3";
 
   pid_t pid = fork ();
   // child
@@ -254,16 +252,13 @@ TEST_CASE ("Test displaying error", "[lexer]")
 
       curr_token = lexer.getNextToken ();
     }
-    exit (0);
+    exit (EXIT_SUCCESS);
   }
   // parent
-  else
-  {
-    int status;
-    wait (&status);
-    int ret_val = WEXITSTATUS (status);
-    CHECK (ret_val == 1);
-  }
+  int status;
+  wait (&status);
+  int ret_val = WEXITSTATUS (status);
+  REQUIRE (ret_val == EXIT_FAILURE);
 }
 
 TEST_CASE ("Lexing file", "[lexer]")

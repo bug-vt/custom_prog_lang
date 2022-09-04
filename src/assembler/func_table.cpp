@@ -17,7 +17,7 @@ FuncInfo::FuncInfo (int index, int entry_pos)
 }
 
 
-FuncTable::FuncTable () : func_index (0), func_table ()
+FuncTable::FuncTable () : func_index (1), func_table ()
 {
 }
 
