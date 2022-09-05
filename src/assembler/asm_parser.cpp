@@ -51,6 +51,10 @@ void AsmParser::parseLine ()
       parseVar ();
       break;
 
+    case TOKEN_TYPE_PARAM:
+      parseParam ();
+      break;
+
     default:
       exitOnCodeError ("Unexpected token", lexer);
   }
@@ -67,10 +71,17 @@ void AsmParser::parseFunc ()
   // instruction immediately after the current one is the function's entry point
   // which is equal to the current instruction stream size
   int entry_point = instr_stream_size;
+  string func_name = lexer.getCurrLexeme ();
   // add function to the function table and check for redefinition
-  int func_index = func_table.addFunc (lexer.getCurrLexeme (), entry_point); 
+  int func_index = func_table.addFunc (func_name, entry_point); 
   if (func_index == -1)
     exitOnCodeError ("Function was already defined somewhere else", lexer);
+
+  if (func_name == "main")
+  {
+    is_main_func_present = true;
+    main_func_index = func_index; 
+  }
 
   // change scope to the function
   // and reinitialize variables that used for tracking function
@@ -107,6 +118,7 @@ void AsmParser::parseBlock ()
 
   // end the code block with closing curly brace.
   readToken (TOKEN_TYPE_CLOSE_BRACE);
+  readToken (TOKEN_TYPE_NEWLINE);
 }
 
 void AsmParser::parseVar ()
@@ -153,5 +165,26 @@ void AsmParser::parseVar ()
   else
     curr_func_local_data_size += size;
   
+  readToken (TOKEN_TYPE_NEWLINE);
+}
+
+void AsmParser::parseParam ()
+{
+  if (curr_scope == GLOBAL_SCOPE)
+    exitOnCodeError ("parameter cannot be defined on global scope", lexer);
+
+  readToken (TOKEN_TYPE_IDENT);
+
+  string ident = lexer.getCurrLexeme ();
+
+  // this need to be change later.
+  int stack_index = 0;
+
+  Symbol symbol (ident, curr_scope); 
+  if (symbol_table.addSymbol (symbol, 1, stack_index) == -1)
+    exitOnCodeError ("Identifier with same name already exists inside the same scope", lexer);
+
+  curr_func_param_size++;
+
   readToken (TOKEN_TYPE_NEWLINE);
 }

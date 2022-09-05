@@ -98,12 +98,38 @@ TEST_CASE ("var/var[] parsing error", "[parser]")
   }
 }
 
+TEST_CASE ("Basic param parsing", "[parser]")
+{
+  string input = "\n\nfunc myFunc\n"
+                 "{ \n"
+                 "param x \n"
+                 "param y \n"
+                 "}";
+
+  REQUIRE (testParse (input) == EXIT_SUCCESS);
+}
+
+TEST_CASE ("param parsing error", "[parser]")
+{
+  SECTION ("Defined in global scope")
+  {
+    string input = "param x \n"
+                   "func myFunc\n"
+                   "{ \n"
+                   "}";
+    REQUIRE (testParse (input) == EXIT_FAILURE);
+  }
+}
+
+
 TEST_CASE ("Basic input parsing", "[parser]")
 {
   string input = "\n\nfunc myFunc\n"
                  "{ \n"
                  "  var hello \n"
                  " var world[ 42] \n"
+                 "param x \n"
+                 "param y \n"
                  "}";
 
   REQUIRE (testParse (input) == EXIT_SUCCESS);

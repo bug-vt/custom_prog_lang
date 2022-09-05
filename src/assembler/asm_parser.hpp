@@ -16,7 +16,10 @@ class AsmParser
     void parse ();
 
   private:
-    // variables for entire script
+    // variables for constructing header 
+    int stack_size;
+    bool is_main_func_present;
+    int main_func_index;
     int global_data_size;
     int instr_stream_size;
     // variables for tracking current function
@@ -39,6 +42,7 @@ class AsmParser
     void parseFunc ();
     void parseBlock ();
     void parseVar ();
+    void parseParam ();
 };
 
 #endif
