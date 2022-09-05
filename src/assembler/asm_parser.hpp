@@ -43,6 +43,7 @@ class AsmParser
     void parseBlock ();
     void parseVar ();
     void parseParam ();
+    void parseLabel ();
 };
 
 #endif

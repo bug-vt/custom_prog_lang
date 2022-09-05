@@ -55,6 +55,10 @@ void AsmParser::parseLine ()
       parseParam ();
       break;
 
+    case TOKEN_TYPE_IDENT:
+      parseLabel ();
+      break;
+
     default:
       exitOnCodeError ("Unexpected token", lexer);
   }
@@ -187,4 +191,21 @@ void AsmParser::parseParam ()
   curr_func_param_size++;
 
   readToken (TOKEN_TYPE_NEWLINE);
+}
+
+void AsmParser::parseLabel ()
+{
+  string ident = lexer.getCurrLexeme ();
+
+  readToken (TOKEN_TYPE_COLON);
+
+  if (curr_scope == GLOBAL_SCOPE)
+    exitOnCodeError ("Line label can be only used inside the function", lexer);
+
+  int target_index = instr_stream_size - 1;
+  int func_index = curr_scope;
+
+  Label label (ident, func_index);
+  if (label_table.addLabel (label, target_index) == -1)
+    exitOnCodeError ("Label with same name already exists inside the same scope", lexer);
 }
