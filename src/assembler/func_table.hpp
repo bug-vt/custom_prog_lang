@@ -9,7 +9,7 @@
 // Hold information to describe a function's scope and stack frame.
 struct FuncInfo
 {
-  int func_index;    // index within the function table
+  int func_index; 
   int entry_point;
   int param_count;
   int local_data_size;
@@ -25,14 +25,13 @@ class FuncTable
     FuncTable ();
     int addFunc (std::string func_name, int entry_point);
     FuncInfo getFunc (std::string func_name);
-    void setFunc (std::string func_name, 
+    void setFunc (int func_index, 
                   int param_count, 
                   int local_data_size);
 
   private:
     int func_index;
     std::unordered_map<std::string, FuncInfo> func_table;
-
 };
 
 #endif
