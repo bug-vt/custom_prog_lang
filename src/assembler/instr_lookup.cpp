@@ -1,32 +1,16 @@
 #include "instr_lookup.hpp"
 #include <cassert>
 
-#define OP_FLAG_TYPE_INT    1
-#define OP_FLAG_TYPE_FLOAT  2 
-#define OP_FLAG_TYPE_STR    4 
-#define OP_FLAG_TYPE_MEM    8
-#define OP_FLAG_TYPE_LABEL  16
-#define OP_FLAG_TYPE_FUNC   32
-#define OP_FLAG_TYPE_REG    64
-
-#define DESTINATION         (OP_FLAG_TYPE_MEM | OP_FLAG_TYPE_REG)
-#define SOURCE              (OP_FLAG_TYPE_INT \
-                             | OP_FLAG_TYPE_FLOAT \
-                             | OP_FLAG_TYPE_STR   \
-                             | OP_FLAG_TYPE_MEM   \
-                             | OP_FLAG_TYPE_REG)
-#define SHIFT_COUNT         (OP_FLAG_TYPE_INT)
-
 
 using std::string;
 using std::unordered_map;
 using std::vector;
 
 
-InstrLookup::InstrLookup (int opcode, vector<OpTypes> op_list)
+InstrLookup::InstrLookup (int opcode, vector<OpBitFlags> op_list)
 {
   this->opcode = opcode;
-  this->op_list = vector<OpTypes>(op_list);
+  this->op_list = vector<OpBitFlags>(op_list);
 }
 
 InstrLookupTable& InstrLookupTable::instance ()

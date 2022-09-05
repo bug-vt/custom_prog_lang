@@ -7,6 +7,7 @@
 #include "string_table.hpp"
 #include "symbol_table.hpp"
 #include "label_table.hpp"
+#include "instruction.hpp"
 
 class AsmParser
 {
@@ -21,6 +22,8 @@ class AsmParser
     bool is_main_func_present;
     int main_func_index;
     int global_data_size;
+    // variables for instruction stream
+    std::vector<Instr> instr_stream;
     int instr_stream_size;
     // variables for tracking current function
     int curr_scope;
@@ -31,6 +34,7 @@ class AsmParser
     AsmLexer lexer;
 
     // tables
+    InstrLookupTable instr_table = InstrLookupTable::instance ();
     FuncTable func_table;
     StringTable str_table;
     SymbolTable symbol_table;
@@ -44,6 +48,7 @@ class AsmParser
     void parseVar ();
     void parseParam ();
     void parseLabel ();
+    void parseInstr ();
 };
 
 #endif

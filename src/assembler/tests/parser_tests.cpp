@@ -152,6 +152,72 @@ TEST_CASE ("Basic line label parsing", "[parser]")
   }
 }
 
+TEST_CASE ("Basic instruction parsing", "[parser]")
+{
+  SECTION ("ret instruction")
+  {
+    string input = "\n\nfunc myFunc\n"
+                   "{ \n"
+                   "ret \n"
+                   "}";
+
+    REQUIRE (testParse (input) == EXIT_SUCCESS);
+  }
+
+  SECTION ("push instruction")
+  {
+    string input = "\n\nfunc myFunc\n"
+                   "{ \n"
+                   "push 42 \n"
+                   "}";
+
+    REQUIRE (testParse (input) == EXIT_SUCCESS);
+  }
+
+  SECTION ("mov instruction")
+  {
+    string input = "\n\nfunc myFunc\n"
+                   "{ \n"
+                   "mov x, 33 \n"
+                   "}";
+
+    REQUIRE (testParse (input) == EXIT_SUCCESS);
+  }
+  
+  SECTION ("jg instruction")
+  {
+    string input = "\n\nfunc myFunc\n"
+                   "{ \n"
+                   "here:"
+                   "jg 12.3, 8.2, here \n"
+                   "}";
+
+    REQUIRE (testParse (input) == EXIT_SUCCESS);
+  }
+}
+
+TEST_CASE ("Instruction parsing error", "[parser]")
+{
+  SECTION ("Incorrect add instruction")
+  {
+    string input = "\n\nfunc myFunc\n"
+                   "{ \n"
+                   "add 2, 2 \n"
+                   "}";
+
+    REQUIRE (testParse (input) == EXIT_FAILURE);
+  }
+
+  SECTION ("Incorrect sub instruction")
+  {
+    string input = "\n\nfunc myFunc\n"
+                   "{ \n"
+                   "sub y, :\n"
+                   "}";
+
+    REQUIRE (testParse (input) == EXIT_FAILURE);
+  }
+}
 
 TEST_CASE ("Basic input parsing", "[parser]")
 {

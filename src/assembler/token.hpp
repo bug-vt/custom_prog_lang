@@ -2,6 +2,8 @@
 #define _TOKEN
 
 #include <string>
+#include "instr_lookup.hpp"
+#include "instruction.hpp"
 
 typedef int Token;
 enum TokenType {TOKEN_TYPE_EOF,
@@ -25,5 +27,7 @@ enum TokenType {TOKEN_TYPE_EOF,
                 TOKEN_TYPE_INVALID};
 
 std::string token2string (Token token);
+OpBitFlags token2bitflag (Token token);
+OpType token2op (Token token);
 
 #endif

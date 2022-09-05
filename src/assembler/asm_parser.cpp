@@ -59,10 +59,15 @@ void AsmParser::parseLine ()
       parseLabel ();
       break;
 
+    case TOKEN_TYPE_INSTR:
+      parseInstr ();
+      break;
+
     default:
       exitOnCodeError ("Unexpected token", lexer);
   }
 }
+
 
 void AsmParser::parseFunc ()
 {
@@ -112,6 +117,7 @@ void AsmParser::parseFunc ()
   curr_scope = GLOBAL_SCOPE;
 }
 
+
 void AsmParser::parseBlock ()
 {
   if (curr_scope == GLOBAL_SCOPE)
@@ -124,6 +130,7 @@ void AsmParser::parseBlock ()
   readToken (TOKEN_TYPE_CLOSE_BRACE);
   readToken (TOKEN_TYPE_NEWLINE);
 }
+
 
 void AsmParser::parseVar ()
 {
@@ -172,6 +179,7 @@ void AsmParser::parseVar ()
   readToken (TOKEN_TYPE_NEWLINE);
 }
 
+
 void AsmParser::parseParam ()
 {
   if (curr_scope == GLOBAL_SCOPE)
@@ -193,6 +201,7 @@ void AsmParser::parseParam ()
   readToken (TOKEN_TYPE_NEWLINE);
 }
 
+
 void AsmParser::parseLabel ()
 {
   string ident = lexer.getCurrLexeme ();
@@ -208,4 +217,55 @@ void AsmParser::parseLabel ()
   Label label (ident, func_index);
   if (label_table.addLabel (label, target_index) == -1)
     exitOnCodeError ("Label with same name already exists inside the same scope", lexer);
+}
+
+
+void AsmParser::parseInstr ()
+{
+  // lookup the reference instruction from the given mnemonic
+  string mnemonic = lexer.getCurrLexeme ();
+  InstrLookup ref_instr = instr_table.lookup (mnemonic);
+
+  // Start forming the output instruction
+  int op_count = ref_instr.op_list.size ();
+  Instr curr_output (ref_instr.opcode, op_count);
+
+  // process and verify each operand
+  for (int op_index = 0; op_index < op_count; op_index++)
+  {
+    // get bit encoding that represent allowed operand types
+    // for current operand 
+    OpBitFlags op_flags = ref_instr.op_list[op_index];
+   
+    // token type for current operand
+    Token op_token = lexer.getNextToken ();
+
+    // verify operand type match with one of the bit flags
+    OpBitFlags curr_op_type = token2bitflag (op_token);
+    if (!(op_flags & curr_op_type))
+      exitOnCodeError ("Invalid operand for given instruction", lexer);
+
+    // record type and value
+    // which will be used for generating binary
+    curr_output.op_list[op_index].type = token2op (op_token);
+    string lexeme = lexer.getCurrLexeme ();
+    switch (op_token)
+    {
+      case TOKEN_TYPE_INT:
+        curr_output.op_list[op_index].int_literal = stoi (lexeme);
+        break;
+      case TOKEN_TYPE_FLOAT:
+        curr_output.op_list[op_index].float_literal = stof (lexeme);
+        break;
+      case TOKEN_TYPE_REG_RETVAL:
+        curr_output.op_list[op_index].reg = 0;
+        break;
+    }
+    
+    if (op_index < op_count - 1)
+      readToken (TOKEN_TYPE_COMMA);
+  }
+
+  readToken (TOKEN_TYPE_NEWLINE);
+  instr_stream.push_back (curr_output);
 }

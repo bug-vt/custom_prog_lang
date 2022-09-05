@@ -66,3 +66,62 @@ string token2string (Token token)
   }
   return out;
 }
+
+
+OpBitFlags token2bitflag (Token token)
+{
+  OpBitFlags op_flag;
+  switch (token)
+  {
+    case TOKEN_TYPE_INT:
+      op_flag = OP_FLAG_TYPE_INT;
+      break;
+    case TOKEN_TYPE_FLOAT:
+      op_flag = OP_FLAG_TYPE_FLOAT;
+      break;
+    case TOKEN_TYPE_STRING:
+      op_flag = OP_FLAG_TYPE_STR;
+      break;
+    case TOKEN_TYPE_IDENT:
+      op_flag = OP_FLAG_TYPE_MEM;
+      break;
+    case TOKEN_TYPE_FUNC:
+      op_flag = OP_FLAG_TYPE_FUNC;
+      break;
+    case TOKEN_TYPE_REG_RETVAL:
+      op_flag = OP_FLAG_TYPE_REG;
+      break;
+    default:
+      op_flag = 0;
+  }
+  return op_flag;
+}
+
+OpType token2op (Token token)
+{
+  OpType op;
+  switch (token)
+  {
+    case TOKEN_TYPE_INT:
+      op = OP_TYPE_INT;
+      break;
+    case TOKEN_TYPE_FLOAT:
+      op = OP_TYPE_FLOAT;
+      break;
+    case TOKEN_TYPE_STRING:
+      op = OP_TYPE_STR;
+      break;
+    case TOKEN_TYPE_IDENT:
+      op = OP_TYPE_MEM;
+      break;
+    case TOKEN_TYPE_FUNC:
+      op = OP_TYPE_FUNC;
+      break;
+    case TOKEN_TYPE_REG_RETVAL:
+      op = OP_TYPE_REG;
+      break;
+    default:
+      op = OP_TYPE_INVALID;
+  }
+  return op;
+}
