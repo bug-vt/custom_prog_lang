@@ -27,6 +27,6 @@ void exitOnCodeError (string msg, AsmLexer &lexer)
   cout << line;
   cout << string (lexer.getLexemeStartIndex (), ' ') << '^' << endl;
 
-  cout << "Fail to assemble" << endl;
+  cout << "Fail to assemble\n" << endl;
   exit (EXIT_FAILURE);
 }

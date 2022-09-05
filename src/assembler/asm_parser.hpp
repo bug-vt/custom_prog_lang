@@ -16,7 +16,13 @@ class AsmParser
     void parse ();
 
   private:
+    // variables for entire script
+    int global_data_size;
+    int instr_stream_size;
+    // variables for tracking current function
     int curr_scope;
+    int curr_func_local_data_size;
+    int curr_func_param_size;
 
     // lexer
     AsmLexer lexer;
@@ -32,6 +38,7 @@ class AsmParser
     void parseLine ();
     void parseFunc ();
     void parseBlock ();
+    void parseVar ();
 };
 
 #endif
