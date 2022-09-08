@@ -218,6 +218,16 @@ TEST_CASE ("Basic instruction parsing", "[parser]")
 
     REQUIRE (testParse (input) == EXIT_SUCCESS);
   }
+
+  SECTION ("call instruction")
+  {
+    string input = "\n\nfunc myFunc\n"
+                   "{ \n"
+                   "call myFunc\n"
+                   "}";
+
+    REQUIRE (testParse (input) == EXIT_SUCCESS);
+  }
 }
 
 TEST_CASE ("Instruction parsing error", "[parser]")
@@ -238,6 +248,16 @@ TEST_CASE ("Instruction parsing error", "[parser]")
                    "{ \n"
                    "var y\n"
                    "sub y, :\n"
+                   "}";
+
+    REQUIRE (testParse (input) == EXIT_FAILURE);
+  }
+
+  SECTION ("Incorrect call instruction")
+  {
+    string input = "\n\nfunc myFunc\n"
+                   "{ \n"
+                   "call noFunc\n"
                    "}";
 
     REQUIRE (testParse (input) == EXIT_FAILURE);

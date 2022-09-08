@@ -308,9 +308,20 @@ void AsmParser::parseInstr ()
           curr_output.op_list[op_index].stack_index = stack_index;
         }
         break;
+
+      case OP_TYPE_FUNC:
+        {
+          int func_index = func_table.getFunc (curr_lexeme).func_index;
+          curr_output.op_list[op_index].func_index = func_index;
+        }
+        break;
+
       case OP_TYPE_REG:
         curr_output.op_list[op_index].reg = 0;
         break;
+
+      default:
+        exitOnCodeError ("Unsupported operand type", lexer);
     }
     
     if (op_index < op_count - 1)

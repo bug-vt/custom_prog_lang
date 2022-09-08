@@ -83,10 +83,7 @@ OpBitFlags token2bitflag (Token token)
       op_flag = OP_FLAG_TYPE_STR;
       break;
     case TOKEN_TYPE_IDENT:
-      op_flag = OP_FLAG_TYPE_MEM | OP_FLAG_TYPE_LABEL;
-      break;
-    case TOKEN_TYPE_FUNC:
-      op_flag = OP_FLAG_TYPE_FUNC;
+      op_flag = OP_FLAG_TYPE_MEM | OP_FLAG_TYPE_LABEL | OP_FLAG_TYPE_FUNC;
       break;
     case TOKEN_TYPE_REG_RETVAL:
       op_flag = OP_FLAG_TYPE_REG;
@@ -112,12 +109,14 @@ OpType token2op (Token token, OpBitFlags flags)
       op = OP_TYPE_STR;
       break;
     // in case of identifier token, 
-    // it can be either Memory reference (variable/array) or label.
+    // it can be either Memory reference (variable/array), label, or function.
     // We distinguish it by checking whether bit flag for label is set.
     case TOKEN_TYPE_IDENT:
       if (flags & OP_FLAG_TYPE_LABEL)
         op = OP_TYPE_INSTR_INDEX;
-      // if not label, first assume that it is variable.
+      else if (flags & OP_FLAG_TYPE_FUNC)
+        op = OP_TYPE_FUNC;
+      // if not label or function, first assume that it is variable.
       else
         op = OP_TYPE_ABS_STACK_INDEX;
       break;
