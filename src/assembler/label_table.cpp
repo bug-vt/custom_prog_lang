@@ -40,5 +40,5 @@ int LabelTable::addLabel (Label label, int target_index)
 
 LabelInfo LabelTable::getLabel (Label label)
 {
-  return label_table[label];
+  return label_table.at (label);
 }

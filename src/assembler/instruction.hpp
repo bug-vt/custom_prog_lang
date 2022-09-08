@@ -7,7 +7,7 @@ enum OpType {OP_TYPE_INT,
              OP_TYPE_FLOAT,
              OP_TYPE_STR,
              OP_TYPE_MEM,
-             OP_TYPE_LABEL,
+             OP_TYPE_INSTR_INDEX,
              OP_TYPE_FUNC,
              OP_TYPE_REG,
              OP_TYPE_INVALID};
@@ -19,7 +19,8 @@ struct Op
     {
         int int_literal;
         float float_literal;
-        int string_table_index; // string table index
+        int str_table_index;    // string table index
+        int instr_index;        // instruction stream index
         int stack_index;        // stack index
         int func_index;         // function table index
         int reg;                // register code

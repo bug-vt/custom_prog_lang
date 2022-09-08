@@ -247,17 +247,32 @@ void AsmParser::parseInstr ()
 
     // record type and value
     // which will be used for generating binary
-    curr_output.op_list[op_index].type = token2op (op_token);
-    string lexeme = lexer.getCurrLexeme ();
-    switch (op_token)
+    OpType op_type = token2op (op_token, op_flags);
+    curr_output.op_list[op_index].type = op_type;
+
+    string curr_lexeme = lexer.getCurrLexeme ();
+    switch (op_type)
     {
-      case TOKEN_TYPE_INT:
-        curr_output.op_list[op_index].int_literal = stoi (lexeme);
+      case OP_TYPE_INT:
+        curr_output.op_list[op_index].int_literal = stoi (curr_lexeme);
         break;
-      case TOKEN_TYPE_FLOAT:
-        curr_output.op_list[op_index].float_literal = stof (lexeme);
+      case OP_TYPE_FLOAT:
+        curr_output.op_list[op_index].float_literal = stof (curr_lexeme);
         break;
-      case TOKEN_TYPE_REG_RETVAL:
+      case OP_TYPE_STR:
+        {
+          int str_table_index = str_table.addString (curr_lexeme);
+          curr_output.op_list[op_index].str_table_index = str_table_index;
+        }
+        break;
+      case OP_TYPE_INSTR_INDEX:
+        {
+          Label label (curr_lexeme, curr_scope);
+          int target_index = label_table.getLabel (label).target_index;
+          curr_output.op_list[op_index].instr_index = target_index;
+        }
+        break;
+      case OP_TYPE_REG:
         curr_output.op_list[op_index].reg = 0;
         break;
     }

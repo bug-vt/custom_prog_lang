@@ -42,5 +42,5 @@ int SymbolTable::addSymbol (Symbol symbol, int size, int stack_index)
 
 SymbolInfo SymbolTable::getSymbol (Symbol symbol)
 {
-  return symbol_table[symbol];
+  return symbol_table.at (symbol);
 }

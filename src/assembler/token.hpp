@@ -28,6 +28,6 @@ enum TokenType {TOKEN_TYPE_EOF,
 
 std::string token2string (Token token);
 OpBitFlags token2bitflag (Token token);
-OpType token2op (Token token);
+OpType token2op (Token token, OpBitFlags flags);
 
 #endif
