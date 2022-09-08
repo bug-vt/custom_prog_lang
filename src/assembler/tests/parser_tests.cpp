@@ -207,6 +207,17 @@ TEST_CASE ("Basic instruction parsing", "[parser]")
 
     REQUIRE (testParse (input) == EXIT_SUCCESS);
   }
+
+  SECTION ("mov instruction with string")
+  {
+    string input = "\n\nfunc myFunc\n"
+                   "{ \n"
+                   "var str \n"
+                   "mov str, \"Hello wordl!\" \n"
+                   "}";
+
+    REQUIRE (testParse (input) == EXIT_SUCCESS);
+  }
 }
 
 TEST_CASE ("Instruction parsing error", "[parser]")

@@ -288,10 +288,17 @@ void AsmParser::parseInstr ()
               stack_index += stoi (lexer.getCurrLexeme ());
             // for variable index, record index of the variable and change
             // operand type to relative indexing
+            // because we won't know the value of variable until runtime
             else if (index_token == TOKEN_TYPE_IDENT)
             {
               curr_output.op_list[op_index].type = OP_TYPE_REL_STACK_INDEX;
-              //curr_output_op_list[op_index].offset_index = 0;
+              // find the stack index of the variable index
+              string ident = lexer.getCurrLexeme ();
+              Symbol offset_symbol (ident, curr_scope);
+              int offset_index = symbol_table.getSymbol (offset_symbol).stack_index;
+              // record the stack index that will be added to the base index
+              // during runtime
+              curr_output.op_list[op_index].offset_index = offset_index;
             }
             else
               exitOnCodeError ("Invalid token for array indexing", lexer);

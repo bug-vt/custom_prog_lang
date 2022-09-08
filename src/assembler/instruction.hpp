@@ -26,7 +26,7 @@ struct Op
         int func_index;         // function table index
         int reg;                // register code
     };
-    int offset_index; 
+    int offset_index;           // stack index of the offset variable
 };
 
 struct Instr
