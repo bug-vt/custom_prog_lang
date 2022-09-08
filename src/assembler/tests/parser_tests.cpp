@@ -178,6 +178,7 @@ TEST_CASE ("Basic instruction parsing", "[parser]")
   {
     string input = "\n\nfunc myFunc\n"
                    "{ \n"
+                   "var x\n"
                    "mov x, 33 \n"
                    "}";
 
@@ -190,6 +191,18 @@ TEST_CASE ("Basic instruction parsing", "[parser]")
                    "{ \n"
                    "here:"
                    "jg 12.3, 8.2, here \n"
+                   "}";
+
+    REQUIRE (testParse (input) == EXIT_SUCCESS);
+  }
+
+  SECTION ("add instruction with array")
+  {
+    string input = "\n\nfunc myFunc\n"
+                   "{ \n"
+                   "var xyz[10]\n"
+                   "var y\n"
+                   "add xyz[2], y \n"
                    "}";
 
     REQUIRE (testParse (input) == EXIT_SUCCESS);
@@ -212,6 +225,7 @@ TEST_CASE ("Instruction parsing error", "[parser]")
   {
     string input = "\n\nfunc myFunc\n"
                    "{ \n"
+                   "var y\n"
                    "sub y, :\n"
                    "}";
 

@@ -117,8 +117,9 @@ OpType token2op (Token token, OpBitFlags flags)
     case TOKEN_TYPE_IDENT:
       if (flags & OP_FLAG_TYPE_LABEL)
         op = OP_TYPE_INSTR_INDEX;
+      // if not label, first assume that it is variable.
       else
-        op = OP_TYPE_MEM;
+        op = OP_TYPE_ABS_STACK_INDEX;
       break;
     case TOKEN_TYPE_FUNC:
       op = OP_TYPE_FUNC;

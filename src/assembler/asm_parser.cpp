@@ -272,6 +272,35 @@ void AsmParser::parseInstr ()
           curr_output.op_list[op_index].instr_index = target_index;
         }
         break;
+      case OP_TYPE_ABS_STACK_INDEX:
+        {
+          Symbol symbol (curr_lexeme, curr_scope);
+          int stack_index = symbol_table.getSymbol (symbol).stack_index;
+          // if next token is open bracket,
+          // verify if the operand is an array and process it 
+          if (lexer.peekNextToken () == TOKEN_TYPE_OPEN_BRACKET)
+          {
+            readToken (TOKEN_TYPE_OPEN_BRACKET);
+          
+            Token index_token = lexer.getNextToken ();
+            // for integer index, then add add offset to the base stack index
+            if (index_token == TOKEN_TYPE_INT)
+              stack_index += stoi (lexer.getCurrLexeme ());
+            // for variable index, record index of the variable and change
+            // operand type to relative indexing
+            else if (index_token == TOKEN_TYPE_IDENT)
+            {
+              curr_output.op_list[op_index].type = OP_TYPE_REL_STACK_INDEX;
+              //curr_output_op_list[op_index].offset_index = 0;
+            }
+            else
+              exitOnCodeError ("Invalid token for array indexing", lexer);
+            
+            readToken (TOKEN_TYPE_CLOSE_BRACKET);
+          }
+          curr_output.op_list[op_index].stack_index = stack_index;
+        }
+        break;
       case OP_TYPE_REG:
         curr_output.op_list[op_index].reg = 0;
         break;
