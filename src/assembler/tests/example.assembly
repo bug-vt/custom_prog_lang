@@ -5,7 +5,7 @@
 ; This is based on the example script from Varanese's book. 
 
 ; ---- Globals -----
-var GLOBAL_VAL
+var GLOBAL_VAR
 var GLOBAL_ARRAY[1024]
 
 ; ---- Functions -----
@@ -47,7 +47,7 @@ func myFunc
 }
 
 
-func _main
+func main
 {
     ; invoke myFunc
     call myFunc

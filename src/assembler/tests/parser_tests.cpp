@@ -2,8 +2,11 @@
 #include "../asm_parser.hpp"
 #include <sys/wait.h>
 #include <unistd.h>
+#include <fstream>
 
+using std::ifstream;
 using std::string;
+using std::stringstream;
 
 int testParse (string input)
 {
@@ -221,9 +224,14 @@ TEST_CASE ("Basic instruction parsing", "[parser]")
 
   SECTION ("call instruction")
   {
-    string input = "\n\nfunc myFunc\n"
+    string input = "\n\nfunc someFunc\n"
                    "{ \n"
-                   "call myFunc\n"
+                   "var x\n"
+                   "add x, 2\n"
+                   "}"
+                   "\n\nfunc myFunc\n"
+                   "{ \n"
+                   "call someFunc\n"
                    "}";
 
     REQUIRE (testParse (input) == EXIT_SUCCESS);
@@ -253,6 +261,7 @@ TEST_CASE ("Instruction parsing error", "[parser]")
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
 
+  /*
   SECTION ("Incorrect call instruction")
   {
     string input = "\n\nfunc myFunc\n"
@@ -262,6 +271,7 @@ TEST_CASE ("Instruction parsing error", "[parser]")
 
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
+  */
 }
 
 TEST_CASE ("Basic input parsing", "[parser]")
@@ -276,6 +286,15 @@ TEST_CASE ("Basic input parsing", "[parser]")
                  "}";
 
   REQUIRE (testParse (input) == EXIT_SUCCESS);
+}
+
+TEST_CASE ("Parsing file", "[parser]")
+{
+  ifstream input ("example.assembly");
+  stringstream buffer;
+  buffer << input.rdbuf ();
+
+  REQUIRE (testParse (buffer.str ()) == EXIT_SUCCESS);
 }
 
 // ----------------------------------------------------------------

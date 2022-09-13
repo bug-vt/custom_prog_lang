@@ -1,4 +1,5 @@
 #include "symbol_table.hpp"
+#include <iostream>
 
 using std::string;
 using std::unordered_map;
@@ -27,7 +28,7 @@ SymbolTable::SymbolTable () : symbol_index (0), symbol_table ()
 int SymbolTable::addSymbol (Symbol symbol, int size, int stack_index)
 {
   // check if given function is already inside the table.
-  if (symbol_table.find (symbol) != symbol_table.end ())
+  if (symbol_table.count (symbol))
     return -1;
 
   // add the given function into the table.
@@ -42,5 +43,21 @@ int SymbolTable::addSymbol (Symbol symbol, int size, int stack_index)
 
 SymbolInfo SymbolTable::getSymbol (Symbol symbol)
 {
-  return symbol_table.at (symbol);
+  SymbolInfo found;
+  // first, see if the symbol is defined in local scope
+  if (symbol_table.find (symbol) != symbol_table.end ())
+    found = symbol_table.at (symbol);
+  // otherwise, see if the symbol is defined in global scope
+  else 
+    found = symbol_table.at (Symbol (symbol.ident, 0));
+
+  return found;
+}
+
+void SymbolTable::print ()
+{
+  for (auto const& x : symbol_table)
+  {
+    std::cout << x.first.ident << " " << x.first.func_index << std::endl;
+  }
 }

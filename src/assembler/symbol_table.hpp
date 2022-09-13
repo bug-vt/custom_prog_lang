@@ -54,6 +54,7 @@ class SymbolTable
     SymbolTable ();
     int addSymbol (Symbol symbol, int size, int stack_index);
     SymbolInfo getSymbol (Symbol symbol);
+    void print ();
 
   private:
     int symbol_index;
