@@ -55,5 +55,12 @@ void CodeGen::writeInstrStream ()
     // write operand count 
     char op_count = instr_stream[i].op_list.size ();
     output.write (&op_count, sizeof (op_count));
+
+    // write each operand from the operand list
+    for (int op_index = 0; op_index < op_count; op_index++)
+    {
+      Op operand = instr_stream[i].op_list[op_index];
+      output.write ((char *) &operand, sizeof (Op)); 
+    }
   }
 }
