@@ -25,6 +25,7 @@ class FuncTable
     FuncTable ();
     int addFunc (std::string func_name, int entry_point);
     FuncInfo getFunc (std::string func_name);
+    int getFuncIndex (std::string func_name);
     void setFunc (int func_index, 
                   int param_count, 
                   int local_data_size);

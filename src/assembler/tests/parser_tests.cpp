@@ -238,6 +238,17 @@ TEST_CASE ("Basic instruction parsing", "[parser]")
   }
 }
 
+TEST_CASE ("parsing global variable as operand", "[parser]")
+{
+    string input = "var GLOBAL_VAR\n" 
+                   "func someFunc\n"
+                   "{ \n"
+                   "add GLOBAL_VAR, 2\n"
+                   "}";
+
+    REQUIRE (testParse (input) == EXIT_SUCCESS);
+}
+
 TEST_CASE ("Instruction parsing error", "[parser]")
 {
   SECTION ("Incorrect add instruction")
@@ -261,8 +272,17 @@ TEST_CASE ("Instruction parsing error", "[parser]")
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
 
-  /*
-  SECTION ("Incorrect call instruction")
+  SECTION ("calling undefined variable")
+  {
+    string input = "\n\nfunc myFunc\n"
+                   "{ \n"
+                   "mul xzy, 10\n"
+                   "}";
+
+    REQUIRE (testParse (input) == EXIT_FAILURE);
+  }
+
+  SECTION ("calling undefined function")
   {
     string input = "\n\nfunc myFunc\n"
                    "{ \n"
@@ -271,7 +291,6 @@ TEST_CASE ("Instruction parsing error", "[parser]")
 
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
-  */
 }
 
 TEST_CASE ("Basic input parsing", "[parser]")

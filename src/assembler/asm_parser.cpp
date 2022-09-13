@@ -2,6 +2,7 @@
 #include "error.hpp"
 
 #define GLOBAL_SCOPE 0
+#define DEFAULT_STACK_SIZE 1024
 
 using std::string;
 
@@ -9,8 +10,8 @@ AsmParser::AsmParser (string raw_source)
 {
   lexer = AsmLexer (raw_source);
 
+  stack_size = DEFAULT_STACK_SIZE; 
   global_data_size = 0;
-  instr_stream_size = 0;
 }
 
 void AsmParser::readToken (Token req_token)
@@ -79,7 +80,7 @@ void AsmParser::parseFunc ()
 
   // instruction immediately after the current one is the function's entry point
   // which is equal to the current instruction stream size
-  int entry_point = instr_stream_size;
+  int entry_point = instr_stream.size ();
   string func_name = lexer.getCurrLexeme ();
   // add function to the function table and check for redefinition
   int func_index = func_table.addFunc (func_name, entry_point); 
@@ -107,9 +108,9 @@ void AsmParser::parseFunc ()
   // parse function body
   parseBlock ();
 
-  // make room for extra instruction 
-  // since all function must be append with ret instruction. 
-  instr_stream_size++;
+  // add ret instruction at the end of the function.
+  // --------------To do---------------
+
   // finish setting up function
   func_table.setFunc (curr_scope, curr_func_param_size, curr_func_local_data_size);
 
@@ -211,7 +212,7 @@ void AsmParser::parseLabel ()
   if (curr_scope == GLOBAL_SCOPE)
     exitOnCodeError ("Line label can be only used inside the function", lexer);
 
-  int target_index = instr_stream_size - 1;
+  int target_index = instr_stream.size ();
   int func_index = curr_scope;
 
   Label label (ident, func_index);
@@ -268,14 +269,18 @@ void AsmParser::parseInstr ()
       case OP_TYPE_INSTR_INDEX:
         {
           Label label (curr_lexeme, curr_scope);
-          int target_index = label_table.getLabel (label).target_index;
+          int target_index = label_table.getTargetIndex (label);
+          if (target_index == -1)
+            exitOnCodeError ("Undefined label", lexer);
           curr_output.op_list[op_index].instr_index = target_index;
         }
         break;
       case OP_TYPE_ABS_STACK_INDEX:
         {
           Symbol symbol (curr_lexeme, curr_scope);
-          int stack_index = symbol_table.getSymbol (symbol).stack_index;
+          int stack_index = symbol_table.getStackIndex (symbol);
+          if (stack_index == -1)
+            exitOnCodeError ("Undefined identifier", lexer);
           // if next token is open bracket,
           // verify if the operand is an array and process it 
           if (lexer.peekNextToken () == TOKEN_TYPE_OPEN_BRACKET)
@@ -295,7 +300,9 @@ void AsmParser::parseInstr ()
               // find the stack index of the variable index
               string ident = lexer.getCurrLexeme ();
               Symbol offset_symbol (ident, curr_scope);
-              int offset_index = symbol_table.getSymbol (offset_symbol).stack_index;
+              int offset_index = symbol_table.getStackIndex (offset_symbol);
+              if (offset_index == -1)
+                exitOnCodeError ("Undefined identifier", lexer);
               // record the stack index that will be added to the base index
               // during runtime
               curr_output.op_list[op_index].offset_index = offset_index;
@@ -311,7 +318,9 @@ void AsmParser::parseInstr ()
 
       case OP_TYPE_FUNC:
         {
-          int func_index = func_table.getFunc (curr_lexeme).func_index;
+          int func_index = func_table.getFuncIndex (curr_lexeme);
+          if (func_index == -1)
+            exitOnCodeError ("Undefined function", lexer);
           curr_output.op_list[op_index].func_index = func_index;
         }
         break;
@@ -329,5 +338,6 @@ void AsmParser::parseInstr ()
   }
 
   readToken (TOKEN_TYPE_NEWLINE);
+  // push the processed instruction to instruction stream
   instr_stream.push_back (curr_output);
 }

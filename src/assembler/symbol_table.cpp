@@ -54,10 +54,26 @@ SymbolInfo SymbolTable::getSymbol (Symbol symbol)
   return found;
 }
 
+int SymbolTable::getStackIndex (Symbol symbol)
+{
+  int index;
+  try
+  {
+    index = getSymbol (symbol).stack_index;
+  }
+  catch (...)
+  {
+    index = -1;
+  }
+  return index;
+}
+
 void SymbolTable::print ()
 {
+  std::cout << "---------------------------------------" << std::endl;
   for (auto const& x : symbol_table)
   {
     std::cout << x.first.ident << " " << x.first.func_index << std::endl;
   }
+  std::cout << "---------------------------------------" << std::endl;
 }

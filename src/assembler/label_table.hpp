@@ -53,6 +53,8 @@ class LabelTable
     LabelTable ();
     int addLabel (Label label, int target_index);
     LabelInfo getLabel (Label label);
+    int getTargetIndex (Label label);
+    void print ();
 
   private:
     int label_index;

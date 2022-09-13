@@ -15,16 +15,8 @@ class AsmParser
     AsmParser () { }
     AsmParser (std::string raw_source);
     void parse ();
-
+    
   private:
-    // variables for constructing header 
-    int stack_size;
-    bool is_main_func_present;
-    int main_func_index;
-    int global_data_size;
-    // variables for instruction stream
-    std::vector<Instr> instr_stream;
-    int instr_stream_size;
     // variables for tracking current function
     int curr_scope;
     int curr_func_local_data_size;
@@ -33,6 +25,13 @@ class AsmParser
     // lexer
     AsmLexer lexer;
 
+    // storing header info
+    int stack_size;
+    bool is_main_func_present;
+    int main_func_index;
+    int global_data_size;
+    // storing instruction stream
+    std::vector<Instr> instr_stream;
     // tables
     InstrLookupTable instr_table = InstrLookupTable::instance ();
     FuncTable func_table;

@@ -1,4 +1,5 @@
 #include "label_table.hpp"
+#include <iostream>
 
 using std::string;
 using std::unordered_map;
@@ -41,4 +42,29 @@ int LabelTable::addLabel (Label label, int target_index)
 LabelInfo LabelTable::getLabel (Label label)
 {
   return label_table.at (label);
+}
+
+int LabelTable::getTargetIndex (Label label)
+{
+  int target_index;
+  try
+  {
+    target_index = getLabel (label).target_index;
+  }
+  catch (...)
+  {
+    target_index = -1;
+  }
+  return target_index;
+}
+
+void LabelTable::print ()
+{
+  std::cout << "---------------------------------------" << std::endl;
+  for (auto const& x : label_table)
+  {
+    std::cout << x.first.ident << " " << x.first.func_index << "\t";
+    std::cout << x.second.target_index << std::endl;
+  }
+  std::cout << "---------------------------------------" << std::endl;
 }

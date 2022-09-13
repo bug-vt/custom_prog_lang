@@ -54,6 +54,20 @@ FuncInfo FuncTable::getFunc (string func_name)
   return func_table.at (func_name);
 }
 
+int FuncTable::getFuncIndex (string func_name)
+{
+  int func_index;
+  try 
+  {
+    func_index = getFunc (func_name).func_index;
+  }
+  catch (...)
+  {
+    func_index = -1;
+  }
+  return func_index;
+}
+
 void FuncTable::setFunc (int func_index, int param_count, int local_data_size)
 {
   // make sure the given function is already inside the table.
