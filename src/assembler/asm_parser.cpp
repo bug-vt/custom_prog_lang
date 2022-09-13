@@ -11,7 +11,28 @@ AsmParser::AsmParser (string raw_source)
   lexer = AsmLexer (raw_source);
 
   stack_size = DEFAULT_STACK_SIZE; 
+  is_main_func_present = false;
+  main_func_index = -1;
   global_data_size = 0;
+}
+
+CodeGen AsmParser::createCodeGen (std::ostream &out_file)
+{
+  CodeGen code_gen (out_file);
+  // put header
+  code_gen.header.stack_size = stack_size;
+  code_gen.header.is_main_func_present = (char) is_main_func_present;
+  code_gen.header.main_func_index = main_func_index;
+  code_gen.header.global_data_size = global_data_size;
+  // put tables 
+  code_gen.sym_table = symbol_table;
+  code_gen.label_table = label_table;
+  code_gen.func_table = func_table;
+  code_gen.str_table = str_table;
+  // put instruction stream
+  code_gen.instr_stream = instr_stream;
+
+  return code_gen;
 }
 
 void AsmParser::readToken (Token req_token)

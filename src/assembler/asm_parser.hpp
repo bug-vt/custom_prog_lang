@@ -8,6 +8,8 @@
 #include "symbol_table.hpp"
 #include "label_table.hpp"
 #include "instruction.hpp"
+#include "code_gen.hpp"
+#include <fstream>
 
 class AsmParser
 {
@@ -15,6 +17,7 @@ class AsmParser
     AsmParser () { }
     AsmParser (std::string raw_source);
     void parse ();
+    CodeGen createCodeGen (std::ostream &out_file); 
     
   private:
     // variables for tracking current function
