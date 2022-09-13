@@ -16,6 +16,11 @@ using std::stringstream;
 
 #define TEST_OUT_FILE "test_output.executable"
 
+enum CodeGenFlag {GEN_HEADER = 1, 
+                  GEN_INSTR = 2, 
+                  GEN_STR_TABLE = 4, 
+                  GEN_FUNC_TABLE = 8};
+
 struct TestHeader
 {
   char ver_major;
@@ -42,7 +47,7 @@ struct TestOp
     int offset_index;           // stack index of the offset variable
 };
 
-int testCodeGen (string input)
+int testCodeGen (string input, int flags)
 {
   pid_t pid = fork ();
   // child
@@ -54,8 +59,14 @@ int testCodeGen (string input)
     ofstream out_file (TEST_OUT_FILE);
     CodeGen code_gen = parser.createCodeGen (out_file);
     code_gen.setVersion (0, 1);
-    code_gen.writeHeader ();
-    code_gen.writeInstrStream ();
+    if (flags & GEN_HEADER)
+      code_gen.writeHeader ();
+    if (flags & GEN_INSTR)
+      code_gen.writeInstrStream ();
+    if (flags & GEN_STR_TABLE)
+      code_gen.writeStringTable ();
+    if (flags & GEN_FUNC_TABLE)
+      code_gen.writeFuncTable ();
     out_file.close ();
 
     exit (EXIT_SUCCESS);
@@ -127,18 +138,36 @@ string readInstrStream (ifstream &binary)
   return out.str ();
 }
 
-bool testInstrStream (string expected)
+string readStringTable (ifstream &binary)
 {
-  ifstream binary (TEST_OUT_FILE);
+  stringstream out;
+  // read size of instruction stream
+  int size;
+  binary.read ((char *) &size, sizeof (int));
 
-  readHeader (binary);
-  string instr_stream = readInstrStream (binary);
+  out << "String table:" << endl
+      << size << endl;
 
-  binary.close ();
-  return instr_stream == expected;
+  // read each string
+  for (int i = 0; i < size; i++)
+  {
+    // read string length 
+    int len;
+    binary.read ((char *) &len, sizeof (int));
+   
+    char str[len + 1]; 
+    str[len] = '\0';
+    binary.read (str, len);
+
+    out << len << " "
+        << string (str) << endl;
+  }
+
+  return out.str ();
 }
 
-TEST_CASE ("Generating header", "[code_gen]")
+
+TEST_CASE ("Writing header", "[code_gen]")
 {
   string input = "\n\nfunc myFunc\n"
                  "{ \n"
@@ -149,18 +178,17 @@ TEST_CASE ("Generating header", "[code_gen]")
                     "0 1\n"
                     "1024 0 0 -1\n";
 
-  REQUIRE (testCodeGen (input) == EXIT_SUCCESS);
+  REQUIRE (testCodeGen (input, GEN_HEADER) == EXIT_SUCCESS);
 
   ifstream binary (TEST_OUT_FILE);
 
-  string header = readHeader (binary);
-  REQUIRE (header == expected);
+  REQUIRE (readHeader (binary) == expected);
 
   binary.close ();
 }
 
 
-TEST_CASE ("Generating instruction", "[code_gen]")
+TEST_CASE ("Writing a single instruction", "[code_gen]")
 {
   string input = "\n\nfunc myFunc\n"
                  "{ \n"
@@ -171,11 +199,15 @@ TEST_CASE ("Generating instruction", "[code_gen]")
                     "1\n"
                     "1 2 3 -2 0 0 42 0\n";
 
-  REQUIRE (testCodeGen (input) == EXIT_SUCCESS);
-  REQUIRE (testInstrStream (expected));
+  REQUIRE (testCodeGen (input, GEN_INSTR) == EXIT_SUCCESS);
+  ifstream binary (TEST_OUT_FILE);
+
+  REQUIRE (readInstrStream (binary) == expected);
+
+  binary.close ();
 }
 
-TEST_CASE ("Generating multiple instructions", "[code_gen]")
+TEST_CASE ("Writing multiple instructions", "[code_gen]")
 {
   string input = "\n\nfunc myFunc\n"
                  "{ \n"
@@ -191,6 +223,31 @@ TEST_CASE ("Generating multiple instructions", "[code_gen]")
                     "8 1 3 -2 0\n"
                     "20 3 3 -2 0 0 5 0 5 0 0\n";
 
-  REQUIRE (testCodeGen (input) == EXIT_SUCCESS);
-  REQUIRE (testInstrStream (expected));
+  REQUIRE (testCodeGen (input, GEN_INSTR) == EXIT_SUCCESS);
+  ifstream binary (TEST_OUT_FILE);
+
+  REQUIRE (readInstrStream (binary) == expected);
+
+  binary.close ();
+}
+
+
+TEST_CASE ("Writing string table", "[code_gen]")
+{
+  string input = "\n\nfunc myFunc\n"
+                 "{ \n"
+                 "var str\n"
+                 "mov str, \"Hello World!\"\n"
+                 "}";
+  string expected = "String table:\n"
+                    "1\n"
+                    "12 Hello World!\n";
+
+  REQUIRE (testCodeGen (input, GEN_STR_TABLE) == EXIT_SUCCESS);
+
+  ifstream binary (TEST_OUT_FILE);
+
+  REQUIRE (readStringTable (binary) == expected);
+
+  binary.close ();
 }

@@ -1,7 +1,7 @@
 #ifndef _STRING_TABLE
 #define _STRING_TABLE
 
-#include <unordered_map>
+#include <vector>
 #include <string>
 
 class StringTable
@@ -9,10 +9,12 @@ class StringTable
   public:
     StringTable ();
     int addString (std::string str);
+    std::string at (int index);
+    int size ();
 
   private:
     int str_index;
-    std::unordered_map<std::string, int> str_table;
+    std::vector<std::string> str_table;
 };
 
 #endif
