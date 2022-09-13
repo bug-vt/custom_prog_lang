@@ -11,6 +11,8 @@
 
 struct Header
 {
+  char ver_major;
+  char ver_minor;
   int stack_size;
   int global_data_size;
   char is_main_func_present;
@@ -31,8 +33,6 @@ class CodeGen
     void writeInstrStream ();
 
   private:
-    char ver_major;
-    char ver_minor;
     std::ostream &output;
 
     Header header;
