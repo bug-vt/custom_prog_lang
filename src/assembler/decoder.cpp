@@ -49,21 +49,35 @@ int main (int argc, char **argv)
 {
   if (argc < 2)
   {
-    cout << "usage: decoder executable_file" << endl;
+    cout << "usage: decoder executable_file <--short>" << endl;
     exit (1);
+  }
+
+  bool show_less = false;
+  if (argc > 2)
+  {
+    if (string (argv[2]) == "--short")
+      show_less = true;
   }
 
   string out = "";
   ifstream binary (argv[1]);
 
-  out += readHeader (binary) + "\n";
-  out += readInstrStream (binary) + "\n";
-  out += readStringTable (binary) + "\n";
-  out += readFuncTable (binary) + "\n";
+  out = readHeader (binary);
+  if (!show_less)
+    cout << out << endl;
+
+  cout << readInstrStream (binary) << endl;
+
+  out = readStringTable (binary);
+  if (!show_less)
+    cout << out << endl;
+
+  out = readFuncTable (binary);
+  if (!show_less)
+    cout << out << endl;
 
   binary.close ();
-
-  cout << out;
 
   return 0;
 }

@@ -21,3 +21,6 @@ asm_lexer.o: asm_lexer.cpp instr_lookup.cpp error.cpp
 clean:
 	rm *.o *.executable
 
+clean2:
+	rm assembler decoder
+
