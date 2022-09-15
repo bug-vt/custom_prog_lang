@@ -29,6 +29,21 @@ void CodeGen::writeHeader ()
 
 void CodeGen::writeFuncTable ()
 {
+  // write total number of function 
+  int size = func_table.size ();
+  output.write ((char *) &size, sizeof (int)); 
+
+  // write each function form the function table
+  for (int i = 0; i < size; i++)
+  {
+    FuncInfo func = func_table.at (i);
+    int entry_point = func.entry_point;
+    int param_count = func.param_count;
+    int local_data_size = func.local_data_size;
+    output.write ((char *) &entry_point, sizeof (int));
+    output.write ((char *) &param_count, sizeof (int));
+    output.write ((char *) &local_data_size, sizeof (int));
+  }
 }
 
 void CodeGen::writeStringTable ()
@@ -40,7 +55,7 @@ void CodeGen::writeStringTable ()
   // write each string element form the string table
   for (int i = 0; i < size; i++)
   {
-    string elem = str_table.at(i);
+    string elem = str_table.at (i);
     int len = elem.length ();
     char str[len];
     strncpy (str, elem.c_str (), len);

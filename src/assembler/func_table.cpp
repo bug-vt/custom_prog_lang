@@ -17,8 +17,14 @@ FuncInfo::FuncInfo (string name, int entry_pos)
 }
 
 // Start the function count from 1, since we reserve 0 for global scope
-FuncTable::FuncTable () : func_count (1), func_table (1)
+FuncTable::FuncTable () : func_count (1), func_table ()
 {
+  // put place holder for global scope at index 0
+  FuncInfo func;
+  func.entry_point = -1;
+  func.param_count = -1;
+  func.local_data_size = -1;
+  func_table.push_back (func);
 }
 
 // Add function to the function table.

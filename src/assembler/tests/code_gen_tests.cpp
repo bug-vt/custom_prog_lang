@@ -141,7 +141,7 @@ string readInstrStream (ifstream &binary)
 string readStringTable (ifstream &binary)
 {
   stringstream out;
-  // read size of instruction stream
+  // read size of string table 
   int size;
   binary.read ((char *) &size, sizeof (int));
 
@@ -161,6 +161,34 @@ string readStringTable (ifstream &binary)
 
     out << len << " "
         << string (str) << endl;
+  }
+
+  return out.str ();
+}
+
+string readFuncTable (ifstream &binary)
+{
+  stringstream out;
+  // read size of function table 
+  int size;
+  binary.read ((char *) &size, sizeof (int));
+
+  out << "Function table:" << endl
+      << size << endl;
+
+  // read each function 
+  for (int i = 0; i < size; i++)
+  {
+    int entry_point;
+    int param_count;
+    int local_data_size;
+    binary.read ((char *) &entry_point, sizeof (int));
+    binary.read ((char *) &param_count, sizeof (int));
+    binary.read ((char *) &local_data_size, sizeof (int));
+
+    out << entry_point << " "
+        << param_count << " "
+        << local_data_size << endl;
   }
 
   return out.str ();
@@ -248,6 +276,27 @@ TEST_CASE ("Writing string table", "[code_gen]")
   ifstream binary (TEST_OUT_FILE);
 
   REQUIRE (readStringTable (binary) == expected);
+
+  binary.close ();
+}
+
+TEST_CASE ("Writing function table", "[code_gen]")
+{
+  string input = "\n\nfunc myFunc\n"
+                 "{ \n"
+                 "param x\n"
+                 "var str\n"
+                 "}";
+  string expected = "Function table:\n"
+                    "2\n"
+                    "-1 -1 -1\n"
+                    "0 1 1\n";
+
+  REQUIRE (testCodeGen (input, GEN_FUNC_TABLE) == EXIT_SUCCESS);
+
+  ifstream binary (TEST_OUT_FILE);
+
+  REQUIRE (readFuncTable (binary) == expected);
 
   binary.close ();
 }
