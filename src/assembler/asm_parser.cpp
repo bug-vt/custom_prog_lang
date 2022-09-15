@@ -183,10 +183,11 @@ void AsmParser::parseVar ()
     stack_index = global_data_size;
   // whereas local variables reside on the top of the stack
   // and indexed by negative stack index.
-  // Offset 2 is needed since other function info need to be added 
-  // on the top portion of the function stack frame.
+  // The top of the stack index is -1,
+  // but the top of the stack is reserved for VM.
+  // So, offset 1 must be added.
   else
-    stack_index = -(curr_func_local_data_size + 2);
+    stack_index = -1 - (1 + curr_func_local_data_size);
 
   // add symbol to the symbol table and check for redefinition
   Symbol symbol (ident, curr_scope); 
@@ -199,28 +200,6 @@ void AsmParser::parseVar ()
   else
     curr_func_local_data_size += size;
   
-  readToken (TOKEN_TYPE_NEWLINE);
-}
-
-
-void AsmParser::parseParam ()
-{
-  if (curr_scope == GLOBAL_SCOPE)
-    exitOnCodeError ("parameter cannot be defined on global scope", lexer);
-
-  readToken (TOKEN_TYPE_IDENT);
-
-  string ident = lexer.getCurrLexeme ();
-
-  // this need to be change later.
-  int stack_index = 0;
-
-  Symbol symbol (ident, curr_scope); 
-  if (symbol_table.addSymbol (symbol, 1, stack_index) == -1)
-    exitOnCodeError ("Identifier with same name already exists inside the same scope", lexer);
-
-  curr_func_param_size++;
-
   readToken (TOKEN_TYPE_NEWLINE);
 }
 
@@ -242,7 +221,35 @@ void AsmParser::parseLabel ()
     exitOnCodeError ("Label with same name already exists inside the same scope", lexer);
 }
 
+// parse at 2nd pass
+void AsmParser::parseParam ()
+{
+  if (curr_scope == GLOBAL_SCOPE)
+    exitOnCodeError ("parameter cannot be defined on global scope", lexer);
 
+  readToken (TOKEN_TYPE_IDENT);
+
+  string ident = lexer.getCurrLexeme ();
+
+  // determine stack index.
+  // params are pushed before the function call, so reside below the 
+  // local data and return address on stack.
+  // Since top of the stack index is -1, param is located at
+  // = -1 - 1(reserved for VM) - local data size - 1(return address) - param index 
+  FuncInfo curr_func = func_table.at (curr_scope);
+  int stack_index = -1 - (1 + curr_func.local_data_size + 1 + curr_func_param_size);
+
+  Symbol symbol (ident, curr_scope); 
+  if (symbol_table.addSymbol (symbol, 1, stack_index) == -1)
+    exitOnCodeError ("Identifier with same name already exists inside the same scope", lexer);
+
+  curr_func_param_size++;
+
+  readToken (TOKEN_TYPE_NEWLINE);
+}
+
+
+// parse at 2nd pass
 void AsmParser::parseInstr ()
 {
   // lookup the reference instruction from the given mnemonic

@@ -11,6 +11,7 @@
 #include "code_gen.hpp"
 #include <fstream>
 
+
 class AsmParser
 {
   public:
@@ -45,11 +46,13 @@ class AsmParser
     // methods
     void readToken (Token req_token);
     void parseLine ();
+    // 1st pass
     void parseFunc ();
     void parseBlock ();
     void parseVar ();
-    void parseParam ();
     void parseLabel ();
+    // 2nd pass
+    void parseParam ();
     void parseInstr ();
 };
 
