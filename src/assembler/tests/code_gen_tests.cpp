@@ -116,7 +116,11 @@ string readInstrStream (ifstream &binary)
     binary.read (&op_count, sizeof (char));
    
     out << (int) opcode << " "
-        << (int) op_count << " ";
+        << (int) op_count;
+    if (op_count > 0)
+      out << " ";
+    else
+      out << endl;
 
     // read list of operands that are used in this instruction
     for (int op_index = 0; op_index < op_count; op_index++)
@@ -224,8 +228,9 @@ TEST_CASE ("Writing a single instruction", "[code_gen]")
                  "add t, 42 \n"
                  "}";
   string expected = "Instruction stream:\n"
-                    "1\n"
-                    "1 2 3 -2 0 0 42 0\n";
+                    "2\n"
+                    "1 2 3 -2 0 0 42 0\n"
+                    "29 0\n";
 
   REQUIRE (testCodeGen (input, GEN_INSTR) == EXIT_SUCCESS);
   ifstream binary (TEST_OUT_FILE);
@@ -246,10 +251,11 @@ TEST_CASE ("Writing multiple instructions", "[code_gen]")
                  "je x, 5, here \n"
                  "}";
   string expected = "Instruction stream:\n"
-                    "3\n"
+                    "4\n"
                     "0 2 3 -2 0 0 9 0\n"
                     "8 1 3 -2 0\n"
-                    "20 3 3 -2 0 0 5 0 5 0 0\n";
+                    "20 3 3 -2 0 0 5 0 5 0 0\n"
+                    "29 0\n";
 
   REQUIRE (testCodeGen (input, GEN_INSTR) == EXIT_SUCCESS);
   ifstream binary (TEST_OUT_FILE);
@@ -291,6 +297,33 @@ TEST_CASE ("Writing function table", "[code_gen]")
                     "2\n"
                     "-1 -1 -1\n"
                     "0 1 1\n";
+
+  REQUIRE (testCodeGen (input, GEN_FUNC_TABLE) == EXIT_SUCCESS);
+
+  ifstream binary (TEST_OUT_FILE);
+
+  REQUIRE (readFuncTable (binary) == expected);
+
+  binary.close ();
+}
+
+TEST_CASE ("Writing multiple functions", "[code_gen]")
+{
+  string input = "func myFunc\n"
+                 "{ \n"
+                 "param x\n"
+                 "var hello\n"
+                 "mov hello, 1\n"
+                 "}\n"
+                 "func main\n"
+                 "{ \n"
+                 "var hello\n"
+                 "}";
+  string expected = "Function table:\n"
+                    "3\n"
+                    "-1 -1 -1\n"
+                    "0 1 1\n"
+                    "2 0 1\n";
 
   REQUIRE (testCodeGen (input, GEN_FUNC_TABLE) == EXIT_SUCCESS);
 

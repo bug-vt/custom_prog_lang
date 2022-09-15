@@ -130,7 +130,8 @@ void AsmParser::parseFunc ()
   parseBlock ();
 
   // add ret instruction at the end of the function.
-  // --------------To do---------------
+  Instr ret_instr (instr_table.lookup ("ret").opcode, 0);
+  instr_stream.push_back (ret_instr);
 
   // finish setting up function
   func_table.setFunc (curr_scope, curr_func_param_size, curr_func_local_data_size);
