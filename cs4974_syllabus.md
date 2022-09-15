@@ -90,59 +90,79 @@ Since the goal of this course is to build a working scripting language, the stud
 # Instruction Set
 Instruction set will follow Complex Instruction Set Computing (CISC) methodology, similar to Intel 80x86. This is to make runtime environment for scripting system faster: doing much as work as possible in C instead of leaving implementation to slower scripting language.
 ## Memory
-    mov     Destination, Source  
+| Instruction | Opcode | Operand count | Operands |
+| ----------- | ------ | ------------- | -------- |
+| mov | 0 | 2 | DESTINATION, SOURCE |
+
 ## Arithmetic
-    add     Destination, Source  
-    sub     Destination, Source  
-    mul 	Destination, Source  
-    div 	Destination, Source  
-    mod 	Destination, Source  
-    exp 	Destination, power   
-    neg 	Destination 
-    Inc     Destination
-    Dec     Destination 
+| Instruction | Opcode | Operand count | Operands |
+| ----------- | ------ | ------------- | -------- |
+| add | 1 | 2 | DESTINATION, SOURCE |
+| sub | 2 | 2 | DESTINATION, SOURCE |
+| mul | 3 | 2 | DESTINATION, SOURCE |
+| div | 4 | 2 | DESTINATION, SOURCE |
+| mod | 5 | 2 | DESTINATION, SOURCE |
+| exp | 6 | 2 | DESTINATION, SOURCE |
+| neg | 7 | 1 | DESTINATION |
+| inc | 8 | 1 | DESTINATION |
+| dec | 9 | 1 | DESTINATION |
 ## Bitwise
-    and 	Destination, Source
-    or 	    Destination, Source
-    xor     Destination, Source
-    not     Destination
-    shl     Destination, ShiftCount
-    shr     Destination, ShiftCount
+| Instruction | Opcode | Operand count | Operands |
+| ----------- | ------ | ------------- | -------- |
+| and | 10 | 2 | DESTINATION, SOURCE |
+| or  | 11 | 2 | DESTINATION, SOURCE |
+| xor | 12 | 2 | DESTINATION, SOURCE |
+| not | 13 | 1 | DESTINATION |
+| shl | 14 | 2 | DESTINATION, SHIFT COUNT |
+| shr | 15 | 2 | DESTINATION, SHIFT COUNT |
 ## String processing
-    concat      String0, String1
-    getChar     Destination, Source, Index
-    SetChar     Index, Destination, Source
+| Instruction | Opcode | Operand count | Operands |
+| ----------- | ------ | ------------- | -------- |
+| concat  | 16 | 2 | STRING, STRING |
+| getChar | 17 | 3 | DESTINATION, SOURCE, INTEGER |
+| setChar | 18 | 3 | INTEGER, DESTINATION, SOURCE |
 ## Conditional Branching
-    jmp     Label
-    je      Op0, Op1, Label 
-    jne     Op0, Op1, Label 
-    jg      Op0, Op1, Label 
-    jl      Op0, Op1, Label 
-    jge     Op0, Op1, Label 
-    jle     Op0, Op1, Label 
+| Instruction | Opcode | Operand count | Operands |
+| ----------- | ------ | ------------- | -------- |
+| jmp | 19 | 1 | LABEL | 
+| je  | 20 | 3 | SOURCE, SOURCE, LABEL | 
+| jne | 21 | 3 | SOURCE, SOURCE, LABEL | 
+| jg |  22 | 3 | SOURCE, SOURCE, LABEL | 
+| jl |  23 | 3 | SOURCE, SOURCE, LABEL | 
+| jge | 24 | 3 | SOURCE, SOURCE, LABEL | 
+| jle | 25 | 3 | SOURCE, SOURCE, LABEL | 
 ## Stack Interface
-    push    Source
-    pop     Destination
+| Instruction | Opcode | Operand count | Operands |
+| ----------- | ------ | ------------- | -------- |
+| push | 26 | 1 | SOURCE | 
+| pop  | 27 | 1 | DESTINATION | 
 ## Function Interface
-    call        FunctionName
-    ret
+| Instruction | Opcode | Operand count | Operands |
+| ----------- | ------ | ------------- | -------- |
+| call | 28 | 1 | FUNCTION | 
+| ret |  29 | 0 | | 
 ## Miscellaneous
-    pause   Duration
-    exit    Code
+| Instruction | Opcode | Operand count | Operands |
+| ----------- | ------ | ------------- | -------- |
+| pause | 30 | 1 | INTEGER |
+| exit  | 31 | 1 | INTEGER |
 ## Directives
     setStackSize    Size
     var             Identifier
+    param           Identifier
     func            FunctionName
 
 ## Supporting Operand types
-- Integer
-- Float
-- String
-- Variable
-- Array with literal index
-- Array with variable index
-- Line label
-- Function name
+| Type code | Operand type | Usage |
+| --------- | ------------ | ----- |
+| 0 | Integer | 42 |
+| 1 | Float | 3.14 |
+| 2 | String | "Hello World!" |
+| 3 | Absolute stack index | xyz OR array[3] |
+| 4 | Relative stack index | array[x] |
+| 5 | Instruction index | jmp label |
+| 6 | Function index | call myFunc |
+| 7 | Register | _retVal |
 <div style="page-break-after: always;"></div>
 
 # Scripting language Minimum Design Goal
