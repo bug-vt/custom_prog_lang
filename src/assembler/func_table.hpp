@@ -1,7 +1,7 @@
 #ifndef _FUNC_TABLE
 #define _FUNC_TABLE
 
-#include <unordered_map>
+#include <vector>
 #include <string>
 
 
@@ -9,13 +9,13 @@
 // Hold information to describe a function's scope and stack frame.
 struct FuncInfo
 {
-  int func_index; 
+  std::string func_name; 
   int entry_point;
   int param_count;
   int local_data_size;
 
   FuncInfo ();
-  FuncInfo (int index, int entry_pos);
+  FuncInfo (std::string name, int entry_pos);
 };
 
 
@@ -29,10 +29,13 @@ class FuncTable
     void setFunc (int func_index, 
                   int param_count, 
                   int local_data_size);
+    FuncInfo at (int index);
+    int size ();
+    void print ();
 
   private:
-    int func_index;
-    std::unordered_map<std::string, FuncInfo> func_table;
+    int func_count;
+    std::vector<FuncInfo> func_table;
 };
 
 #endif

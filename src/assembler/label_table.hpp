@@ -57,7 +57,7 @@ class LabelTable
     void print ();
 
   private:
-    int label_index;
+    int label_count;
     std::unordered_map<Label, LabelInfo> label_table;
 };
 

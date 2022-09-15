@@ -13,7 +13,7 @@ class StringTable
     int size ();
 
   private:
-    int str_index;
+    int str_count;
     std::vector<std::string> str_table;
 };
 

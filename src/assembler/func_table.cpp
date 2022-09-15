@@ -1,23 +1,23 @@
 #include "func_table.hpp"
-#include <cassert>
+#include <iostream>
 
-using std::unordered_map;
+using std::vector;
 using std::string;
 
 FuncInfo::FuncInfo ()
 {
 }
 
-FuncInfo::FuncInfo (int index, int entry_pos)
+FuncInfo::FuncInfo (string name, int entry_pos)
 {
-  func_index = index;
+  func_name = name;
   entry_point = entry_pos;
   param_count = 0;
   local_data_size = 0;
 }
 
-
-FuncTable::FuncTable () : func_index (1), func_table ()
+// Start the function count from 1, since we reserve 0 for global scope
+FuncTable::FuncTable () : func_count (1), func_table (1)
 {
 }
 
@@ -28,20 +28,18 @@ FuncTable::FuncTable () : func_index (1), func_table ()
 int FuncTable::addFunc (string func_name, int entry_point)
 {
   // check if given function is already inside the table.
-  try
+  if (getFuncIndex (func_name) != -1)
   {
-    getFunc (func_name);
     return -1;
   }
-  catch (...) { }
 
   // add the given function into the table.
-  int curr_index = func_index;
-  FuncInfo curr_func (curr_index, entry_point);
-  func_table[func_name] = curr_func;
-  func_index++;
+  int curr_count = func_count;
+  FuncInfo curr_func (func_name, entry_point);
+  func_table.push_back (curr_func);
+  func_count++;
 
-  return curr_index;
+  return curr_count;
 }
 
 // Return function information for the given function name.
@@ -51,36 +49,47 @@ int FuncTable::addFunc (string func_name, int entry_point)
 // pointers/references/objects.
 FuncInfo FuncTable::getFunc (string func_name)
 {
-  return func_table.at (func_name);
+  int func_index = getFuncIndex (func_name);
+  return func_table.at (func_index);
 }
 
 int FuncTable::getFuncIndex (string func_name)
 {
-  int func_index;
-  try 
+  int func_index = -1;
+  for (int i = 0; i < func_table.size (); i++)
   {
-    func_index = getFunc (func_name).func_index;
+    if (func_table[i].func_name == func_name)
+    {
+      func_index = i;
+      break;
+    } 
   }
-  catch (...)
-  {
-    func_index = -1;
-  }
+
   return func_index;
 }
 
 void FuncTable::setFunc (int func_index, int param_count, int local_data_size)
 {
-  // make sure the given function is already inside the table.
-  string func_name;
-  for (const auto &iter : func_table)
-  {
-    if (iter.second.func_index == func_index)
-    {
-      func_name = iter.first;
-      func_table[func_name].param_count = param_count;
-      func_table[func_name].local_data_size = local_data_size;
-      break;
-    }
-  }
+  func_table.at (func_index).param_count = param_count;
+  func_table.at (func_index).local_data_size = local_data_size;
 }
 
+FuncInfo FuncTable::at (int index)
+{
+  return func_table.at (index);
+}
+
+int FuncTable::size ()
+{
+  return func_table.size ();
+}
+
+void FuncTable::print ()
+{
+  std::cout << "------------------------------------------------" << std::endl;
+  for (int i = 0; i < func_table.size (); i++)
+  {
+    std::cout << func_table[i].func_name << std::endl;
+  }
+  std::cout << "------------------------------------------------" << std::endl;
+}

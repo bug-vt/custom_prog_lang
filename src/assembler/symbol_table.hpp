@@ -58,7 +58,7 @@ class SymbolTable
     void print ();
 
   private:
-    int symbol_index;
+    int symbol_count;
     std::unordered_map<Symbol, SymbolInfo> symbol_table;
 };
 

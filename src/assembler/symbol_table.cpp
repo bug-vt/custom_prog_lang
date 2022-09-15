@@ -17,7 +17,7 @@ SymbolInfo::SymbolInfo (int index, int size, int stack)
   this->stack_index = stack;
 }
 
-SymbolTable::SymbolTable () : symbol_index (0), symbol_table ()
+SymbolTable::SymbolTable () : symbol_count (0), symbol_table ()
 {
 }
 
@@ -32,12 +32,12 @@ int SymbolTable::addSymbol (Symbol symbol, int size, int stack_index)
     return -1;
 
   // add the given function into the table.
-  int curr_index = symbol_index;
-  SymbolInfo curr_symbol (symbol_index, size, stack_index);
+  int curr_count = symbol_count;
+  SymbolInfo curr_symbol (symbol_count, size, stack_index);
   symbol_table[symbol] = curr_symbol;
-  symbol_index++;
+  symbol_count++;
 
-  return curr_index;
+  return curr_count;
   
 }
 

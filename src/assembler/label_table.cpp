@@ -15,7 +15,7 @@ LabelInfo::LabelInfo (int index, int target) : label_index (index),
 {
 }
 
-LabelTable::LabelTable () : label_index (0), label_table ()
+LabelTable::LabelTable () : label_count (0), label_table ()
 {
 }
 
@@ -30,12 +30,12 @@ int LabelTable::addLabel (Label label, int target_index)
     return -1;
 
   // add the given function into the table.
-  int curr_index = label_index;
-  LabelInfo curr_label_info (label_index, target_index);
+  int curr_count = label_count;
+  LabelInfo curr_label_info (label_count, target_index);
   label_table[label] = curr_label_info;
-  label_index++;
+  label_count++;
 
-  return curr_index;
+  return curr_count;
   
 }
 

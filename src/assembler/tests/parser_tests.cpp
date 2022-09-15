@@ -333,13 +333,13 @@ TEST_CASE ("Test function table", "[func_table]")
   {
     FuncInfo func_info;
     REQUIRE_NOTHROW (func_info = func_table.getFunc ("myFunc1"));
-    REQUIRE (func_info.func_index == 1);
+    REQUIRE (func_table.getFuncIndex ("myFunc1") == 1);
     REQUIRE (func_info.entry_point == 0);
   }
 
   SECTION ("Get function that does NOT exists inside table")
   {
-    REQUIRE_THROWS (func_table.getFunc ("noFunc"));
+    REQUIRE (func_table.getFuncIndex ("noFunc") == -1);
   }
 
   SECTION ("Set parameters and local data size")

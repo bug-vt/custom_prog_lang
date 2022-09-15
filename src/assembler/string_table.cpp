@@ -3,7 +3,7 @@
 using std::vector;
 using std::string;
 
-StringTable::StringTable () : str_index (0), str_table ()
+StringTable::StringTable () : str_count (0), str_table ()
 {
 }
 
@@ -17,11 +17,11 @@ int StringTable::addString (string str)
       return i;
   }
 
-  int curr_index = str_index;
+  int curr_count = str_count;
   str_table.push_back (str);
-  str_index++;
+  str_count++;
 
-  return curr_index;
+  return curr_count;
 }
 
 string StringTable::at (int index)

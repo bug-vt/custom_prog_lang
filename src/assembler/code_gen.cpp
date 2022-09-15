@@ -43,7 +43,7 @@ void CodeGen::writeStringTable ()
     string elem = str_table.at(i);
     int len = elem.length ();
     char str[len];
-    strcpy (str, elem.c_str ());
+    strncpy (str, elem.c_str (), len);
     output.write ((char *) &len, sizeof (int));
     output.write (str, len);
   }
