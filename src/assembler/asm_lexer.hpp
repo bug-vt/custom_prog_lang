@@ -16,6 +16,8 @@ class AsmLexer
     Token getNextToken (); 
     std::string getCurrLexeme ();
     Token peekNextToken ();
+    bool goToNextLine ();
+    void reset ();
     // used for displaying error
     std::string getCurrLine ();
     int getCurrLineIndex ();

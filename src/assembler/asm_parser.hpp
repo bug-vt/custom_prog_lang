@@ -18,9 +18,12 @@ class AsmParser
     AsmParser () { }
     AsmParser (std::string raw_source);
     void parse ();
+    void parse (int pass_id);
     CodeGen createCodeGen (std::ostream &out_file); 
     
   private:
+    // keep track of the which pass is on 
+    int curr_pass;
     // variables for tracking current function
     int curr_scope;
     int curr_func_local_data_size;
@@ -36,6 +39,7 @@ class AsmParser
     int global_data_size;
     // storing instruction stream
     std::vector<Instr> instr_stream;
+    int instr_count;
     // tables
     InstrLookupTable instr_table = InstrLookupTable::instance ();
     FuncTable func_table;

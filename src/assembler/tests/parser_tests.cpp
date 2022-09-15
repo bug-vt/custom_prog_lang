@@ -240,13 +240,44 @@ TEST_CASE ("Basic instruction parsing", "[parser]")
 
 TEST_CASE ("parsing global variable as operand", "[parser]")
 {
-    string input = "var GLOBAL_VAR\n" 
-                   "func someFunc\n"
+  string input = "var GLOBAL_VAR\n" 
+                 "func someFunc\n"
+                 "{ \n"
+                 "add GLOBAL_VAR, 2\n"
+                 "}";
+
+  REQUIRE (testParse (input) == EXIT_SUCCESS);
+}
+
+TEST_CASE ("Test forward referencing", "[parser]")
+{
+  SECTION ("forward referencing label")
+  {
+    string input = "func someFunc\n"
                    "{ \n"
-                   "add GLOBAL_VAR, 2\n"
+                   "jmp hello\n"
+                   "push 2\n"
+                   "hello:\n"
                    "}";
 
     REQUIRE (testParse (input) == EXIT_SUCCESS);
+  }
+
+  SECTION ("forward referencing function")
+  {
+    string input = "func someFunc\n"
+                   "{ \n"
+                   "call otherFunc\n"
+                   "}\n"
+                   "func otherFunc\n"
+                   "{ \n"
+                   "var tmp\n"
+                   "mov tmp, 88\n"
+                   "}\n";
+
+    REQUIRE (testParse (input) == EXIT_SUCCESS);
+  }
+
 }
 
 TEST_CASE ("Instruction parsing error", "[parser]")

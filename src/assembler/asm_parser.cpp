@@ -3,6 +3,8 @@
 
 #define GLOBAL_SCOPE 0
 #define DEFAULT_STACK_SIZE 1024
+#define FIRST_PASS 1
+#define SECOND_PASS 2
 
 using std::string;
 
@@ -46,6 +48,15 @@ void AsmParser::readToken (Token req_token)
 
 void AsmParser::parse ()
 {
+  parse (FIRST_PASS);
+  lexer.reset ();
+  parse (SECOND_PASS);
+}
+
+void AsmParser::parse (int pass_id)
+{
+  instr_count = 0;
+  curr_pass = pass_id;
   curr_scope = GLOBAL_SCOPE; 
 
   while (true)
@@ -70,7 +81,10 @@ void AsmParser::parseLine ()
       break;
 
     case TOKEN_TYPE_VAR:
-      parseVar ();
+      if (curr_pass == FIRST_PASS)
+        parseVar ();
+      else
+        lexer.goToNextLine ();
       break;
 
     case TOKEN_TYPE_PARAM:
@@ -78,11 +92,20 @@ void AsmParser::parseLine ()
       break;
 
     case TOKEN_TYPE_IDENT:
-      parseLabel ();
+      if (curr_pass == FIRST_PASS)
+        parseLabel ();
+      else
+        lexer.goToNextLine ();
       break;
 
     case TOKEN_TYPE_INSTR:
-      parseInstr ();
+      if (curr_pass == SECOND_PASS)
+        parseInstr ();
+      else
+      {
+        lexer.goToNextLine ();
+        instr_count++;
+      }
       break;
 
     default:
@@ -98,21 +121,27 @@ void AsmParser::parseFunc ()
 
   // function name
   readToken (TOKEN_TYPE_IDENT);
-
-  // instruction immediately after the current one is the function's entry point
-  // which is equal to the current instruction stream size
-  int entry_point = instr_stream.size ();
   string func_name = lexer.getCurrLexeme ();
-  // add function to the function table and check for redefinition
-  int func_index = func_table.addFunc (func_name, entry_point); 
-  if (func_index == -1)
-    exitOnCodeError ("Function was already defined somewhere else", lexer);
+  int func_index = -1;
 
-  if (func_name == "main")
+  if (curr_pass == FIRST_PASS)
   {
-    is_main_func_present = true;
-    main_func_index = func_index; 
+    // instruction immediately after the current one is the function's entry point
+    // which is equal to the current instruction count
+    int entry_point = instr_count;
+    // add function to the function table and check for redefinition
+    func_index = func_table.addFunc (func_name, entry_point); 
+    if (func_index == -1)
+      exitOnCodeError ("Function was already defined somewhere else", lexer);
+
+    if (func_name == "main")
+    {
+      is_main_func_present = true;
+      main_func_index = func_index; 
+    }
   }
+  else
+    func_index = func_table.getFuncIndex (func_name); 
 
   // change scope to the function
   // and reinitialize variables that used for tracking function
@@ -129,12 +158,20 @@ void AsmParser::parseFunc ()
   // parse function body
   parseBlock ();
 
-  // add ret instruction at the end of the function.
-  Instr ret_instr (instr_table.lookup ("ret").opcode, 0);
-  instr_stream.push_back (ret_instr);
-
-  // finish setting up function
-  func_table.setFunc (curr_scope, curr_func_param_size, curr_func_local_data_size);
+  if (curr_pass == SECOND_PASS)
+  {
+    // add ret instruction at the end of the function.
+    Instr ret_instr (instr_table.lookup ("ret").opcode, 0);
+    instr_stream.push_back (ret_instr);
+  }
+  else
+  {
+    // ret instruction will be added at the end of the function during the
+    // second pass, so count additional instruction
+    instr_count++;
+    // finish setting up function
+    func_table.setFunc (curr_scope, curr_func_param_size, curr_func_local_data_size);
+  }
 
   // once block have been parsed, return to global scope
   curr_scope = GLOBAL_SCOPE;
@@ -229,19 +266,22 @@ void AsmParser::parseParam ()
 
   readToken (TOKEN_TYPE_IDENT);
 
-  string ident = lexer.getCurrLexeme ();
+  if (curr_pass == SECOND_PASS)
+  {
+    string ident = lexer.getCurrLexeme ();
 
-  // determine stack index.
-  // params are pushed before the function call, so reside below the 
-  // local data and return address on stack.
-  // Since top of the stack index is -1, param is located at
-  // = -1 - 1(reserved for VM) - local data size - 1(return address) - param index 
-  FuncInfo curr_func = func_table.at (curr_scope);
-  int stack_index = -1 - (1 + curr_func.local_data_size + 1 + curr_func_param_size);
+    // determine stack index.
+    // params are pushed before the function call, so reside below the 
+    // local data and return address on stack.
+    // Since top of the stack index is -1, param is located at
+    // = -1 - 1(reserved for VM) - local data size - 1(return address) - param index 
+    FuncInfo curr_func = func_table.at (curr_scope);
+    int stack_index = -1 - (1 + curr_func.local_data_size + 1 + curr_func_param_size);
 
-  Symbol symbol (ident, curr_scope); 
-  if (symbol_table.addSymbol (symbol, 1, stack_index) == -1)
-    exitOnCodeError ("Identifier with same name already exists inside the same scope", lexer);
+    Symbol symbol (ident, curr_scope); 
+    if (symbol_table.addSymbol (symbol, 1, stack_index) == -1)
+      exitOnCodeError ("Identifier with same name already exists inside the same scope", lexer);
+  }
 
   curr_func_param_size++;
 

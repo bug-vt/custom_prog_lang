@@ -199,10 +199,12 @@ Token AsmLexer::peekNextToken ()
   return next_token;
 }
 
+
 void AsmLexer::undoGetNextToken ()
 {
   copyLexeme (curr_lexeme, prev_lexeme);
 }
+
 
 char AsmLexer::getNextChar ()
 {
@@ -213,16 +215,7 @@ char AsmLexer::getNextChar ()
   // otherwise, when current lexeme end index go beyond of current line,
   if (curr_lexeme.lexeme_end >= curr_lexeme.line.length ())
   {
-    curr_lexeme.line_index++;
-    // make sure lexer did not reach end of source file,
-    // then move to next line.
-    if (curr_lexeme.line_index < source_code.size ())
-    {
-      curr_lexeme.line = source_code[curr_lexeme.line_index];
-      curr_lexeme.lexeme_start = 0;
-      curr_lexeme.lexeme_end = 0;
-    }
-    else
+    if (!goToNextLine ())
     {
       curr_lexeme.line = "";
       return '\0';
@@ -232,6 +225,43 @@ char AsmLexer::getNextChar ()
   return curr_lexeme.line[curr_lexeme.lexeme_end++];
 }
 
+bool AsmLexer::goToNextLine ()
+{
+  curr_lexeme.line_index++;
+  // make sure lexer did not reach end of source file,
+  if (curr_lexeme.line_index >= source_code.size ())
+    return false;
+
+  // move to next line.
+  curr_lexeme.line = source_code[curr_lexeme.line_index];
+  curr_lexeme.lexeme_start = 0;
+  curr_lexeme.lexeme_end = 0;
+
+  /*
+  // allow multi-line string? 
+  if (curr_lex_state == LEX_STATE_STRING 
+      || curr_lex_state == LEX_STATE_STRING_ESCAPE)
+    curr_lex_state = LEX_STATE_INVALID;
+  */
+
+  return true;
+}
+
+
+void AsmLexer::reset ()
+{
+  // rewind to beginning of the first source code line
+  curr_lexeme.line_index = 0;
+  if (source_code.size () > 0)
+    curr_lexeme.line = source_code[0];
+  curr_lexeme.lexeme_start = 0;
+  curr_lexeme.lexeme_end = 0;
+  curr_lexeme.lexeme = "";
+  
+  curr_lex_state = LEX_STATE_INVALID;
+}
+
+
 void AsmLexer::copyLexeme (Lexeme &dest, Lexeme &source)
 {
   dest.lexeme = source.lexeme;
@@ -240,6 +270,7 @@ void AsmLexer::copyLexeme (Lexeme &dest, Lexeme &source)
   dest.line = source.line;
   dest.line_index = source.line_index;
 }
+
 
 string AsmLexer::getCurrLine ()
 {
