@@ -83,11 +83,23 @@ string readHeader (ifstream &binary)
 {
   // read header
   TestHeader header;
-  binary.read ((char *) &header, sizeof (TestHeader));
-
   stringstream out;
+
+  char id[4];
+  id[3] = '\0';
+  binary.read ((char *) &id, 3);
   out << "Header:" << endl
-      << (int) header.ver_major << " "
+      << string (id) << endl;
+
+
+  binary.read (&header.ver_major, sizeof (char));
+  binary.read (&header.ver_minor, sizeof (char));
+  binary.read ((char *) &header.stack_size, sizeof (int));
+  binary.read ((char *) &header.global_data_size, sizeof (int));
+  binary.read (&header.is_main_func_present, sizeof (char));
+  binary.read ((char *) &header.main_func_index, sizeof (int));
+
+  out << (int) header.ver_major << " "
       << (int) header.ver_minor << endl
       << header.stack_size << " "
       << header.global_data_size << " "
@@ -207,6 +219,7 @@ TEST_CASE ("Writing header", "[code_gen]")
                  "mov xyz, 42 \n"
                  "}";
   string expected = "Header:\n"
+                    "BUG\n"
                     "0 1\n"
                     "1024 0 0 -1\n";
 

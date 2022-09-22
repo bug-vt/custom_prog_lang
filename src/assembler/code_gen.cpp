@@ -18,12 +18,20 @@ void CodeGen::setVersion (char ver_major, char ver_minor)
 void CodeGen::writeHeader ()
 {
   // write header:
-  // 1. version 
-  // 2. stack size
-  // 3. global data size
-  // 4. flag for main function
-  // 5. main function index
-  output.write ((char *) &header, sizeof (Header)); 
+  // 1. executable id (3 bytes)
+  char id[] = "BUG";
+  output.write (id, strlen (id));
+  // 2. version (2 bytes) 
+  output.write (&header.ver_major, sizeof (char));
+  output.write (&header.ver_minor, sizeof (char));
+  // 3. stack size  (4 bytes)
+  output.write ((char *) &header.stack_size, sizeof (int));
+  // 4. global data size (4 bytes)
+  output.write ((char *) &header.global_data_size, sizeof (int));
+  // 5. flag for main function (1 byte)
+  output.write (&header.is_main_func_present, sizeof (char));
+  // 6. main function index (4 bytes)
+  output.write ((char *) &header.main_func_index, sizeof (int));
 }
 
 
