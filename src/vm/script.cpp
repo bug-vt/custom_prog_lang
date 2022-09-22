@@ -75,8 +75,46 @@ void Script::loadInstrStream (ifstream &binary)
 
 void Script::loadStringTable (ifstream &binary)
 {
+  // read size of string table 
+  int size;
+  binary.read ((char *) &size, sizeof (int));
+  str_table = vector<string> (size);
+
+  // read each string
+  for (int i = 0; i < size; i++)
+  {
+    // read string length 
+    int len;
+    binary.read ((char *) &len, sizeof (int));
+   
+    char str[len + 1]; 
+    str[len] = '\0';
+    binary.read (str, len);
+    
+    str_table[i] = string (str);
+  }
 }
 
 void Script::loadFuncTable (ifstream &binary)
 {
+  // read size of function table 
+  int size;
+  binary.read ((char *) &size, sizeof (int));
+  func_table = vector<Func> (size);
+
+  // read each function 
+  for (int i = 0; i < size; i++)
+  {
+    int entry_point;
+    int param_count;
+    int local_data_size;
+    binary.read ((char *) &entry_point, sizeof (int));
+    binary.read ((char *) &param_count, sizeof (int));
+    binary.read ((char *) &local_data_size, sizeof (int));
+
+    func_table[i].entry_point = entry_point;
+    func_table[i].param_count = param_count;
+    func_table[i].local_data_size = local_data_size;
+    func_table[i].stack_frame_size = param_count + local_data_size + 1;
+  }
 }
