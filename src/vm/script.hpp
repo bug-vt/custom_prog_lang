@@ -29,7 +29,7 @@ class Script
   private:
     // header
     int global_data_size;
-    bool is_main_func_present;
+    char is_main_func_present;
     int main_func_index;
 
     // register
