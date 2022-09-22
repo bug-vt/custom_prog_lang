@@ -2,6 +2,7 @@
 #define _SCRIPT
 
 #include "instruction.hpp"
+#include <fstream>
 
 struct RuntimeStack
 {
@@ -48,6 +49,10 @@ class Script
     // function table
     std::vector<Func> func_table;
 
+    void loadHeader (std::ifstream &binary);
+    void loadInstrStream (std::ifstream &binary);
+    void loadStringTable (std::ifstream &binary);
+    void loadFuncTable (std::ifstream &binary);
 };
 
 #endif

@@ -1,6 +1,6 @@
 #include "script.hpp"
-#include <fstream>
 
+using std::vector;
 using std::string;
 using std::ifstream;
 
@@ -8,6 +8,23 @@ void Script::loadScript (string file_name)
 {
   ifstream binary (file_name);
   // load header
+  loadHeader (binary);
+  
+  // load instruction stream
+  loadInstrStream (binary);
+
+  // load string table
+  loadStringTable (binary);
+
+  // load function table
+  loadFuncTable (binary);
+
+ 
+  binary.close ();
+}
+
+void Script::loadHeader (ifstream &binary)
+{
   char id[4];
   id[3] = '\0';
   binary.read ((char *) &id, 3);
@@ -29,14 +46,37 @@ void Script::loadScript (string file_name)
   // read main func info
   binary.read (&is_main_func_present, sizeof (char));
   binary.read ((char *) &main_func_index, sizeof (int));
-
-  
-  // load instruction stream
-  
-  // load string table
-
-  // load function table
- 
-  binary.close ();
 }
 
+void Script::loadInstrStream (ifstream &binary)
+{
+  int instr_stream_size;
+  binary.read ((char *) &instr_stream_size, sizeof (int));
+  instr_stream = vector<Instr> (instr_stream_size);
+
+  for (int instr_index = 0; instr_index < instr_stream_size; instr_index++)
+  {
+    // read opcode and operand count
+    char opcode, op_count;
+    binary.read (&opcode, sizeof (char));
+    binary.read (&op_count, sizeof (char));
+   
+    instr_stream[instr_index].opcode = (int) opcode;
+
+    // read list of operands that are used in this instruction
+    for (int op_index = 0; op_index < op_count; op_index++)
+    {
+      Value operand;
+      binary.read ((char *) &operand, sizeof (Value));
+      instr_stream[instr_index].op_list.push_back (operand);
+    }
+  }
+}
+
+void Script::loadStringTable (ifstream &binary)
+{
+}
+
+void Script::loadFuncTable (ifstream &binary)
+{
+}
