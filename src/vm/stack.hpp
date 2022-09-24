@@ -9,6 +9,7 @@ class Stack
   public:
     Stack () { }
     Stack (int size);
+    void reset ();
     int resolveIndex (int index);
     Value getValue (int index);
     Value *getValuePtr (int index);

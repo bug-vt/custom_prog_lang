@@ -5,6 +5,17 @@ using std::vector;
 Stack::Stack (int size)
 {
   stack = vector<Value> (size);
+  top_index = 0;
+  frame_index = 0;
+}
+
+void Stack::reset ()
+{
+  top_index = 0;
+  frame_index = 0;
+
+  for (int i = 0; i < stack.size (); i++)
+    stack[i].type = OP_TYPE_INVALID;
 }
 
 // stack interface

@@ -10,7 +10,7 @@ using std::stof;
 using std::to_string;
 
 
-void Script::loadScript (string file_name)
+void Script::load (string file_name)
 {
   ifstream binary (file_name);
 
@@ -30,6 +30,24 @@ void Script::loadScript (string file_name)
  
   binary.close ();
 }
+
+void Script::reset ()
+{
+  // set instruction pointer to main function's entry point
+  if (func_table.size () > 0)
+  {
+    if (is_main_func_present)
+      instr_index = func_table.at (main_func_index).entry_point;
+  }
+ 
+  stack.reset ();
+
+  // reserve bottom of the stack for global variables
+  stack.pushFrame (global_data_size);
+  // push stack frame for main function
+  stack.pushFrame (func_table.at (main_func_index).local_data_size + 1);
+}
+
 
 // ---------------------------------------------------------
 // internal interface for VM

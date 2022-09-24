@@ -21,7 +21,8 @@ class Script
 {
   public:
     Script () { }
-    void loadScript (std::string file_name);
+    void load (std::string file_name);
+    void reset ();
 
   private:
     // header
@@ -45,7 +46,7 @@ class Script
     // function table
     std::unordered_map<int, Func> func_table;
 
-    // resolution/coercion interfaces
+    // internal interface for resolution/coercion
     int resolveOpStackIndex (int op_index);
     Value resolveOpValue (int op_index);
     Value* resolveOpPtr (int op_index);
