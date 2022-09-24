@@ -3,6 +3,8 @@
 
 #include "instruction.hpp"
 #include <unordered_map>
+#include <vector>
+#include <string>
 
 
 struct Func
@@ -43,6 +45,25 @@ class Script
 
     // function table
     std::unordered_map<int, Func> func_table;
+
+    // interfaces
+    int resolveOpStackIndex (int op_index);
+    Value resolveOpValue (int op_index);
+    Value* resolveOpPtr (int op_index);
+
+    int coerceToInt (Value val);
+    float coerceToFloat (Value val);
+    std::string coerceToString (Value val);
+
+    int resolveOpAsInt (int op_index);
+    float resolveOpAsFloat (int op_index);
+    std::string resolveOpAsString (int op_index);
+    int resolveOpAsStackIndex (int op_index);
+    int resolveOpAsFuncIndex (int op_index);
+    int resolveOpAsReg (int op_index);
+
+    int resolveStackIndex (int index);
+    Value getStackValue (int index);
 };
 
 #endif
