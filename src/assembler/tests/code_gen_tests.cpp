@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include "decoder.hpp"
 
 using std::string;
 using std::cout;
@@ -21,31 +22,6 @@ enum CodeGenFlag {GEN_HEADER = 1,
                   GEN_STR_TABLE = 4, 
                   GEN_FUNC_TABLE = 8};
 
-struct TestHeader
-{
-  char ver_major;
-  char ver_minor;
-  int stack_size;
-  int global_data_size;
-  char is_main_func_present;
-  int main_func_index;
-};
-
-struct TestOp
-{
-    OpType type;
-    union
-    {
-        int int_literal;
-        float float_literal;
-        int str_table_index;    // string table index
-        int instr_index;        // instruction stream index
-        int stack_index;        // stack index
-        int func_index;         // function table index
-        int reg;                // register code
-    };
-    int offset_index;           // stack index of the offset variable
-};
 
 int testCodeGen (string input, int flags)
 {
@@ -79,136 +55,6 @@ int testCodeGen (string input, int flags)
   return ret_val;
 }
 
-string readHeader (ifstream &binary)
-{
-  // read header
-  TestHeader header;
-  stringstream out;
-
-  char id[4];
-  id[3] = '\0';
-  binary.read ((char *) &id, 3);
-  out << "Header:" << endl
-      << string (id) << endl;
-
-
-  binary.read (&header.ver_major, sizeof (char));
-  binary.read (&header.ver_minor, sizeof (char));
-  binary.read ((char *) &header.stack_size, sizeof (int));
-  binary.read ((char *) &header.global_data_size, sizeof (int));
-  binary.read (&header.is_main_func_present, sizeof (char));
-  binary.read ((char *) &header.main_func_index, sizeof (int));
-
-  out << (int) header.ver_major << " "
-      << (int) header.ver_minor << endl
-      << header.stack_size << " "
-      << header.global_data_size << " "
-      << (bool) header.is_main_func_present << " "
-      << header.main_func_index << endl;
-
-  return out.str ();
-}
-
-string readInstrStream (ifstream &binary)
-{
-  stringstream out;
-  // read size of instruction stream
-  int size;
-  binary.read ((char *) &size, sizeof (int));
-
-  out << "Instruction stream:" << endl
-      << size << endl;
-
-  // read each instruction
-  for (int i = 0; i < size; i++)
-  {
-    // read opcode and operand count
-    char opcode, op_count;
-    binary.read (&opcode, sizeof (char));
-    binary.read (&op_count, sizeof (char));
-   
-    out << (int) opcode << " "
-        << (int) op_count;
-    if (op_count > 0)
-      out << " ";
-    else
-      out << endl;
-
-    // read list of operands that are used in this instruction
-    for (int op_index = 0; op_index < op_count; op_index++)
-    {
-      TestOp op;
-      binary.read ((char *) &op, sizeof (TestOp));
-
-      out << op.type << " "
-          << op.int_literal << " "
-          << op.offset_index;
-      
-      if (op_index < op_count - 1)
-        out << " ";
-      else
-        out << endl;
-    }
-  }
-
-  return out.str ();
-}
-
-string readStringTable (ifstream &binary)
-{
-  stringstream out;
-  // read size of string table 
-  int size;
-  binary.read ((char *) &size, sizeof (int));
-
-  out << "String table:" << endl
-      << size << endl;
-
-  // read each string
-  for (int i = 0; i < size; i++)
-  {
-    // read string length 
-    int len;
-    binary.read ((char *) &len, sizeof (int));
-   
-    char str[len + 1]; 
-    str[len] = '\0';
-    binary.read (str, len);
-
-    out << len << " "
-        << string (str) << endl;
-  }
-
-  return out.str ();
-}
-
-string readFuncTable (ifstream &binary)
-{
-  stringstream out;
-  // read size of function table 
-  int size;
-  binary.read ((char *) &size, sizeof (int));
-
-  out << "Function table:" << endl
-      << size << endl;
-
-  // read each function 
-  for (int i = 0; i < size; i++)
-  {
-    int entry_point;
-    int param_count;
-    int local_data_size;
-    binary.read ((char *) &entry_point, sizeof (int));
-    binary.read ((char *) &param_count, sizeof (int));
-    binary.read ((char *) &local_data_size, sizeof (int));
-
-    out << entry_point << " "
-        << param_count << " "
-        << local_data_size << endl;
-  }
-
-  return out.str ();
-}
 
 
 TEST_CASE ("Writing header", "[code_gen]")
@@ -227,7 +73,7 @@ TEST_CASE ("Writing header", "[code_gen]")
 
   ifstream binary (TEST_OUT_FILE);
 
-  REQUIRE (readHeader (binary) == expected);
+  REQUIRE (Decoder::readHeader (binary) == expected);
 
   binary.close ();
 }
@@ -248,7 +94,27 @@ TEST_CASE ("Writing a single instruction", "[code_gen]")
   REQUIRE (testCodeGen (input, GEN_INSTR) == EXIT_SUCCESS);
   ifstream binary (TEST_OUT_FILE);
 
-  REQUIRE (readInstrStream (binary) == expected);
+  REQUIRE (Decoder::readInstrStream (binary) == expected);
+
+  binary.close ();
+}
+
+TEST_CASE ("Writing a instruction with float operand", "[code_gen]")
+{
+  string input = "\n\nfunc myFunc\n"
+                 "{ \n"
+                 "var k\n"
+                 "mov k, 0.123 \n"
+                 "}";
+  string expected = "Instruction stream:\n"
+                    "2\n"
+                    "0 2 3 -2 0 1 0.123 0\n"
+                    "29 0\n";
+
+  REQUIRE (testCodeGen (input, GEN_INSTR) == EXIT_SUCCESS);
+  ifstream binary (TEST_OUT_FILE);
+
+  REQUIRE (Decoder::readInstrStream (binary) == expected);
 
   binary.close ();
 }
@@ -273,7 +139,7 @@ TEST_CASE ("Writing multiple instructions", "[code_gen]")
   REQUIRE (testCodeGen (input, GEN_INSTR) == EXIT_SUCCESS);
   ifstream binary (TEST_OUT_FILE);
 
-  REQUIRE (readInstrStream (binary) == expected);
+  REQUIRE (Decoder::readInstrStream (binary) == expected);
 
   binary.close ();
 }
@@ -294,7 +160,7 @@ TEST_CASE ("Writing string table", "[code_gen]")
 
   ifstream binary (TEST_OUT_FILE);
 
-  REQUIRE (readStringTable (binary) == expected);
+  REQUIRE (Decoder::readStringTable (binary) == expected);
 
   binary.close ();
 }
@@ -315,7 +181,7 @@ TEST_CASE ("Writing function table", "[code_gen]")
 
   ifstream binary (TEST_OUT_FILE);
 
-  REQUIRE (readFuncTable (binary) == expected);
+  REQUIRE (Decoder::readFuncTable (binary) == expected);
 
   binary.close ();
 }
@@ -342,7 +208,7 @@ TEST_CASE ("Writing multiple functions", "[code_gen]")
 
   ifstream binary (TEST_OUT_FILE);
 
-  REQUIRE (readFuncTable (binary) == expected);
+  REQUIRE (Decoder::readFuncTable (binary) == expected);
 
   binary.close ();
 }

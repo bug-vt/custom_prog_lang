@@ -1,7 +1,4 @@
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include "instruction.hpp"
+#include "decoder.hpp"
 
 using std::string;
 using std::cout;
@@ -11,40 +8,10 @@ using std::ofstream;
 using std::ifstream;
 using std::stringstream;
 
-
-string readHeader (ifstream &binary);
-string readInstrStream (ifstream &binary);
-string readStringTable (ifstream &binary);
-string readFuncTable (ifstream &binary);
+//#define MAIN 1
 
 
-struct TestHeader
-{
-  char ver_major;
-  char ver_minor;
-  int stack_size;
-  int global_data_size;
-  char is_main_func_present;
-  int main_func_index;
-};
-
-struct TestOp
-{
-    OpType type;
-    union
-    {
-        int int_literal;
-        float float_literal;
-        int str_table_index;    // string table index
-        int instr_index;        // instruction stream index
-        int stack_index;        // stack index
-        int func_index;         // function table index
-        int reg;                // register code
-    };
-    int offset_index;           // stack index of the offset variable
-};
-
-
+#ifdef MAIN
 int main (int argc, char **argv)
 {
   if (argc < 2)
@@ -63,17 +30,17 @@ int main (int argc, char **argv)
   string out = "";
   ifstream binary (argv[1]);
 
-  out = readHeader (binary);
+  out = Decoder::readHeader (binary);
   if (!show_less)
     cout << out << endl;
 
-  cout << readInstrStream (binary) << endl;
+  cout << Decoder::readInstrStream (binary) << endl;
 
-  out = readStringTable (binary);
+  out = Decoder::readStringTable (binary);
   if (!show_less)
     cout << out << endl;
 
-  out = readFuncTable (binary);
+  out = Decoder::readFuncTable (binary);
   if (!show_less)
     cout << out << endl;
 
@@ -81,9 +48,10 @@ int main (int argc, char **argv)
 
   return 0;
 }
+#endif
 
 
-string readHeader (ifstream &binary)
+string Decoder::readHeader (ifstream &binary)
 {
   // read header
   TestHeader header;
@@ -113,7 +81,7 @@ string readHeader (ifstream &binary)
   return out.str ();
 }
 
-string readInstrStream (ifstream &binary)
+string Decoder::readInstrStream (ifstream &binary)
 {
   stringstream out;
   // read size of instruction stream
@@ -144,10 +112,18 @@ string readInstrStream (ifstream &binary)
       TestOp op;
       binary.read ((char *) &op, sizeof (TestOp));
 
-      out << op.type << " "
-          << op.int_literal << " "
-          << op.offset_index;
-      
+      // operand type 
+      out << op.type << " ";
+      // operand value
+      if (op.type == OP_TYPE_FLOAT)
+        out << op.float_literal << " ";
+      else
+        out << op.int_literal << " ";
+
+      // offset (for relative indexing)
+      out << op.offset_index;
+       
+      // last operand print newline
       if (op_index < op_count - 1)
         out << " ";
       else
@@ -158,7 +134,7 @@ string readInstrStream (ifstream &binary)
   return out.str ();
 }
 
-string readStringTable (ifstream &binary)
+string Decoder::readStringTable (ifstream &binary)
 {
   stringstream out;
   // read size of string table 
@@ -186,7 +162,7 @@ string readStringTable (ifstream &binary)
   return out.str ();
 }
 
-string readFuncTable (ifstream &binary)
+string Decoder::readFuncTable (ifstream &binary)
 {
   stringstream out;
   // read size of function table 
