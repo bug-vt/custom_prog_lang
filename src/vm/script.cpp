@@ -39,12 +39,7 @@ int Script::resolveOpStackIndex (int op_index)
   int stack_index = instr_stream[instr_index].op_list[op_index].stack_index;
   int offset_index = instr_stream[instr_index].op_list[op_index].offset_index;
   int offset = 0;
-  // local variable references from top of the stack
-  if (offset_index < 0)
-    offset = stack[frame_index + offset_index].int_literal;
-  // global variable references from bottom of the stack
-  else
-    offset = stack[offset_index].int_literal;
+  offset = stack.getValue (offset_index).int_literal;
 
   return stack_index + offset;
 }
@@ -57,12 +52,12 @@ Value Script::resolveOpValue (int op_index)
     case OP_TYPE_ABS_STACK_INDEX:
       {
         int abs_index = instr_stream[instr_index].op_list[op_index].stack_index;
-        return getStackValue (abs_index);
+        return stack.getValue (abs_index);
       }
     case OP_TYPE_REL_STACK_INDEX:
       {
         int abs_index = resolveOpStackIndex (op_index);
-        return getStackValue (abs_index);
+        return stack.getValue (abs_index);
       }
     case OP_TYPE_REG:
       return ret_val;
@@ -159,12 +154,12 @@ Value* Script::resolveOpPtr (int op_index)
     case OP_TYPE_ABS_STACK_INDEX:
       {
         int abs_index = instr_stream[instr_index].op_list[op_index].stack_index;
-        return &stack.at (resolveStackIndex (abs_index));
+        return stack.getValuePtr (abs_index);
       }
     case OP_TYPE_REL_STACK_INDEX:
       {
         int abs_index = resolveOpStackIndex (op_index);
-        return &stack.at (resolveStackIndex (abs_index));
+        return stack.getValuePtr (abs_index);
       }
     case OP_TYPE_REG:
       return &ret_val;
@@ -172,16 +167,5 @@ Value* Script::resolveOpPtr (int op_index)
     default:
       return nullptr;
   }
-}
-
-// stack interface
-int Script::resolveStackIndex (int index)
-{
-  return index < 0 ? frame_index + index : index;
-}
-
-Value Script::getStackValue (int index)
-{
-  return stack[ resolveStackIndex (index) ];
 }
 

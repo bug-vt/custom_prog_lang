@@ -9,7 +9,7 @@ Loader::Loader (ifstream &input) : binary (input)
 {
 }
 
-void Loader::loadHeader (vector<Value> &stack,
+void Loader::loadHeader (Stack &stack,
                          int &global_data_size,
                          char &is_main_func_present,
                          int &main_func_index)
@@ -30,7 +30,7 @@ void Loader::loadHeader (vector<Value> &stack,
   int stack_size;
   binary.read ((char *) &stack_size, sizeof (int));
   // initialize stack with given stack size
-  stack = std::vector<Value> (stack_size);
+  stack = Stack (stack_size);
 
   // read global data size
   binary.read ((char *) &global_data_size, sizeof (int));

@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <vector>
 #include <string>
+#include "stack.hpp"
 
 
 struct Func
@@ -29,16 +30,14 @@ class Script
     int main_func_index;
 
     // registers
-    int instr_index;
-    int frame_index;
-    int stack_index;
-    Value ret_val;
+    int instr_index;  // instruction pointer
+    Value ret_val;    // return value register
 
     // instruction stream
     std::vector<Instr> instr_stream;
 
     // runtime stack
-    std::vector<Value> stack;
+    Stack stack;
 
     // string table
     std::unordered_map<int, std::string> str_table;
@@ -46,7 +45,7 @@ class Script
     // function table
     std::unordered_map<int, Func> func_table;
 
-    // interfaces
+    // resolution/coercion interfaces
     int resolveOpStackIndex (int op_index);
     Value resolveOpValue (int op_index);
     Value* resolveOpPtr (int op_index);
@@ -61,9 +60,6 @@ class Script
     int resolveOpAsStackIndex (int op_index);
     int resolveOpAsFuncIndex (int op_index);
     int resolveOpAsReg (int op_index);
-
-    int resolveStackIndex (int index);
-    Value getStackValue (int index);
 };
 
 #endif
