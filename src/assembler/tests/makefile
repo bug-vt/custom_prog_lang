@@ -6,14 +6,14 @@ CFLAGS=-Wall -g
 build: asm_tests.cpp lexer_tests.o parser_tests.o code_gen_tests.o \
 			 asm_parser.o func_table.o symbol_table.o label_table.o string_table.o token.o \
 			 asm_lexer.o instr_lookup.o error.o \
-			 code_gen.o
+			 code_gen.o decoder.o
 	$(CC) $(CFLAGS) -o asm_tests asm_tests.cpp lexer_tests.o parser_tests.o code_gen_tests.o \
 			 asm_parser.o func_table.o symbol_table.o label_table.o string_table.o token.o \
 			 asm_lexer.o instr_lookup.o error.o \
-			 code_gen.o
+			 code_gen.o decoder.o
 
-code_gen_tests.o: code_gen_tests.cpp code_gen.o
-	$(CC) $(CFLAGS) -c code_gen_tests.cpp 
+code_gen_tests.o: code_gen_tests.cpp code_gen.o decoder.cpp
+	$(CC) $(CFLAGS) -c code_gen_tests.cpp decoder.cpp
 
 parser_tests.o: parser_tests.cpp asm_parser.o
 	$(CC) $(CFLAGS) -c parser_tests.cpp 
