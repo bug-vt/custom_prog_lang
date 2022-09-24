@@ -4,9 +4,19 @@
 #include <string>
 #include <vector>
 
+enum OpType {OP_TYPE_INT,
+             OP_TYPE_FLOAT,
+             OP_TYPE_STR,
+             OP_TYPE_ABS_STACK_INDEX,
+             OP_TYPE_REL_STACK_INDEX,
+             OP_TYPE_INSTR_INDEX,
+             OP_TYPE_FUNC,
+             OP_TYPE_REG,
+             OP_TYPE_INVALID};
+
 struct Value
 {
-  int type;
+  OpType type;
   union
   {
     int int_literal;

@@ -4,6 +4,7 @@ using std::vector;
 using std::string;
 using std::ifstream;
 
+
 void Script::loadScript (string file_name)
 {
   ifstream binary (file_name);
@@ -29,18 +30,20 @@ void Script::loadHeader (ifstream &binary)
   id[3] = '\0';
   binary.read ((char *) &id, 3);
   if (string (id) != "BUG")
-  {
-    // load error
-  }
+    throw std::runtime_error ("Invalid executable id");
+
   char ver_major, ver_minor;
   binary.read (&ver_major, sizeof (char));
   binary.read (&ver_minor, sizeof (char));
   if (ver_major != 1 || ver_minor != 0)
-  {
-    // load error
-  }
+    throw std::runtime_error ("Unsupported version");
+
   // read stack size
-  binary.read ((char *) &stack.size, sizeof (int));
+  int stack_size;
+  binary.read ((char *) &stack_size, sizeof (int));
+  // initialize stack with given stack size
+  stack = std::vector<Value> (stack_size);
+
   // read global data size
   binary.read ((char *) &global_data_size, sizeof (int));
   // read main func info
@@ -78,7 +81,6 @@ void Script::loadStringTable (ifstream &binary)
   // read size of string table 
   int size;
   binary.read ((char *) &size, sizeof (int));
-  str_table = vector<string> (size);
 
   // read each string
   for (int i = 0; i < size; i++)
@@ -100,7 +102,6 @@ void Script::loadFuncTable (ifstream &binary)
   // read size of function table 
   int size;
   binary.read ((char *) &size, sizeof (int));
-  func_table = vector<Func> (size);
 
   // read each function 
   for (int i = 0; i < size; i++)
@@ -112,9 +113,12 @@ void Script::loadFuncTable (ifstream &binary)
     binary.read ((char *) &param_count, sizeof (int));
     binary.read ((char *) &local_data_size, sizeof (int));
 
-    func_table[i].entry_point = entry_point;
-    func_table[i].param_count = param_count;
-    func_table[i].local_data_size = local_data_size;
-    func_table[i].stack_frame_size = param_count + local_data_size + 1;
+    Func curr_func;
+    curr_func.entry_point = entry_point;
+    curr_func.param_count = param_count;
+    curr_func.local_data_size = local_data_size;
+    curr_func.stack_frame_size = param_count + local_data_size + 1;
+
+    func_table[i] = curr_func;
   }
 }
