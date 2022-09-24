@@ -340,7 +340,9 @@ TEST_CASE ("Basic input parsing", "[parser]")
 
 TEST_CASE ("Parsing file", "[parser]")
 {
-  ifstream input ("example.assembly");
+  ifstream input ("../example/example.assembly");
+  REQUIRE (input.good ());
+
   stringstream buffer;
   buffer << input.rdbuf ();
 

@@ -20,7 +20,6 @@ func mysteryFunc
     add     sum, y
     ; put result in the _retVal register
     mov     _retVal, sum
-    ret
 }
 
 

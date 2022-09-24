@@ -1,0 +1,5 @@
+func myFunc
+{
+  var x
+  mov x, "Hello World"
+}

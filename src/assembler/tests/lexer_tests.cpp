@@ -263,7 +263,8 @@ TEST_CASE ("Test displaying error", "[lexer]")
 
 TEST_CASE ("Lexing file", "[lexer]")
 {
-  ifstream input ("example.assembly");
+  ifstream input ("../example/example.assembly");
+  REQUIRE (input.good ());
   stringstream buffer;
   buffer << input.rdbuf ();
 
