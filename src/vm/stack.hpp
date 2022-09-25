@@ -12,7 +12,6 @@ class Stack
     void reset ();
     int resolveIndex (int index);
     Value getValue (int index);
-    Value *getValuePtr (int index);
     void setValue (int index, Value val);
     void push (Value val);
     Value pop ();
@@ -23,6 +22,7 @@ class Stack
     std::vector<Value> stack;
     int top_index;
     int frame_index;
+    int prev_frame_index;
 };
 
 #endif

@@ -105,7 +105,9 @@ void Loader::loadFuncTable (unordered_map<int, Func> &func_table)
     curr_func.entry_point = entry_point;
     curr_func.param_count = param_count;
     curr_func.local_data_size = local_data_size;
-    curr_func.stack_frame_size = param_count + local_data_size + 1;
+    // size of stack frame is:
+    // 1(reserved for vm) + local data + 1(return address) + parameters
+    curr_func.stack_frame_size = param_count + local_data_size + 2;
 
     func_table[i] = curr_func;
   }

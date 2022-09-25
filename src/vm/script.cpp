@@ -9,6 +9,39 @@ using std::stoi;
 using std::stof;
 using std::to_string;
 
+enum InstrOpcode {INSTR_MOV,      // 0
+                  INSTR_ADD,      // 1
+                  INSTR_SUB,      // 2
+                  INSTR_MUL,      // 3
+                  INSTR_DIV,      // 4
+                  INSTR_MOD,      // 5
+                  INSTR_EXP,      // 6
+                  INSTR_NEG,      // 7
+                  INSTR_INC,      // 8
+                  INSTR_DEC,      // 9
+                  INSTR_AND,      // 10
+                  INSTR_OR,       // 11
+                  INSTR_XOR,      // 12
+                  INSTR_NOT,      // 13
+                  INSTR_SHL,      // 14
+                  INSTR_SHR,      // 15
+                  INSTR_CONCAT,   // 16
+                  INSTR_GETCHAR,  // 17
+                  INSTR_SETCHAR,  // 18
+                  INSTR_JMP,      // 19
+                  INSTR_JE,       // 20
+                  INSTR_JNE,      // 21
+                  INSTR_JG,       // 22
+                  INSTR_JL,       // 23
+                  INSTR_JGE,      // 24
+                  INSTR_JLE,      // 25
+                  INSTR_PUSH,     // 26
+                  INSTR_POP,      // 27
+                  INSTR_CALL,     // 28
+                  INSTR_RET,      // 29
+                  INSTR_PAUSE,    // 30
+                  INSTR_EXIT};    // 31
+
 
 void Script::load (string file_name)
 {
@@ -44,8 +77,62 @@ void Script::reset ()
 
   // reserve bottom of the stack for global variables
   stack.pushFrame (global_data_size);
-  // push stack frame for main function
-  stack.pushFrame (func_table.at (main_func_index).local_data_size + 1);
+  // now, Push stack frame for main:
+  // first, push return address -1 to indicate end of program
+  Value return_addr;
+  return_addr.instr_index = -1;
+  stack.push (return_addr);
+  // next, reserve space for local variables for main function.
+  // main frame does not contains parameters 
+  stack.pushFrame (func_table.at (main_func_index).local_data_size);
+  // finally, push main function index on the top of the frame
+  Value frame_top;
+  frame_top.func_index = main_func_index;
+  stack.push (frame_top);
+}
+
+void Script::execute ()
+{
+  while (instr_index >= 0)
+  {
+    int curr_instr_index = instr_index;
+    switch (instr_stream[instr_index].opcode)
+    {
+      case INSTR_MOV:
+        resolveOpCopy (0, resolveOpValue (1));
+        break;
+      case INSTR_ADD:
+        {
+          Value dest = resolveOpValue (0);
+          if (dest.type == OP_TYPE_INT)
+            dest.int_literal += resolveOpAsInt (1);
+          else
+            dest.float_literal += resolveOpAsFloat (1);
+          resolveOpCopy (0, dest);
+        }
+        break;
+      case INSTR_RET:
+        {
+          // obtain current function info by peeking the top of the stack frame
+          Value frame_top = stack.getValue (-1); 
+          int func_index = frame_top.func_index;
+          Func curr_func = func_table.at (func_index);
+          
+          // obtain position of the return address inside stack frame
+          Value ret_addr = stack.getValue (-(curr_func.local_data_size + 1));
+          // pop the stack frame
+          stack.popFrame (curr_func.stack_frame_size);
+          // jump to return address 
+          instr_index = ret_addr.instr_index;
+        }
+        break;
+      default:
+        break;
+    }
+    // move to next instruction if no jump or function call was made 
+    if (curr_instr_index == instr_index)
+      instr_index++;
+  }
 }
 
 
@@ -164,7 +251,7 @@ int Script::resolveOpAsReg (int op_index)
   return resolveOpValue (op_index).reg;
 }
 
-Value* Script::resolveOpPtr (int op_index)
+void Script::resolveOpCopy (int op_index, Value val)
 {
   Value op = instr_stream[instr_index].op_list[op_index]; 
   switch (op.type)
@@ -172,18 +259,17 @@ Value* Script::resolveOpPtr (int op_index)
     case OP_TYPE_ABS_STACK_INDEX:
       {
         int abs_index = instr_stream[instr_index].op_list[op_index].stack_index;
-        return stack.getValuePtr (abs_index);
+        stack.setValue (abs_index, val);
       }
     case OP_TYPE_REL_STACK_INDEX:
       {
         int abs_index = resolveOpStackIndex (op_index);
-        return stack.getValuePtr (abs_index);
+        stack.setValue (abs_index, val);
       }
     case OP_TYPE_REG:
-      return &ret_val;
+      ret_val = val;
 
     default:
-      return nullptr;
+      throw std::runtime_error ("Cannot write to non-destination operand"); 
   }
 }
-

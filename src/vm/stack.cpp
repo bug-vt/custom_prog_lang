@@ -29,11 +29,6 @@ Value Stack::getValue (int index)
   return stack[ resolveIndex (index) ];
 }
 
-Value* Stack::getValuePtr (int index)
-{
-  return &stack[ resolveIndex (index) ];
-}
-
 void Stack::setValue (int index, Value val)
 {
   stack[ resolveIndex (index) ] = val;
@@ -54,10 +49,18 @@ Value Stack::pop ()
 void Stack::pushFrame (int size)
 {
   top_index += size;
+  // record the current stack frame
+  prev_frame_index = frame_index;
+  // change to new stack frame
   frame_index = top_index;
 }
 
 void Stack::popFrame (int size)
 {
+  // silently pop any values pushed above current stack frame
+  top_index = frame_index;
+  // pop the current stack frame
   top_index -= size;
+  // restore to previous stack frame
+  frame_index = prev_frame_index;
 }

@@ -23,6 +23,7 @@ class Script
     Script () { }
     void load (std::string file_name);
     void reset ();
+    void execute ();
 
   private:
     // header
@@ -49,7 +50,7 @@ class Script
     // internal interface for resolution/coercion
     int resolveOpStackIndex (int op_index);
     Value resolveOpValue (int op_index);
-    Value* resolveOpPtr (int op_index);
+    void resolveOpCopy (int op_index, Value val);
 
     int coerceToInt (Value val);
     float coerceToFloat (Value val);
