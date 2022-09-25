@@ -119,6 +119,28 @@ TEST_CASE ("Writing a instruction with float operand", "[code_gen]")
   binary.close ();
 }
 
+TEST_CASE ("Writing a print instruction", "[code_gen]")
+{
+  string input = "\n\nfunc myFunc\n"
+                 "{ \n"
+                 "var str\n"
+                 "mov str, \"hello world!\"\n"
+                 "print str\n"
+                 "}";
+  string expected = "Instruction stream:\n"
+                    "3\n"
+                    "0 2 3 -2 0 2 0 0\n"
+                    "32 1 3 -2 0\n"
+                    "29 0\n";
+
+  REQUIRE (testCodeGen (input, GEN_INSTR) == EXIT_SUCCESS);
+  ifstream binary (TEST_OUT_FILE);
+
+  REQUIRE (Decoder::readInstrStream (binary) == expected);
+
+  binary.close ();
+}
+
 TEST_CASE ("Writing multiple instructions", "[code_gen]")
 {
   string input = "\n\nfunc myFunc\n"
