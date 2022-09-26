@@ -1,6 +1,7 @@
 #include "script.hpp"
 #include "loader.hpp"
 #include <fstream>
+#include <iostream>
 
 using std::vector;
 using std::string;
@@ -40,12 +41,15 @@ enum InstrOpcode {INSTR_MOV,      // 0
                   INSTR_CALL,     // 28
                   INSTR_RET,      // 29
                   INSTR_PAUSE,    // 30
-                  INSTR_EXIT};    // 31
+                  INSTR_EXIT,     // 31
+                  INSTR_PRINT};   // 32
 
 
 void Script::load (string file_name)
 {
   ifstream binary (file_name);
+  if (binary.fail ())
+    throw std::runtime_error ("File not found");
 
   Loader loader (binary);
   // load header
@@ -71,6 +75,8 @@ void Script::reset ()
   {
     if (is_main_func_present)
       instr_index = func_table.at (main_func_index).entry_point;
+    else
+      throw std::runtime_error ("No main function found");
   }
  
   stack.reset ();
@@ -82,13 +88,14 @@ void Script::reset ()
   Value return_addr;
   return_addr.instr_index = -1;
   stack.push (return_addr);
-  // next, reserve space for local variables for main function.
+  // next, reserve space for local variables for main function
+  // and additional space for function index on the top.
   // main frame does not contains parameters 
-  stack.pushFrame (func_table.at (main_func_index).local_data_size);
-  // finally, push main function index on the top of the frame
+  stack.pushFrame (func_table.at (main_func_index).local_data_size + 1);
+  // finally, set main function index on the top of the frame
   Value frame_top;
   frame_top.func_index = main_func_index;
-  stack.push (frame_top);
+  stack.setValue (-1, frame_top);
 }
 
 void Script::execute ()
@@ -101,6 +108,7 @@ void Script::execute ()
       case INSTR_MOV:
         resolveOpCopy (0, resolveOpValue (1));
         break;
+
       case INSTR_ADD:
         {
           Value dest = resolveOpValue (0);
@@ -111,6 +119,7 @@ void Script::execute ()
           resolveOpCopy (0, dest);
         }
         break;
+
       case INSTR_RET:
         {
           // obtain current function info by peeking the top of the stack frame
@@ -119,13 +128,19 @@ void Script::execute ()
           Func curr_func = func_table.at (func_index);
           
           // obtain position of the return address inside stack frame
-          Value ret_addr = stack.getValue (-(curr_func.local_data_size + 1));
+          // -1(function index) - local data - 1(return address)
+          Value ret_addr = stack.getValue (-(curr_func.local_data_size + 2));
           // pop the stack frame
           stack.popFrame (curr_func.stack_frame_size);
           // jump to return address 
           instr_index = ret_addr.instr_index;
         }
         break;
+
+      case INSTR_PRINT:
+        std::cout << resolveOpAsString (0);
+        break;
+
       default:
         break;
     }
@@ -261,13 +276,16 @@ void Script::resolveOpCopy (int op_index, Value val)
         int abs_index = instr_stream[instr_index].op_list[op_index].stack_index;
         stack.setValue (abs_index, val);
       }
+      break;
     case OP_TYPE_REL_STACK_INDEX:
       {
         int abs_index = resolveOpStackIndex (op_index);
         stack.setValue (abs_index, val);
       }
+      break;
     case OP_TYPE_REG:
       ret_val = val;
+      break;
 
     default:
       throw std::runtime_error ("Cannot write to non-destination operand"); 

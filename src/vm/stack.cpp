@@ -1,4 +1,5 @@
 #include "stack.hpp"
+#include <iostream>
 
 using std::vector;
 
@@ -21,17 +22,21 @@ void Stack::reset ()
 // stack interface
 int Stack::resolveIndex (int index)
 {
-  return index < 0 ? frame_index + index : index;
+  int resolved_index = index < 0 ? frame_index + index : index;
+  if (resolved_index < 0 || resolved_index > top_index)
+    throw std::runtime_error ("Stack index out of bound");
+
+  return resolved_index;
 }
 
 Value Stack::getValue (int index)
 {
-  return stack[ resolveIndex (index) ];
+  return stack.at (resolveIndex (index));
 }
 
 void Stack::setValue (int index, Value val)
 {
-  stack[ resolveIndex (index) ] = val;
+  stack.at (resolveIndex (index)) = val;
 }
 
 void Stack::push (Value val)
@@ -43,7 +48,7 @@ void Stack::push (Value val)
 Value Stack::pop ()
 {
   top_index--;
-  return stack[top_index];
+  return stack.at (top_index);
 }
 
 void Stack::pushFrame (int size)

@@ -1,5 +1,6 @@
-func myFunc
+func main 
 {
   var x
   mov x, "Hello World"
+  print x
 }
