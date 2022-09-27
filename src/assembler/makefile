@@ -22,5 +22,5 @@ clean:
 	rm *.o *.executable
 
 clean2:
-	rm assembler decoder
+	rm assembler
 

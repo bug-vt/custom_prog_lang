@@ -1,5 +1,9 @@
-func myFunc
+func main
 {
-  var t
-  add t, 42
+  var x
+  var y
+  mov x, 42
+  mov y, 10
+  add x, y
+  print x
 }
