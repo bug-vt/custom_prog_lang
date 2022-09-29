@@ -385,15 +385,27 @@ void AsmLexer::lexStateString (char curr_char)
   }
   else if (curr_char == '\\')
   {
-    curr_lex_state = LEX_STATE_STRING_ESCAPE;
     add_curr_char = false;
+    curr_lex_state = LEX_STATE_STRING_ESCAPE;
   }
 }
 
 void AsmLexer::lexStateStringEscape (char curr_char)
 {
-  // This let the escape character to be added,
-  // then switch back to the string state.
+  if (curr_char == 'n')
+  {
+    add_curr_char = false;
+    curr_lexeme.lexeme += "\n";
+  }
+  else if (curr_char == 't')
+  {
+    add_curr_char = false;
+    curr_lexeme.lexeme += "\t";
+  }
+  // for other escape characters such as " (from \")
+  // the current character can be simply added.
+
+  // switch back to the string state.
   curr_lex_state = LEX_STATE_STRING;
 }
 

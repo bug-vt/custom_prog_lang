@@ -142,6 +142,15 @@ TEST_CASE ("Basic string lexing", "[lexer]")
   REQUIRE (lexer.getCurrLexeme () == "fall $ number  @sun");
 }
 
+TEST_CASE ("String lexing with escape characters", "[lexer]")
+{
+  string input = " \"newline\\n tab\\t quote\\\" \"";
+  
+  AsmLexer lexer (input);
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_STRING);
+  REQUIRE (lexer.getCurrLexeme () == "newline\n tab\t quote\" ");
+}
+
 TEST_CASE ("Lexing comment", "[lexer]")
 {
   string input = "; this is comment \n \

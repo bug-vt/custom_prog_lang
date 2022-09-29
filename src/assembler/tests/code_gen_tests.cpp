@@ -141,6 +141,25 @@ TEST_CASE ("Writing a print instruction", "[code_gen]")
   binary.close ();
 }
 
+TEST_CASE ("Using return value register", "[code_gen]")
+{
+  string input = "\n\nfunc myFunc\n"
+                 "{ \n"
+                 "mov _retVal, 33\n"
+                 "}";
+  string expected = "Instruction stream:\n"
+                    "2\n"
+                    "0 2 7 0 0 0 33 0\n"
+                    "29 0\n";
+
+  REQUIRE (testCodeGen (input, GEN_INSTR) == EXIT_SUCCESS);
+  ifstream binary (TEST_OUT_FILE);
+
+  REQUIRE (Decoder::readInstrStream (binary) == expected);
+
+  binary.close ();
+}
+
 TEST_CASE ("Writing multiple instructions", "[code_gen]")
 {
   string input = "\n\nfunc myFunc\n"
@@ -172,11 +191,11 @@ TEST_CASE ("Writing string table", "[code_gen]")
   string input = "\n\nfunc myFunc\n"
                  "{ \n"
                  "var str\n"
-                 "mov str, \"Hello World!\"\n"
+                 "mov str, \"Hello World!\\n\"\n"
                  "}";
   string expected = "String table:\n"
                     "1\n"
-                    "12 Hello World!\n";
+                    "13 Hello World!\n\n";
 
   REQUIRE (testCodeGen (input, GEN_STR_TABLE) == EXIT_SUCCESS);
 
