@@ -22,6 +22,13 @@ class TestVM (unittest.TestCase):
         expected = "Hello World"
         out = runVM ("../example/mov.assembly");
         self.assertEqual (out, expected);
+
+    def testCall (self):
+        expected = ("inside myFunc\n"
+                    "back to main\n"
+                    "33")
+        out = runVM ("../example/call.assembly");
+        self.assertEqual (out, expected);
         
 if __name__ == '__main__':
     unittest.main ()

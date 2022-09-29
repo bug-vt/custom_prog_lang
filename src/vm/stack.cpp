@@ -60,6 +60,27 @@ void Stack::pushFrame (int size)
   frame_index = top_index;
 }
 
+void Stack::pushFrame (int size, int ret_index, int func_index)
+{
+  // first, push return address 
+  Value return_addr;
+  return_addr.instr_index = ret_index;
+  push (return_addr);
+
+  // next, reserve space for local variables
+  // and additional space for function index on the top.
+  top_index += size + 1;
+  // record the current stack frame
+  prev_frame_index = frame_index;
+  // change to new stack frame
+  frame_index = top_index;
+
+  // finally, set function index on the top of the frame
+  Value frame_top;
+  frame_top.func_index = func_index;
+  setValue (-1, frame_top);
+}
+
 void Stack::popFrame (int size)
 {
   // silently pop any values pushed above current stack frame

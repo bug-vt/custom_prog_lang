@@ -1,0 +1,12 @@
+func myFunc
+{
+  print "inside myFunc\n"
+  mov _retVal, 33
+}
+
+func main
+{
+  call myFunc
+  print "back to main\n"
+  print _retVal
+}

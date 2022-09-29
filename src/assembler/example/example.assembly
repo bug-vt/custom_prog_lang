@@ -40,9 +40,9 @@ func myFunc
     mov     GLOBAL_VAR, sum
     ; initialize the GLOBAL_ARRAY
     mov     GLOBAL_ARRAY[0], "Hello "
-    mov     GLOBAL_ARRAY[1], "World!"
-    mov     GLOBAL_ARRAY[2], "CS 4974"
-    mov     GLOBAL_ARRAY[3], "scripting design and implementation"
+    mov     GLOBAL_ARRAY[1], "World!\n"
+    mov     GLOBAL_ARRAY[2], "CS 4974 "
+    mov     GLOBAL_ARRAY[3], "scripting design and implementation\n"
 }
 
 
@@ -50,5 +50,8 @@ func main
 {
     ; invoke myFunc
     call myFunc
+    print GLOBAL_VAR
+    print GLOBAL_ARRAY[2]
+    print GLOBAL_ARRAY[3]
 }
 

@@ -84,18 +84,8 @@ void Script::reset ()
   // reserve bottom of the stack for global variables
   stack.pushFrame (global_data_size);
   // now, Push stack frame for main:
-  // first, push return address -1 to indicate end of program
-  Value return_addr;
-  return_addr.instr_index = -1;
-  stack.push (return_addr);
-  // next, reserve space for local variables for main function
-  // and additional space for function index on the top.
-  // main frame does not contains parameters 
-  stack.pushFrame (func_table.at (main_func_index).local_data_size + 1);
-  // finally, set main function index on the top of the frame
-  Value frame_top;
-  frame_top.func_index = main_func_index;
-  stack.setValue (-1, frame_top);
+  Func main_func = func_table.at (main_func_index);
+  stack.pushFrame (main_func.local_data_size, -1, main_func_index);
 }
 
 void Script::execute ()
@@ -117,6 +107,23 @@ void Script::execute ()
           else
             dest.float_literal += resolveOpAsFloat (1);
           resolveOpCopy (0, dest);
+        }
+        break;
+
+      case INSTR_CALL:
+        {
+          int func_index = resolveOpAsFuncIndex (0);
+          Func func = func_table.at (func_index);
+          
+          // when function return, it instruction pointer should
+          // points to the instruction that immediately following the call
+          instr_index++;
+
+          // now, Push stack frame for main:
+          stack.pushFrame (func.local_data_size, instr_index, func_index);
+
+          // jump to function's entry point
+          instr_index = func.entry_point;
         }
         break;
 

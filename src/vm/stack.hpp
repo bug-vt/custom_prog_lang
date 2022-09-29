@@ -16,6 +16,7 @@ class Stack
     void push (Value val);
     Value pop ();
     void pushFrame (int size);
+    void pushFrame (int size, int ret_index, int func_index);
     void popFrame (int size);
 
   private:
