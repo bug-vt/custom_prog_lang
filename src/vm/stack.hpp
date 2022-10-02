@@ -1,5 +1,5 @@
-#ifndef _STACK
-#define _STACK
+#ifndef STACK_HPP
+#define STACK_HPP
 
 #include "instruction.hpp"
 #include <vector>

@@ -36,7 +36,7 @@ func myFunc
     ; grab return value from _retval register
     mov     sum, _retVal
     ; transform the sum and store it in GLOBAL_VAL
-    mul     sum, 2
+    add     sum, 2
     mov     GLOBAL_VAR, sum
     ; initialize the GLOBAL_ARRAY
     mov     GLOBAL_ARRAY[0], "Hello "

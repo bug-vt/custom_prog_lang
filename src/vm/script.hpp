@@ -1,5 +1,5 @@
-#ifndef _SCRIPT
-#define _SCRIPT
+#ifndef SCRIPT_HPP
+#define SCRIPT_HPP
 
 #include "instruction.hpp"
 #include <unordered_map>
@@ -20,7 +20,7 @@ struct Func
 class Script
 {
   public:
-    Script () { }
+    Script ();
     void load (std::string file_name);
     void reset ();
     void execute ();
@@ -47,6 +47,19 @@ class Script
     // function table
     std::unordered_map<int, Func> func_table;
 
+    // ------------------------------------------
+    // instruction handler
+    std::unordered_map<int, void (Script::*)()> instr_handler;
+
+    // instruction execution
+    void instrMov ();
+    void instrAdd ();
+    void instrPush ();
+    void instrCall ();
+    void instrRet ();
+    void instrPrint ();
+
+    // ------------------------------------------
     // internal interface for resolution/coercion
     int resolveOpStackIndex (int op_index);
     Value resolveOpValue (int op_index);

@@ -37,8 +37,13 @@ class TestVM (unittest.TestCase):
         out = runVM ("../example/nested_func.assembly");
         self.assertEqual (out, expected);
 
+    def testBasicAdder (self):
+        expected = ("12\n")
+        out = runVM ("../example/basic_adder.assembly");
+        self.assertEqual (out, expected);
+
     def testExample (self):
-        expected = ("78\n"
+        expected = ("80\n"
                     "CS 4974 scripting design and implementation\n")
         out = runVM ("../example/example.assembly");
         self.assertEqual (out, expected);

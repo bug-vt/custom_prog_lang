@@ -1,5 +1,5 @@
-#ifndef _LOADER
-#define _LOADER
+#ifndef LOADER_HPP
+#define LOADER_HPP
 
 #include <fstream>
 #include "script.hpp"
