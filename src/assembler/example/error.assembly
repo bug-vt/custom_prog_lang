@@ -1,0 +1,7 @@
+func main
+{
+  var err
+  mov err, "error"
+  add err, 2
+  print err
+}

@@ -4,6 +4,41 @@
 #include <string>
 #include <vector>
 
+enum InstrOpcode {INSTR_MOV,      // 0
+                  INSTR_ADD,      // 1
+                  INSTR_SUB,      // 2
+                  INSTR_MUL,      // 3
+                  INSTR_DIV,      // 4
+                  INSTR_MOD,      // 5
+                  INSTR_EXP,      // 6
+                  INSTR_NEG,      // 7
+                  INSTR_INC,      // 8
+                  INSTR_DEC,      // 9
+                  INSTR_AND,      // 10
+                  INSTR_OR,       // 11
+                  INSTR_XOR,      // 12
+                  INSTR_NOT,      // 13
+                  INSTR_SHL,      // 14
+                  INSTR_SHR,      // 15
+                  INSTR_CONCAT,   // 16
+                  INSTR_GETCHAR,  // 17
+                  INSTR_SETCHAR,  // 18
+                  INSTR_JMP,      // 19
+                  INSTR_JE,       // 20
+                  INSTR_JNE,      // 21
+                  INSTR_JG,       // 22
+                  INSTR_JL,       // 23
+                  INSTR_JGE,      // 24
+                  INSTR_JLE,      // 25
+                  INSTR_PUSH,     // 26
+                  INSTR_POP,      // 27
+                  INSTR_CALL,     // 28
+                  INSTR_RET,      // 29
+                  INSTR_PAUSE,    // 30
+                  INSTR_EXIT,     // 31
+                  INSTR_PRINT};   // 32
+
+
 enum OpType {OP_TYPE_INT,
              OP_TYPE_FLOAT,
              OP_TYPE_STR,

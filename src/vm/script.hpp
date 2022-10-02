@@ -53,10 +53,32 @@ class Script
 
     // instruction execution
     void instrMov ();
-    void instrAdd ();
+    void instrBinaryArithmetic ();
+    void instrNeg ();
+    void instrInc ();
+    void instrDec ();
+    void instrAnd ();
+    void instrOr ();
+    void instrXor ();
+    void instrNot ();
+    void instrShl ();
+    void instrShr ();
+    void instrConcat ();
+    void instrGetChar ();
+    void instrSetChar ();
+    void instrJmp ();
+    void instrJe ();
+    void instrJne ();
+    void instrJg ();
+    void instrJl ();
+    void instrJge ();
+    void instrJle ();
     void instrPush ();
+    void instrPop ();
     void instrCall ();
     void instrRet ();
+    void instrPause ();
+    void instrExit ();
     void instrPrint ();
 
     // ------------------------------------------

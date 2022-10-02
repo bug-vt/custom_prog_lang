@@ -2,6 +2,7 @@
 #include "loader.hpp"
 #include <fstream>
 #include <iostream>
+#include <cmath>
 
 using std::string;
 using std::ifstream;
@@ -11,37 +12,37 @@ using std::ifstream;
 Script::Script ()
 {
   instr_handler[0] = &Script::instrMov;
-  instr_handler[1] = &Script::instrAdd;
-  //instr_handler[2] = sub;
-  //instr_handler[3] = instrMul;
-  //instr_handler[4] = instrDiv;
-  //instr_handler[5] = instrMod;
-  //instr_handler[6] = instrExp;
-  //instr_handler[7] = instrNeg;
-  //instr_handler[8] = instrInc;
-  //instr_handler[9] = instrDec;
-  //instr_handler[10] = instrAnd;
-  //instr_handler[11] = instrOr;
-  //instr_handler[12] = instrXor;
-  //instr_handler[13] = instrNot;
-  //instr_handler[14] = instrShl;
-  //instr_handler[15] = instrShr;
-  //instr_handler[16] = instrConcat;
-  //instr_handler[17] = instrGetChar;
-  //instr_handler[18] = instrSetChar;
-  //instr_handler[19] = instrJmp;
-  //instr_handler[20] = instrJe;
-  //instr_handler[21] = instrJne;
-  //instr_handler[22] = instrJg;
-  //instr_handler[23] = instrJl;
-  //instr_handler[24] = instrJge;
-  //instr_handler[25] = instrJle;
+  instr_handler[1] = &Script::instrBinaryArithmetic;
+  instr_handler[2] = &Script::instrBinaryArithmetic;
+  instr_handler[3] = &Script::instrBinaryArithmetic;
+  instr_handler[4] = &Script::instrBinaryArithmetic;
+  instr_handler[5] = &Script::instrBinaryArithmetic;
+  instr_handler[6] = &Script::instrBinaryArithmetic;
+  instr_handler[7] = &Script::instrNeg;
+  instr_handler[8] = &Script::instrInc;
+  instr_handler[9] = &Script::instrDec;
+  instr_handler[10] = &Script::instrAnd;
+  instr_handler[11] = &Script::instrOr;
+  instr_handler[12] = &Script::instrXor;
+  instr_handler[13] = &Script::instrNot;
+  instr_handler[14] = &Script::instrShl;
+  instr_handler[15] = &Script::instrShr;
+  instr_handler[16] = &Script::instrConcat;
+  instr_handler[17] = &Script::instrGetChar;
+  instr_handler[18] = &Script::instrSetChar;
+  instr_handler[19] = &Script::instrJmp;
+  instr_handler[20] = &Script::instrJe;
+  instr_handler[21] = &Script::instrJne;
+  instr_handler[22] = &Script::instrJg;
+  instr_handler[23] = &Script::instrJl;
+  instr_handler[24] = &Script::instrJge;
+  instr_handler[25] = &Script::instrJle;
   instr_handler[26] = &Script::instrPush;
-  //instr_handler[27] = instrPop;
+  instr_handler[27] = &Script::instrPop;
   instr_handler[28] = &Script::instrCall;
   instr_handler[29] = &Script::instrRet;
-  //instr_handler[30] = instrPause;
-  //instr_handler[31] = instrExit;
+  instr_handler[30] = &Script::instrPause;
+  instr_handler[31] = &Script::instrExit;
   instr_handler[32] = &Script::instrPrint;
 }
 
@@ -111,19 +112,148 @@ void Script::instrMov ()
   resolveOpCopy (0, resolveOpValue (1));
 }
 
-void Script::instrAdd ()
+void Script::instrBinaryArithmetic ()
 {
+  int opcode = instr_stream.at (instr_index).opcode;
+
   Value dest = resolveOpValue (0);
   if (dest.type == OP_TYPE_INT)
-    dest.int_literal += resolveOpAsInt (1);
+  {
+    switch (opcode)
+    {
+      case INSTR_ADD:
+        dest.int_literal += resolveOpAsInt (1);
+        break;
+      case INSTR_SUB:
+        dest.int_literal -= resolveOpAsInt (1);
+        break;
+      case INSTR_MUL:
+        dest.int_literal *= resolveOpAsInt (1);
+        break;
+      case INSTR_DIV:
+        dest.int_literal /= resolveOpAsInt (1);
+        break;
+      case INSTR_MOD:
+        dest.int_literal %= resolveOpAsInt (1);
+        break;
+      case INSTR_EXP:
+        dest.int_literal = pow (dest.int_literal, resolveOpAsInt (1));
+        break;
+    }
+  }
+  else if (dest.type == OP_TYPE_FLOAT)
+  {
+    switch (opcode)
+    {
+      case INSTR_ADD:
+        dest.float_literal += resolveOpAsFloat (1);
+        break;
+      case INSTR_SUB:
+        dest.float_literal -= resolveOpAsFloat (1);
+        break;
+      case INSTR_MUL:
+        dest.float_literal *= resolveOpAsFloat (1);
+        break;
+      case INSTR_DIV:
+        dest.float_literal /= resolveOpAsFloat (1);
+        break;
+      case INSTR_MOD:
+        dest.float_literal = fmod (dest.float_literal, resolveOpAsFloat (1));
+        break;
+      case INSTR_EXP:
+        dest.float_literal = pow (dest.float_literal, resolveOpAsFloat (1));
+        break;
+    }
+  }
   else
-    dest.float_literal += resolveOpAsFloat (1);
+    throw std::runtime_error ("Unsupported destination operand type");
+
   resolveOpCopy (0, dest);
+}
+
+void Script::instrNeg ()
+{
+}
+
+void Script::instrInc ()
+{
+}
+
+void Script::instrDec ()
+{
+}
+
+void Script::instrAnd ()
+{
+}
+
+void Script::instrOr ()
+{
+}
+
+void Script::instrXor ()
+{
+}
+
+void Script::instrNot ()
+{
+}
+
+void Script::instrShl ()
+{
+}
+
+void Script::instrShr ()
+{
+}
+
+void Script::instrConcat ()
+{
+}
+
+void Script::instrGetChar ()
+{
+}
+
+void Script::instrSetChar ()
+{
+}
+
+void Script::instrJmp ()
+{
+}
+
+void Script::instrJe ()
+{
+}
+
+void Script::instrJne ()
+{
+}
+
+void Script::instrJg ()
+{
+}
+
+void Script::instrJl ()
+{
+}
+
+void Script::instrJge ()
+{
+}
+
+void Script::instrJle ()
+{
 }
 
 void Script::instrPush ()
 {
   stack.push (resolveOpValue (0));
+}
+
+void Script::instrPop ()
+{
 }
 
 void Script::instrCall ()
@@ -156,6 +286,14 @@ void Script::instrRet ()
   stack.popFrame (curr_func.stack_frame_size);
   // jump to return address 
   instr_index = ret_addr.instr_index;
+}
+
+void Script::instrPause ()
+{
+}
+
+void Script::instrExit ()
+{
 }
 
 void Script::instrPrint ()
