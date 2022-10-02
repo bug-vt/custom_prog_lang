@@ -6,4 +6,5 @@ func main
   mov y, 10
   add x, y
   print x
+  print "\n"
 }

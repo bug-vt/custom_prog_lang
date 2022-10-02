@@ -110,6 +110,10 @@ void Script::execute ()
         }
         break;
 
+      case INSTR_PUSH:
+        stack.push (resolveOpValue (0));
+        break;
+
       case INSTR_CALL:
         {
           int func_index = resolveOpAsFuncIndex (0);

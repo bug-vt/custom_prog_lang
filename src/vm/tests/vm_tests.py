@@ -14,20 +14,33 @@ def runVM (input_file):
 class TestVM (unittest.TestCase):
 
     def testAdd (self):
-        expected = "52"
+        expected = "52\n"
         out = runVM ("../example/add.assembly");
         self.assertEqual (out, expected);
 
     def testMov (self):
-        expected = "Hello World"
+        expected = "Hello World\n"
         out = runVM ("../example/mov.assembly");
         self.assertEqual (out, expected);
 
     def testCall (self):
         expected = ("inside myFunc\n"
                     "back to main\n"
-                    "33")
+                    "33\n")
         out = runVM ("../example/call.assembly");
+        self.assertEqual (out, expected);
+    
+    def testNestedCall (self):
+        expected = ("inside outerFunc\n"
+                    "inside innerFunc\n"
+                    "back to main\n")
+        out = runVM ("../example/nested_func.assembly");
+        self.assertEqual (out, expected);
+
+    def testExample (self):
+        expected = ("78\n"
+                    "CS 4974 scripting design and implementation\n")
+        out = runVM ("../example/example.assembly");
         self.assertEqual (out, expected);
         
 if __name__ == '__main__':

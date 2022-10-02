@@ -6,7 +6,7 @@
 
 ; ---- Globals -----
 var GLOBAL_VAR
-var GLOBAL_ARRAY[1024]
+var GLOBAL_ARRAY[128]
 
 ; ---- Functions -----
 func mysteryFunc
@@ -51,6 +51,7 @@ func main
     ; invoke myFunc
     call myFunc
     print GLOBAL_VAR
+    print "\n"
     print GLOBAL_ARRAY[2]
     print GLOBAL_ARRAY[3]
 }

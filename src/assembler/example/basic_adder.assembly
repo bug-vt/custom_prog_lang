@@ -1,0 +1,16 @@
+func adder 
+{
+  param x
+  param y
+  mov _retVal, x
+  add _retVal, y
+}
+
+func main
+{
+  push 3
+  push 9
+  call adder
+  print _retVal
+  print "\n"
+}

@@ -9,4 +9,5 @@ func main
   call myFunc
   print "back to main\n"
   print _retVal
+  print "\n"
 }

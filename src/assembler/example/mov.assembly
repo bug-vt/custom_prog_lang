@@ -3,4 +3,5 @@ func main
   var x
   mov x, "Hello World"
   print x
+  print "\n"
 }

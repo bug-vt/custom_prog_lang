@@ -1,0 +1,17 @@
+func innerFunc
+{
+  print "inside innerFunc\n"
+}
+
+
+func outerFunc
+{
+  print "inside outerFunc\n"
+  call innerFunc
+}
+
+func main
+{
+  call outerFunc
+  print "back to main\n"
+}
