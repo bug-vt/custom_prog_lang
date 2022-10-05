@@ -59,12 +59,7 @@ class Script
     void instrGetChar ();
     void instrSetChar ();
     void instrJmp ();
-    void instrJe ();
-    void instrJne ();
-    void instrJg ();
-    void instrJl ();
-    void instrJge ();
-    void instrJle ();
+    void instrBranch ();
     void instrPush ();
     void instrPop ();
     void instrCall ();
@@ -87,6 +82,7 @@ class Script
     float resolveOpAsFloat (int op_index);
     std::string resolveOpAsString (int op_index);
     int resolveOpAsStackIndex (int op_index);
+    int resolveOpAsInstrIndex (int op_index);
     int resolveOpAsFuncIndex (int op_index);
     int resolveOpAsReg (int op_index);
 };

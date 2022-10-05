@@ -1,0 +1,20 @@
+func main
+{
+  jmp label3
+
+label1:
+  print "1\n" 
+  jg "apple", "bear", end
+  jne 6.6, 2, label2
+  print "This shouldn't be printed\n"
+
+label2:
+  print "2\n"
+  jmp end
+
+label3:
+  print "3\n"
+  je 4, 4, label1
+
+end:
+}

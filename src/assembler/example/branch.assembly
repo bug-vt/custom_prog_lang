@@ -1,0 +1,11 @@
+func main
+{
+  var x
+  mov x, 0
+
+start:
+  print x 
+  print "\n"
+  add x, 1
+  jl x, 5, start
+}

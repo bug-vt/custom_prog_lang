@@ -11,6 +11,7 @@ using std::ifstream;
 
 Script::Script ()
 {
+  // register functions to the instruction handler table
   instr_handler[0] = &Script::instrMov;
   instr_handler[1] = &Script::instrArithmetic;
   instr_handler[2] = &Script::instrArithmetic;
@@ -31,12 +32,12 @@ Script::Script ()
   instr_handler[17] = &Script::instrGetChar;
   instr_handler[18] = &Script::instrSetChar;
   instr_handler[19] = &Script::instrJmp;
-  instr_handler[20] = &Script::instrJe;
-  instr_handler[21] = &Script::instrJne;
-  instr_handler[22] = &Script::instrJg;
-  instr_handler[23] = &Script::instrJl;
-  instr_handler[24] = &Script::instrJge;
-  instr_handler[25] = &Script::instrJle;
+  instr_handler[20] = &Script::instrBranch;
+  instr_handler[21] = &Script::instrBranch;
+  instr_handler[22] = &Script::instrBranch;
+  instr_handler[23] = &Script::instrBranch;
+  instr_handler[24] = &Script::instrBranch;
+  instr_handler[25] = &Script::instrBranch;
   instr_handler[26] = &Script::instrPush;
   instr_handler[27] = &Script::instrPop;
   instr_handler[28] = &Script::instrCall;
@@ -95,7 +96,8 @@ void Script::execute ()
   {
     int curr_instr_index = instr_index;
     int opcode = instr_stream.at (instr_index).opcode;
-
+    
+    // invoke appropriate function from table, index by opcode 
     (*this.*instr_handler.at (opcode)) ();
 
     // move to next instruction if no jump or function call was made 
@@ -116,6 +118,7 @@ void Script::instrArithmetic ()
 {
   int opcode = instr_stream.at (instr_index).opcode;
 
+  // make a local copy of destination operand
   Value dest = resolveOpValue (0);
   if (dest.type == OP_TYPE_INT)
   {
@@ -184,15 +187,17 @@ void Script::instrArithmetic ()
     }
   }
   else
-    throw std::runtime_error ("Unsupported destination operand type");
+    throw std::runtime_error ("Unsupported arithmetic operand type");
 
+  // write the result to destination operand
   resolveOpCopy (0, dest);
 }
 
 void Script::instrBitwise ()
 {
   int opcode = instr_stream.at (instr_index).opcode;
-
+  
+  // make a local copy of destination operand
   Value dest = resolveOpValue (0);
   if (dest.type == OP_TYPE_INT)
   {
@@ -219,8 +224,9 @@ void Script::instrBitwise ()
     }
   }
   else
-    throw std::runtime_error ("Unsupported destination operand type");
-
+    throw std::runtime_error ("Unsupported bitwise operand type");
+  
+  // write the result to destination operand
   resolveOpCopy (0, dest);
 }
 
@@ -238,30 +244,100 @@ void Script::instrSetChar ()
 
 void Script::instrJmp ()
 {
+  int target_index = resolveOpAsInstrIndex (0);
+ 
+  // make a jump to target index
+  instr_index = target_index;
 }
 
-void Script::instrJe ()
+void Script::instrBranch ()
 {
-}
+  int opcode = instr_stream.at (instr_index).opcode;
 
-void Script::instrJne ()
-{
-}
+  Value op0 = resolveOpValue (0);
+  int target_index = resolveOpAsInstrIndex (2);
+  
+  // comparison between operand 0 and operand 1
+  bool branch = false;
+  if (op0.type == OP_TYPE_INT)
+  {
+    switch (opcode)
+    {
+      case INSTR_JE:
+        branch = op0.int_literal == resolveOpAsInt (1);
+        break;
+      case INSTR_JNE:
+        branch = op0.int_literal != resolveOpAsInt (1);
+        break;
+      case INSTR_JG:
+        branch = op0.int_literal > resolveOpAsInt (1);
+        break;
+      case INSTR_JL:
+        branch = op0.int_literal < resolveOpAsInt (1);
+        break;
+      case INSTR_JGE:
+        branch = op0.int_literal >= resolveOpAsInt (1);
+        break;
+      case INSTR_JLE:
+        branch = op0.int_literal <= resolveOpAsInt (1);
+        break;
+    }
+  }
+  else if (op0.type == OP_TYPE_FLOAT)
+  {
+    switch (opcode)
+    {
+      case INSTR_JE:
+        branch = op0.float_literal == resolveOpAsFloat (1);
+        break;
+      case INSTR_JNE:
+        branch = op0.float_literal != resolveOpAsFloat (1);
+        break;
+      case INSTR_JG:
+        branch = op0.float_literal > resolveOpAsFloat (1);
+        break;
+      case INSTR_JL:
+        branch = op0.float_literal < resolveOpAsFloat (1);
+        break;
+      case INSTR_JGE:
+        branch = op0.float_literal >= resolveOpAsFloat (1);
+        break;
+      case INSTR_JLE:
+        branch = op0.float_literal <= resolveOpAsFloat (1);
+        break;
+    }
+  }
+  else if (op0.type == OP_TYPE_STR)
+  {
+    string op0_str = str_table.at (op0.string_index);
+    switch (opcode)
+    {
+      case INSTR_JE:
+        branch = op0_str == resolveOpAsString (1);
+        break;
+      case INSTR_JNE:
+        branch = op0_str != resolveOpAsString (1);
+        break;
+      case INSTR_JG:
+        branch = op0_str > resolveOpAsString (1);
+        break;
+      case INSTR_JL:
+        branch = op0_str < resolveOpAsString (1);
+        break;
+      case INSTR_JGE:
+        branch = op0_str >= resolveOpAsString (1);
+        break;
+      case INSTR_JLE:
+        branch = op0_str <= resolveOpAsString (1);
+        break;
+    }
+  }
+  else
+    throw std::runtime_error ("Unsupported relational operand type");
 
-void Script::instrJg ()
-{
-}
-
-void Script::instrJl ()
-{
-}
-
-void Script::instrJge ()
-{
-}
-
-void Script::instrJle ()
-{
+  // make a jump if comparison between operand 0 and operand 1 is true
+  if (branch)
+    instr_index = target_index;
 }
 
 void Script::instrPush ()

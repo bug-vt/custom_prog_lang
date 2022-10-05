@@ -110,6 +110,11 @@ int Script::resolveOpAsStackIndex (int op_index)
   return resolveOpValue (op_index).stack_index;
 }
 
+int Script::resolveOpAsInstrIndex (int op_index)
+{
+  return resolveOpValue (op_index).instr_index;
+}
+
 int Script::resolveOpAsFuncIndex (int op_index)
 {
   return resolveOpValue (op_index).func_index;

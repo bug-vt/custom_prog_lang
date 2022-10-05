@@ -70,6 +70,22 @@ class TestVM (unittest.TestCase):
                     "4\n")
         out = runVM ("../example/bitwise.assembly");
         self.assertEqual (out, expected);
+
+    def testBranch (self):
+        expected = ("0\n"
+                    "1\n"
+                    "2\n"
+                    "3\n"
+                    "4\n")
+        out = runVM ("../example/branch.assembly");
+        self.assertEqual (out, expected);
+
+    def testJump (self):
+        expected = ("3\n"
+                    "1\n"
+                    "2\n")
+        out = runVM ("../example/jump.assembly");
+        self.assertEqual (out, expected);
         
 if __name__ == '__main__':
     unittest.main ()
