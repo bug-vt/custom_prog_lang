@@ -250,7 +250,9 @@ void AsmParser::parseLabel ()
   if (curr_scope == GLOBAL_SCOPE)
     exitOnCodeError ("Line label can be only used inside the function", lexer);
 
-  int target_index = instr_stream.size ();
+  // instruction immediately after the current one is the target index 
+  // which is equal to the current instruction count
+  int target_index = instr_count;
   int func_index = curr_scope;
 
   Label label (ident, func_index);
