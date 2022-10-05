@@ -160,21 +160,23 @@ TEST_CASE ("Using return value register", "[code_gen]")
   binary.close ();
 }
 
-TEST_CASE ("Writing multiple instructions", "[code_gen]")
+TEST_CASE ("Writing branch instruction", "[code_gen]")
 {
   string input = "\n\nfunc myFunc\n"
                  "{ \n"
-                 "here:\n"
                  "var x\n"
                  "mov x, 9 \n"
+                 "mov x, 9 \n"
+                 "here:\n"
                  "inc x \n"
                  "je x, 5, here \n"
                  "}";
   string expected = "Instruction stream:\n"
-                    "4\n"
+                    "5\n"
+                    "0 2 3 -2 0 0 9 0\n"
                     "0 2 3 -2 0 0 9 0\n"
                     "8 1 3 -2 0\n"
-                    "20 3 3 -2 0 0 5 0 5 0 0\n"
+                    "20 3 3 -2 0 0 5 0 5 2 0\n"
                     "29 0\n";
 
   REQUIRE (testCodeGen (input, GEN_INSTR) == EXIT_SUCCESS);
