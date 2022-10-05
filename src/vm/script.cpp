@@ -12,21 +12,21 @@ using std::ifstream;
 Script::Script ()
 {
   instr_handler[0] = &Script::instrMov;
-  instr_handler[1] = &Script::instrBinaryArithmetic;
-  instr_handler[2] = &Script::instrBinaryArithmetic;
-  instr_handler[3] = &Script::instrBinaryArithmetic;
-  instr_handler[4] = &Script::instrBinaryArithmetic;
-  instr_handler[5] = &Script::instrBinaryArithmetic;
-  instr_handler[6] = &Script::instrBinaryArithmetic;
-  instr_handler[7] = &Script::instrNeg;
-  instr_handler[8] = &Script::instrInc;
-  instr_handler[9] = &Script::instrDec;
-  instr_handler[10] = &Script::instrAnd;
-  instr_handler[11] = &Script::instrOr;
-  instr_handler[12] = &Script::instrXor;
-  instr_handler[13] = &Script::instrNot;
-  instr_handler[14] = &Script::instrShl;
-  instr_handler[15] = &Script::instrShr;
+  instr_handler[1] = &Script::instrArithmetic;
+  instr_handler[2] = &Script::instrArithmetic;
+  instr_handler[3] = &Script::instrArithmetic;
+  instr_handler[4] = &Script::instrArithmetic;
+  instr_handler[5] = &Script::instrArithmetic;
+  instr_handler[6] = &Script::instrArithmetic;
+  instr_handler[7] = &Script::instrArithmetic;
+  instr_handler[8] = &Script::instrArithmetic;
+  instr_handler[9] = &Script::instrArithmetic;
+  instr_handler[10] = &Script::instrBitwise;
+  instr_handler[11] = &Script::instrBitwise;
+  instr_handler[12] = &Script::instrBitwise;
+  instr_handler[13] = &Script::instrBitwise;
+  instr_handler[14] = &Script::instrBitwise;
+  instr_handler[15] = &Script::instrBitwise;
   instr_handler[16] = &Script::instrConcat;
   instr_handler[17] = &Script::instrGetChar;
   instr_handler[18] = &Script::instrSetChar;
@@ -112,7 +112,7 @@ void Script::instrMov ()
   resolveOpCopy (0, resolveOpValue (1));
 }
 
-void Script::instrBinaryArithmetic ()
+void Script::instrArithmetic ()
 {
   int opcode = instr_stream.at (instr_index).opcode;
 
@@ -139,6 +139,15 @@ void Script::instrBinaryArithmetic ()
       case INSTR_EXP:
         dest.int_literal = pow (dest.int_literal, resolveOpAsInt (1));
         break;
+      case INSTR_NEG:
+        dest.int_literal = -dest.int_literal;
+        break;
+      case INSTR_INC:
+        dest.int_literal = dest.int_literal + 1;
+        break;
+      case INSTR_DEC:
+        dest.int_literal = dest.int_literal - 1;
+        break;
     }
   }
   else if (dest.type == OP_TYPE_FLOAT)
@@ -163,6 +172,15 @@ void Script::instrBinaryArithmetic ()
       case INSTR_EXP:
         dest.float_literal = pow (dest.float_literal, resolveOpAsFloat (1));
         break;
+      case INSTR_NEG:
+        dest.float_literal = -dest.float_literal;
+        break;
+      case INSTR_INC:
+        dest.float_literal = dest.float_literal + 1.0;
+        break;
+      case INSTR_DEC:
+        dest.float_literal = dest.float_literal - 1.0;
+        break;
     }
   }
   else
@@ -171,40 +189,39 @@ void Script::instrBinaryArithmetic ()
   resolveOpCopy (0, dest);
 }
 
-void Script::instrNeg ()
+void Script::instrBitwise ()
 {
-}
+  int opcode = instr_stream.at (instr_index).opcode;
 
-void Script::instrInc ()
-{
-}
+  Value dest = resolveOpValue (0);
+  if (dest.type == OP_TYPE_INT)
+  {
+    switch (opcode)
+    {
+      case INSTR_AND:
+        dest.int_literal &= resolveOpAsInt (1);
+        break;
+      case INSTR_OR:
+        dest.int_literal |= resolveOpAsInt (1);
+        break;
+      case INSTR_XOR:
+        dest.int_literal ^= resolveOpAsInt (1);
+        break;
+      case INSTR_NOT:
+        dest.int_literal = ~dest.int_literal;
+        break;
+      case INSTR_SHL:
+        dest.int_literal <<= resolveOpAsInt (1);
+        break;
+      case INSTR_SHR:
+        dest.int_literal >>= resolveOpAsInt (1);
+        break;
+    }
+  }
+  else
+    throw std::runtime_error ("Unsupported destination operand type");
 
-void Script::instrDec ()
-{
-}
-
-void Script::instrAnd ()
-{
-}
-
-void Script::instrOr ()
-{
-}
-
-void Script::instrXor ()
-{
-}
-
-void Script::instrNot ()
-{
-}
-
-void Script::instrShl ()
-{
-}
-
-void Script::instrShr ()
-{
+  resolveOpCopy (0, dest);
 }
 
 void Script::instrConcat ()

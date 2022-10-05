@@ -53,16 +53,8 @@ class Script
 
     // instruction execution
     void instrMov ();
-    void instrBinaryArithmetic ();
-    void instrNeg ();
-    void instrInc ();
-    void instrDec ();
-    void instrAnd ();
-    void instrOr ();
-    void instrXor ();
-    void instrNot ();
-    void instrShl ();
-    void instrShr ();
+    void instrArithmetic ();
+    void instrBitwise ();
     void instrConcat ();
     void instrGetChar ();
     void instrSetChar ();

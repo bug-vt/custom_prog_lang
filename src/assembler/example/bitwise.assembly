@@ -1,0 +1,30 @@
+func main
+{
+  var x
+  mov x, 11   ; x = 1011
+
+  and x, 3    ; 1011 & 0011 
+  print x     ; x = 0011 = 3
+  print "\n"
+
+  or x, 4     ; 0011 | 0100
+  print x     ; x = 0111 = 7
+  print "\n"
+
+  xor x, 9    ; 0111 ^ 1001
+  print x     ; x = 1110 = 14
+  print "\n"
+
+  not x
+  and x, 15
+  print x     ; x = 0001 = 1
+  print "\n"
+
+  shl x, 3 
+  print x     ; x = 1000 = 8
+  print "\n"
+
+  shr x, 1 
+  print x     ; x = 0100 = 4
+  print "\n"
+}

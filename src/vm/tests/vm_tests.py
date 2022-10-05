@@ -47,6 +47,29 @@ class TestVM (unittest.TestCase):
                     "CS 4974 scripting design and implementation\n")
         out = runVM ("../example/example.assembly");
         self.assertEqual (out, expected);
+
+    def testArithmetic (self):
+        expected = ("30\n"
+                    "25\n"
+                    "18.400000\n"
+                    "5\n"
+                    "8.400000\n"
+                    "125\n"
+                    "-8.400000\n"
+                    "126\n"
+                    "-9.400000\n")
+        out = runVM ("../example/arithmetic.assembly");
+        self.assertEqual (out, expected);
+
+    def testArithmetic (self):
+        expected = ("3\n"
+                    "7\n"
+                    "14\n"
+                    "1\n"
+                    "8\n"
+                    "4\n")
+        out = runVM ("../example/bitwise.assembly");
+        self.assertEqual (out, expected);
         
 if __name__ == '__main__':
     unittest.main ()

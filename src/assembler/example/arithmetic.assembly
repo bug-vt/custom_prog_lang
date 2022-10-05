@@ -1,0 +1,43 @@
+func main
+{
+  var x
+  var y
+  mov x, 21
+  mov y, 9.2
+
+  add x, y
+  print x   ; x = 30
+  print "\n"
+
+  sub x, 5
+  print x   ; x = 25
+  print "\n"
+
+  mul y, 2
+  print y   ; y = 18.4
+  print "\n"
+  
+  div x, 5
+  print x   ; x = 5
+  print "\n"
+
+  mod y, 10 
+  print y   ; y = 8.4
+  print "\n"
+
+  exp x, 3
+  print x   ; x = 125
+  print "\n"
+
+  neg y
+  print y   ; y = -8.4
+  print "\n"
+
+  inc x
+  print x   ; x = 126
+  print "\n"
+
+  dec y
+  print y   ; x = -9.4
+  print "\n"
+}
