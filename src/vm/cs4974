@@ -11,8 +11,8 @@ def main (asm_file):
     if (exit_code > 0):
         exit (1)
 
-    call (["vm", "out.executable"])
-    call (["rm", "out.executable"])
+    call (["vm", "out.exec"])
+    call (["rm", "out.exec"])
 
 
 if __name__ == '__main__':

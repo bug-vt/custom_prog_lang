@@ -15,37 +15,37 @@ class TestVM (unittest.TestCase):
 
     def testAdd (self):
         expected = "52\n"
-        out = runVM ("../example/add.assembly");
+        out = runVM ("../example/add.casm");
         self.assertEqual (out, expected);
 
     def testMov (self):
         expected = "Hello World\n"
-        out = runVM ("../example/mov.assembly");
+        out = runVM ("../example/mov.casm");
         self.assertEqual (out, expected);
 
     def testCall (self):
         expected = ("inside myFunc\n"
                     "back to main\n"
                     "33\n")
-        out = runVM ("../example/call.assembly");
+        out = runVM ("../example/call.casm");
         self.assertEqual (out, expected);
     
     def testNestedCall (self):
         expected = ("inside outerFunc\n"
                     "inside innerFunc\n"
                     "back to main\n")
-        out = runVM ("../example/nested_func.assembly");
+        out = runVM ("../example/nested_func.casm");
         self.assertEqual (out, expected);
 
     def testBasicAdder (self):
         expected = ("12\n")
-        out = runVM ("../example/basic_adder.assembly");
+        out = runVM ("../example/basic_adder.casm");
         self.assertEqual (out, expected);
 
     def testExample (self):
         expected = ("80\n"
                     "CS 4974 scripting design and implementation\n")
-        out = runVM ("../example/example.assembly");
+        out = runVM ("../example/example.casm");
         self.assertEqual (out, expected);
 
     def testArithmetic (self):
@@ -58,7 +58,7 @@ class TestVM (unittest.TestCase):
                     "-8.400000\n"
                     "126\n"
                     "-9.400000\n")
-        out = runVM ("../example/arithmetic.assembly");
+        out = runVM ("../example/arithmetic.casm");
         self.assertEqual (out, expected);
 
     def testArithmetic (self):
@@ -68,7 +68,7 @@ class TestVM (unittest.TestCase):
                     "1\n"
                     "8\n"
                     "4\n")
-        out = runVM ("../example/bitwise.assembly");
+        out = runVM ("../example/bitwise.casm");
         self.assertEqual (out, expected);
 
     def testBranch (self):
@@ -77,14 +77,14 @@ class TestVM (unittest.TestCase):
                     "2\n"
                     "3\n"
                     "4\n")
-        out = runVM ("../example/branch.assembly");
+        out = runVM ("../example/branch.casm");
         self.assertEqual (out, expected);
 
     def testJump (self):
         expected = ("3\n"
                     "1\n"
                     "2\n")
-        out = runVM ("../example/jump.assembly");
+        out = runVM ("../example/jump.casm");
         self.assertEqual (out, expected);
         
 if __name__ == '__main__':

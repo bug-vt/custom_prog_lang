@@ -30,9 +30,9 @@ int main (int argc, char **argv)
   if (argc < 2)
     exitOnError ("usage: assembler assembly_file <output_file_name>");
  
-  string out_file_name = "out.executable";
+  string out_file_name = "out.exec";
   if (argc > 2)
-    out_file_name = string (argv[2]) + ".executable";
+    out_file_name = string (argv[2]) + ".exec";
 
   string raw_source = loadAssemblyFile (argv[1]);
   AsmParser parser (raw_source);

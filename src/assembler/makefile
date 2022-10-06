@@ -19,7 +19,7 @@ asm_lexer.o: asm_lexer.cpp instr_lookup.cpp error.cpp
 	$(CC) $(CFLAGS) -c lexer_tests.cpp asm_lexer.cpp instr_lookup.cpp error.cpp
 
 clean:
-	rm *.o *.executable
+	rm *.o
 
 clean2:
 	rm assembler
