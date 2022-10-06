@@ -11,6 +11,7 @@ using std::istringstream;
 
 
 enum LexState {LEX_STATE_START,
+               LEX_STATE_NEGATIVE,
                LEX_STATE_INT,
                LEX_STATE_FLOAT,
                LEX_STATE_STRING,
@@ -92,6 +93,10 @@ Token AsmLexer::getNextToken ()
     {
       case LEX_STATE_START:
         lexStateStart (curr_char);
+        break;
+
+      case LEX_STATE_NEGATIVE:
+        lexStateNegative (curr_char);
         break;
 
       case LEX_STATE_INT:
@@ -299,6 +304,8 @@ void AsmLexer::lexStateStart (char curr_char)
     curr_lexeme.lexeme_start++;
     add_curr_char = false;
   }
+  else if (curr_char == '-')
+    curr_lex_state = LEX_STATE_NEGATIVE;
   else if (isdigit (curr_char))
     curr_lex_state = LEX_STATE_INT;
   else if (curr_char == '.')
@@ -320,6 +327,25 @@ void AsmLexer::lexStateStart (char curr_char)
   // invalid character is read 
   else
     curr_lex_state = LEX_STATE_INVALID;
+}
+
+void AsmLexer::lexStateNegative (char curr_char)
+{
+  if (isdigit (curr_char))
+    curr_lex_state = LEX_STATE_INT;
+  else if (curr_char == '.')
+    curr_lex_state = LEX_STATE_FLOAT;
+  // invalid character is read 
+  else
+  {
+    // white space or delimiter is read
+    if (isspace (curr_char) || delim.find (curr_char) != delim.end ())
+    {
+      add_curr_char = false;
+      lexeme_done = true;
+    }
+    curr_lex_state = LEX_STATE_INVALID;
+  }
 }
 
 void AsmLexer::lexStateInt (char curr_char)
