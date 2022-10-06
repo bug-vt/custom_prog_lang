@@ -1,0 +1,49 @@
+func main
+{
+  param argc
+  param input
+  var n
+  mov n, 0
+  add n, input      ; coerce input argument to int
+
+  var i
+  mov i, 0
+calc_fib:
+  push i 
+  call fib
+  var result
+  mov result, _retVal
+  print result
+  print " "
+  
+  inc i
+  jle i, n, calc_fib
+  print "\n"
+}
+
+func fib
+{
+  param n
+  jg n, 1, recursion
+
+base:
+  mov _retVal, n
+  ret
+
+recursion:
+  var fib_ret1
+  var fib_ret2
+
+  dec n
+  push n
+  call fib
+  mov fib_ret1, _retVal
+
+  dec n
+  push n
+  call fib
+  mov fib_ret2, _retVal
+
+  add fib_ret1, fib_ret2
+  mov _retVal, fib_ret1
+}

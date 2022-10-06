@@ -5,8 +5,8 @@ from subprocess import Popen, call, PIPE
 import subprocess
 
 
-def runVM (input_file):
-    proc = Popen (["cs4974", input_file], stdout=PIPE)
+def runVM (input_file, argv=[]):
+    proc = Popen (["cs4974", input_file] + argv, stdout=PIPE)
     proc.wait ()
     out, err = proc.communicate ()
     return str (out, 'utf-8')
@@ -86,6 +86,18 @@ class TestVM (unittest.TestCase):
                     "2\n")
         out = runVM ("../example/jump.casm");
         self.assertEqual (out, expected);
-        
+
+    def testCmdLineArgs (self):
+        expected = ("2\n"
+                    "Hello\n"
+                    "World\n")
+        out = runVM ("../example/cmd_args.casm", ["Hello", "World"]);
+        self.assertEqual (out, expected);
+       
+    def testFibonacci (self):
+        expected = ("0 1 1 2 3 5 8 13 21 34 55 89 144 \n")
+        out = runVM ("../example/fibonacci.casm", ["12"]);
+        self.assertEqual (out, expected);
+
 if __name__ == '__main__':
     unittest.main ()

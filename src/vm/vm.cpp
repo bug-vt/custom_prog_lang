@@ -18,6 +18,6 @@ int main (int argc, char** argv)
   string input_file = string (argv[1]);
   Script script;
   script.load (input_file);
-  script.reset ();
+  script.reset (argc, argv);
   script.execute ();
 }

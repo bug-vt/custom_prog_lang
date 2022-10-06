@@ -22,7 +22,7 @@ class Script
   public:
     Script ();
     void load (std::string file_name);
-    void reset ();
+    void reset (int argc, char **argv);
     void execute ();
 
   private:

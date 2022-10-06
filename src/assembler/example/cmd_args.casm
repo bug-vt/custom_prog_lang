@@ -1,0 +1,15 @@
+func main
+{
+  param argc
+  param arg1
+  param arg2
+
+  print argc
+  print "\n"
+
+  print arg1
+  print "\n"
+
+  print arg2
+  print "\n"
+}

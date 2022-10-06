@@ -70,7 +70,7 @@ void Script::load (string file_name)
   binary.close ();
 }
 
-void Script::reset ()
+void Script::reset (int argc, char **argv)
 {
   // set instruction pointer to main function's entry point
   if (func_table.size () > 0)
@@ -85,7 +85,29 @@ void Script::reset ()
 
   // reserve bottom of the stack for global variables
   stack.pushFrame (global_data_size);
-  // now, Push stack frame for main:
+  // now, push stack frame for main:
+  // first, push command line arguments if any.
+  // arguments start from index 2 (0=vm, 1=exec file) 
+  if (argc > 2)
+  {
+    // push each argument from right to left
+    int str_index = str_table.size ();
+    for (int i = argc - 1; i > 1; i--)
+    {
+      str_table[str_index + i] = string (argv[i]);
+      Value arg;
+      arg.type = OP_TYPE_STR;
+      arg.string_index = str_index + i;
+      stack.push (arg);
+    }
+
+    // push argument count
+    Value arg_count;
+    arg_count.type = OP_TYPE_INT;
+    arg_count.int_literal = argc - 2;
+    stack.push (arg_count);
+  }
+  // then, push remaining frame (local variables, return address, function index)
   Func main_func = func_table.at (main_func_index);
   stack.pushFrame (main_func.local_data_size, -1, main_func_index);
 }
