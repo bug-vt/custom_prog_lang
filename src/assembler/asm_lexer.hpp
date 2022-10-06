@@ -54,6 +54,7 @@ class AsmLexer
 
     // lexer states
     void lexStateStart (char curr_char);
+    void lexStateNegative (char curr_char);
     void lexStateInt (char curr_char);
     void lexStateFloat (char curr_char);
     void lexStateIdent (char curr_char);

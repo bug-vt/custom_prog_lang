@@ -171,7 +171,7 @@ TEST_CASE ("Basic instruction parsing", "[parser]")
   {
     string input = "\n\nfunc myFunc\n"
                    "{ \n"
-                   "push 42 \n"
+                   "push -42 \n"
                    "}";
 
     REQUIRE (testParse (input) == EXIT_SUCCESS);

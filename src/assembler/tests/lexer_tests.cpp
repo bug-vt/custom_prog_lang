@@ -51,6 +51,23 @@ TEST_CASE ("Basic float lexing", "[lexer]")
   REQUIRE (lexer.getCurrLexeme () == "1.8450");
 }
 
+TEST_CASE ("Negative intger/float lexing", "[lexer]")
+{
+  string input = "-1    -1.0 -4.2   -99 -.123  ";
+  
+  AsmLexer lexer (input);
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_INT);
+  REQUIRE (lexer.getCurrLexeme () == "-1");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_FLOAT);
+  REQUIRE (lexer.getCurrLexeme () == "-1.0");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_FLOAT);
+  REQUIRE (lexer.getCurrLexeme () == "-4.2");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_INT);
+  REQUIRE (lexer.getCurrLexeme () == "-99");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_FLOAT);
+  REQUIRE (lexer.getCurrLexeme () == "-.123");
+}
+
 TEST_CASE ("Basic identifier lexing", "[lexer]")
 {
   string input = " hello    x _y    n123  ";
@@ -215,7 +232,7 @@ TEST_CASE ("Peek next token", "[lexer]")
 
 TEST_CASE ("Lexing Invalid token", "[lexer]")
 {
-  string input = "  7ident  1.2. ident! @ \n";
+  string input = "  7ident  1.2. ident! @  -  -12-\n";
   
   AsmLexer lexer (input);
   CHECK (lexer.getNextToken () == TOKEN_TYPE_INVALID);
@@ -226,6 +243,10 @@ TEST_CASE ("Lexing Invalid token", "[lexer]")
   CHECK (lexer.getCurrLexeme () == "ident!");
   CHECK (lexer.getNextToken () == TOKEN_TYPE_INVALID);
   CHECK (lexer.getCurrLexeme () == "@");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_INVALID);
+  CHECK (lexer.getCurrLexeme () == "-");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_INVALID);
+  CHECK (lexer.getCurrLexeme () == "-12-");
 }
 
 TEST_CASE ("Lexing until EOF", "[lexer]")
