@@ -3,6 +3,7 @@
 import unittest
 from subprocess import Popen, call, PIPE
 import subprocess
+import random
 
 
 def runVM (input_file, argv=[]):
@@ -97,6 +98,21 @@ class TestVM (unittest.TestCase):
     def testFibonacci (self):
         expected = ("0 1 1 2 3 5 8 13 21 34 55 89 144 \n")
         out = runVM ("../example/fibonacci.casm", ["12"]);
+        self.assertEqual (out, expected);
+
+    def testInsertionSort (self):
+        unsorted_arr = [str (random.randint (0, 1000)) for _ in range (30)]
+        sorted_arr = sorted ([int (i) for i in unsorted_arr])
+
+        expected = "Before: "
+        for i in range (len (unsorted_arr)):
+          expected += str (unsorted_arr[i]) + " "
+        expected += "\nAfter:  "
+        for i in range (len (sorted_arr)):
+          expected += str (sorted_arr[i]) + " "
+        expected += "\n"
+
+        out = runVM ("../example/sort.casm", unsorted_arr);
         self.assertEqual (out, expected);
 
 if __name__ == '__main__':

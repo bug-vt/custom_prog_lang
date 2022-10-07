@@ -1,0 +1,81 @@
+func main
+{
+  param argc
+  param inputs 
+  
+  var i
+  mov i, 0
+  var count
+  mov count, 0
+  
+  print "Before: "
+original_inputs:
+  print inputs[i]
+  print " "
+  dec i
+  inc count
+  jl count, argc, original_inputs
+  print "\n"
+
+  print "After:  "
+  mov i, 0
+  mov count, 0
+push_param:
+  var elem
+  mov elem, 0
+  add elem, inputs[i]
+  push elem 
+  dec i
+  inc count
+  jl count, argc, push_param
+
+  push count
+
+  call insertion_sort
+}
+
+func insertion_sort
+{
+  param n
+  param array
+  
+  neg n
+  var i
+  mov i, -1
+
+outer_loop:
+  var key     
+  mov key, array[i]         ; record the element that we want to
+  var j                     ; insert into currently sorted subarray
+  mov j, i
+  inc j
+
+inner_loop:
+  je j, 1, skip            ; iterate over the subarray and find the
+  jle array[j], key, skip   ; position where element can be insert into.
+  var new_j
+  mov new_j, j
+  dec new_j
+  mov array[new_j], array[j]
+  inc j
+  jmp inner_loop
+
+skip:                       ; insert the element into the found position
+  mov new_j, j              ; which grow the sorted subarray 
+  dec new_j
+  mov array[new_j], key 
+  
+  dec i
+  jg i, n, outer_loop       ; move onto next element
+
+
+  mov i, 0                  ; at this point, array should be sorted
+show_result:
+  print array[i]
+  print " "
+  dec i
+  jg i, n, show_result
+
+  print "\n"
+}
+
