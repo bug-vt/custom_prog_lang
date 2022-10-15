@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+
 #define OP_FLAG_TYPE_INT    1
 #define OP_FLAG_TYPE_FLOAT  2 
 #define OP_FLAG_TYPE_STR    4 
@@ -19,7 +20,16 @@
                              | OP_FLAG_TYPE_STR   \
                              | OP_FLAG_TYPE_MEM   \
                              | OP_FLAG_TYPE_REG)
-#define SHIFT_COUNT         (OP_FLAG_TYPE_INT)
+#define SRC_NUMBER          (OP_FLAG_TYPE_INT \
+                             | OP_FLAG_TYPE_FLOAT \
+                             | OP_FLAG_TYPE_MEM   \
+                             | OP_FLAG_TYPE_REG)
+#define SRC_INTEGER         (OP_FLAG_TYPE_INT \
+                             | OP_FLAG_TYPE_MEM   \
+                             | OP_FLAG_TYPE_REG)
+#define SRC_STRING          (OP_FLAG_TYPE_STR \
+                             | OP_FLAG_TYPE_MEM   \
+                             | OP_FLAG_TYPE_REG)
 
 typedef int OpBitFlags;
 

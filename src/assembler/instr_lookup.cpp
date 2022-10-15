@@ -23,45 +23,47 @@ InstrLookupTable::InstrLookupTable ()
 {
   // memory
   instr_lookup["mov"] = {0, {DESTINATION, SOURCE}};
+  instr_lookup["mem"] = {1, {DESTINATION, SOURCE, SRC_INTEGER}};
+  instr_lookup["ref"] = {2, {DESTINATION, OP_FLAG_TYPE_MEM}}; 
   // arithmetic
-  instr_lookup["add"] = {1, {DESTINATION, SOURCE}};
-  instr_lookup["sub"] = {2, {DESTINATION, SOURCE}};
-  instr_lookup["mul"] = {3, {DESTINATION, SOURCE}};
-  instr_lookup["div"] = {4, {DESTINATION, SOURCE}};
-  instr_lookup["mod"] = {5, {DESTINATION, SOURCE}};
-  instr_lookup["exp"] = {6, {DESTINATION, SOURCE}};
-  instr_lookup["neg"] = {7, {DESTINATION}};
-  instr_lookup["inc"] = {8, {DESTINATION}};
-  instr_lookup["dec"] = {9, {DESTINATION}};
+  instr_lookup["add"] = {3, {DESTINATION, SRC_NUMBER}};
+  instr_lookup["sub"] = {4, {DESTINATION, SRC_NUMBER}};
+  instr_lookup["mul"] = {5, {DESTINATION, SRC_NUMBER}};
+  instr_lookup["div"] = {6, {DESTINATION, SRC_NUMBER}};
+  instr_lookup["mod"] = {7, {DESTINATION, SRC_NUMBER}};
+  instr_lookup["exp"] = {8, {DESTINATION, SRC_NUMBER}};
+  instr_lookup["neg"] = {9, {DESTINATION}};
+  instr_lookup["inc"] = {10, {DESTINATION}};
+  instr_lookup["dec"] = {11, {DESTINATION}};
   // bitwise
-  instr_lookup["and"] = {10, {DESTINATION, SOURCE}};
-  instr_lookup["or"] =  {11, {DESTINATION, SOURCE}};
-  instr_lookup["xor"] = {12, {DESTINATION, SOURCE}};
-  instr_lookup["not"] = {13, {DESTINATION}};
-  instr_lookup["shl"] = {14, {DESTINATION, SHIFT_COUNT}};
-  instr_lookup["shr"] = {15, {DESTINATION, SHIFT_COUNT}};
+  instr_lookup["and"] = {12, {DESTINATION, SRC_INTEGER}};
+  instr_lookup["or"] =  {13, {DESTINATION, SRC_INTEGER}};
+  instr_lookup["xor"] = {14, {DESTINATION, SRC_INTEGER}};
+  instr_lookup["not"] = {15, {DESTINATION}};
+  instr_lookup["shl"] = {16, {DESTINATION, SRC_INTEGER}};
+  instr_lookup["shr"] = {17, {DESTINATION, SRC_INTEGER}};
   // string processing
-  instr_lookup["concat"] =  {16, {OP_FLAG_TYPE_STR, OP_FLAG_TYPE_STR}};
-  instr_lookup["getChar"] = {17, {DESTINATION, SOURCE, OP_FLAG_TYPE_INT}};
-  instr_lookup["setChar"] = {18, {OP_FLAG_TYPE_INT, DESTINATION, SOURCE}};
+  instr_lookup["concat"] =  {18, {DESTINATION, SRC_STRING}};
+  instr_lookup["getChar"] = {19, {DESTINATION, SRC_STRING, SRC_INTEGER}};
+  instr_lookup["setChar"] = {20, {DESTINATION, SRC_INTEGER, SRC_STRING}};
   // conditional branching
-  instr_lookup["jmp"] = {19, {OP_FLAG_TYPE_LABEL}}; 
-  instr_lookup["je"] =  {20, {SOURCE, SOURCE, OP_FLAG_TYPE_LABEL}}; 
-  instr_lookup["jne"] = {21, {SOURCE, SOURCE, OP_FLAG_TYPE_LABEL}}; 
-  instr_lookup["jg"] =  {22, {SOURCE, SOURCE, OP_FLAG_TYPE_LABEL}}; 
-  instr_lookup["jl"] =  {23, {SOURCE, SOURCE, OP_FLAG_TYPE_LABEL}}; 
-  instr_lookup["jge"] = {24, {SOURCE, SOURCE, OP_FLAG_TYPE_LABEL}}; 
-  instr_lookup["jle"] = {25, {SOURCE, SOURCE, OP_FLAG_TYPE_LABEL}}; 
+  instr_lookup["jmp"] = {21, {OP_FLAG_TYPE_LABEL}}; 
+  instr_lookup["je"] =  {22, {SOURCE, SOURCE, OP_FLAG_TYPE_LABEL}}; 
+  instr_lookup["jne"] = {23, {SOURCE, SOURCE, OP_FLAG_TYPE_LABEL}}; 
+  instr_lookup["jg"] =  {24, {SOURCE, SOURCE, OP_FLAG_TYPE_LABEL}}; 
+  instr_lookup["jl"] =  {25, {SOURCE, SOURCE, OP_FLAG_TYPE_LABEL}}; 
+  instr_lookup["jge"] = {26, {SOURCE, SOURCE, OP_FLAG_TYPE_LABEL}}; 
+  instr_lookup["jle"] = {27, {SOURCE, SOURCE, OP_FLAG_TYPE_LABEL}}; 
   // stack interface
-  instr_lookup["push"] = {26, {SOURCE}}; 
-  instr_lookup["pop"]  = {27, {DESTINATION}}; 
+  instr_lookup["push"] = {28, {SOURCE}}; 
+  instr_lookup["pop"]  = {29, {DESTINATION}}; 
   // function interface
-  instr_lookup["call"] = {28, {OP_FLAG_TYPE_FUNC}}; 
-  instr_lookup["ret"] =  {29, {}}; 
+  instr_lookup["call"] = {30, {OP_FLAG_TYPE_FUNC}}; 
+  instr_lookup["ret"] =  {31, {}}; 
   // miscellaneous
-  instr_lookup["pause"] = {30, {OP_FLAG_TYPE_INT}};
-  instr_lookup["exit"]  = {31, {OP_FLAG_TYPE_INT}};
-  instr_lookup["print"]  = {32, {SOURCE}};
+  instr_lookup["pause"] = {32, {OP_FLAG_TYPE_INT}};
+  instr_lookup["exit"]  = {33, {OP_FLAG_TYPE_INT}};
+  instr_lookup["print"]  = {34, {SOURCE}};
 }
 
 InstrLookup InstrLookupTable::lookup (string mnemonic)

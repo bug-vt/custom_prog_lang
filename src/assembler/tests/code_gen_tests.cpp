@@ -88,8 +88,8 @@ TEST_CASE ("Writing a single instruction", "[code_gen]")
                  "}";
   string expected = "Instruction stream:\n"
                     "2\n"
-                    "1 2 3 -2 0 0 42 0\n"
-                    "29 0\n";
+                    "3 2 3 -2 0 0 42 0\n"
+                    "31 0\n";
 
   REQUIRE (testCodeGen (input, GEN_INSTR) == EXIT_SUCCESS);
   ifstream binary (TEST_OUT_FILE);
@@ -109,7 +109,7 @@ TEST_CASE ("Writing a instruction with float operand", "[code_gen]")
   string expected = "Instruction stream:\n"
                     "2\n"
                     "0 2 3 -2 0 1 0.123 0\n"
-                    "29 0\n";
+                    "31 0\n";
 
   REQUIRE (testCodeGen (input, GEN_INSTR) == EXIT_SUCCESS);
   ifstream binary (TEST_OUT_FILE);
@@ -130,8 +130,52 @@ TEST_CASE ("Writing a print instruction", "[code_gen]")
   string expected = "Instruction stream:\n"
                     "3\n"
                     "0 2 3 -2 0 2 0 0\n"
-                    "32 1 3 -2 0\n"
-                    "29 0\n";
+                    "34 1 3 -2 0\n"
+                    "31 0\n";
+
+  REQUIRE (testCodeGen (input, GEN_INSTR) == EXIT_SUCCESS);
+  ifstream binary (TEST_OUT_FILE);
+
+  REQUIRE (Decoder::readInstrStream (binary) == expected);
+
+  binary.close ();
+}
+
+TEST_CASE ("Writing a mem instruction", "[code_gen]")
+{
+  string input = "\n\nfunc myFunc\n"
+                 "{ \n"
+                 "var x\n"
+                 "var y\n"
+                 "mem x, 12, 0\n"
+                 "mem y, x, 2\n"
+                 "}";
+  string expected = "Instruction stream:\n"
+                    "3\n"
+                    "1 3 3 -2 0 0 12 0 0 0 0\n"
+                    "1 3 3 -3 0 3 -2 0 0 2 0\n"
+                    "31 0\n";
+
+  REQUIRE (testCodeGen (input, GEN_INSTR) == EXIT_SUCCESS);
+  ifstream binary (TEST_OUT_FILE);
+
+  REQUIRE (Decoder::readInstrStream (binary) == expected);
+
+  binary.close ();
+}
+
+TEST_CASE ("Writing a ref instruction", "[code_gen]")
+{
+  string input = "\n\nfunc myFunc\n"
+                 "{ \n"
+                 "var x\n"
+                 "var y\n"
+                 "ref y, x\n"
+                 "}";
+  string expected = "Instruction stream:\n"
+                    "2\n"
+                    "2 2 3 -3 0 3 -2 0\n"
+                    "31 0\n";
 
   REQUIRE (testCodeGen (input, GEN_INSTR) == EXIT_SUCCESS);
   ifstream binary (TEST_OUT_FILE);
@@ -150,7 +194,7 @@ TEST_CASE ("Using return value register", "[code_gen]")
   string expected = "Instruction stream:\n"
                     "2\n"
                     "0 2 7 0 0 0 33 0\n"
-                    "29 0\n";
+                    "31 0\n";
 
   REQUIRE (testCodeGen (input, GEN_INSTR) == EXIT_SUCCESS);
   ifstream binary (TEST_OUT_FILE);
@@ -175,9 +219,9 @@ TEST_CASE ("Writing branch instruction", "[code_gen]")
                     "5\n"
                     "0 2 3 -2 0 0 9 0\n"
                     "0 2 3 -2 0 0 9 0\n"
-                    "8 1 3 -2 0\n"
-                    "20 3 3 -2 0 0 5 0 5 2 0\n"
-                    "29 0\n";
+                    "10 1 3 -2 0\n"
+                    "22 3 3 -2 0 0 5 0 5 2 0\n"
+                    "31 0\n";
 
   REQUIRE (testCodeGen (input, GEN_INSTR) == EXIT_SUCCESS);
   ifstream binary (TEST_OUT_FILE);

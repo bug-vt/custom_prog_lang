@@ -25,7 +25,7 @@ lexer_tests.o: lexer_tests.cpp asm_lexer.o
 	$(CC) $(CFLAGS) -c lexer_tests.cpp 
 
 asm_lexer.o: ../asm_lexer.cpp ../instr_lookup.cpp ../error.cpp
-	$(CC) $(CFLAGS) -c lexer_tests.cpp ../asm_lexer.cpp ../instr_lookup.cpp ../error.cpp
+	$(CC) $(CFLAGS) -c ../asm_lexer.cpp ../instr_lookup.cpp ../error.cpp
 
 clean:
 	rm asm_tests *.o test_output.*
