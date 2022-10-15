@@ -214,10 +214,10 @@ void AsmParser::parseVar ()
 
   // calculate variable's index inside stack
   // global variables reside on the bottom of the stack 
-  // and indexed by positive stack index.
+  // and indexed by positive stack index (staring at index 1).
   int stack_index;
   if (curr_scope == GLOBAL_SCOPE)
-    stack_index = global_data_size;
+    stack_index = global_data_size + 1;
   // whereas local variables reside on the top of the stack
   // and indexed by negative stack index.
   // The top of the stack index is -1,

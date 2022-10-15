@@ -1,0 +1,14 @@
+var global_x
+var global_arr[10]
+
+func main
+{
+  mov global_arr[7], 42
+
+  mov global_x, 7
+  print global_arr[global_x]
+  print "\n"
+
+  mov global_arr[9], 0      ; last element of the array. 
+                            ; Should not get stack out of bound error
+}

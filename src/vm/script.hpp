@@ -53,6 +53,8 @@ class Script
 
     // instruction execution
     void instrMov ();
+    void instrMem ();
+    void instrRef ();
     void instrArithmetic ();
     void instrBitwise ();
     void instrConcat ();

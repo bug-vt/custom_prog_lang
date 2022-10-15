@@ -115,5 +115,18 @@ class TestVM (unittest.TestCase):
         out = runVM ("../example/sort.casm", unsorted_arr);
         self.assertEqual (out, expected);
 
+    def testGlobal (self):
+        expected = ("42\n")
+        out = runVM ("../example/global.casm");
+        self.assertEqual (out, expected);
+         
+    def testPassByRef (self):
+        expected = ("7\n"
+                    "3\n"
+                    "7\n"
+                    "7\n")
+        out = runVM ("../example/pass_by_ref.casm");
+        self.assertEqual (out, expected);
+
 if __name__ == '__main__':
     unittest.main ()

@@ -10,6 +10,7 @@ class Stack
     Stack () { }
     Stack (int size);
     void reset ();
+    int resolveIndex (int index);
     Value getValue (int index);
     void setValue (int index, Value val);
     void push (Value val);
@@ -22,8 +23,6 @@ class Stack
     std::vector<Value> stack;
     int top_index;
     int frame_index;
-
-    int resolveIndex (int index);
 };
 
 #endif

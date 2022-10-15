@@ -11,10 +11,12 @@ using std::to_string;
 
 int Script::resolveOpStackIndex (int op_index)
 {
-  int stack_index = instr_stream[instr_index].op_list[op_index].stack_index;
-  int offset_index = instr_stream[instr_index].op_list[op_index].offset_index;
+  Value op = instr_stream[instr_index].op_list[op_index]; 
+  int stack_index = op.stack_index;
+  int offset_index = op.offset_index;
   int offset = 0;
-  offset = stack.getValue (offset_index).int_literal;
+  if (offset_index != 0)
+    offset = stack.getValue (offset_index).int_literal;
 
   return stack_index + offset;
 }
@@ -25,10 +27,6 @@ Value Script::resolveOpValue (int op_index)
   switch (op.type)
   {
     case OP_TYPE_ABS_STACK_INDEX:
-      {
-        int abs_index = instr_stream[instr_index].op_list[op_index].stack_index;
-        return stack.getValue (abs_index);
-      }
     case OP_TYPE_REL_STACK_INDEX:
       {
         int abs_index = resolveOpStackIndex (op_index);
@@ -132,11 +130,6 @@ void Script::resolveOpCopy (int op_index, Value val)
   switch (op.type)
   {
     case OP_TYPE_ABS_STACK_INDEX:
-      {
-        int abs_index = instr_stream[instr_index].op_list[op_index].stack_index;
-        stack.setValue (abs_index, val);
-      }
-      break;
     case OP_TYPE_REL_STACK_INDEX:
       {
         int abs_index = resolveOpStackIndex (op_index);

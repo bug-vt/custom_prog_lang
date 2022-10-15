@@ -12,39 +12,41 @@ using std::ifstream;
 Script::Script ()
 {
   // register functions to the instruction handler table
-  instr_handler[0] = &Script::instrMov;
-  instr_handler[1] = &Script::instrArithmetic;
-  instr_handler[2] = &Script::instrArithmetic;
-  instr_handler[3] = &Script::instrArithmetic;
-  instr_handler[4] = &Script::instrArithmetic;
-  instr_handler[5] = &Script::instrArithmetic;
-  instr_handler[6] = &Script::instrArithmetic;
-  instr_handler[7] = &Script::instrArithmetic;
-  instr_handler[8] = &Script::instrArithmetic;
-  instr_handler[9] = &Script::instrArithmetic;
-  instr_handler[10] = &Script::instrBitwise;
-  instr_handler[11] = &Script::instrBitwise;
-  instr_handler[12] = &Script::instrBitwise;
-  instr_handler[13] = &Script::instrBitwise;
-  instr_handler[14] = &Script::instrBitwise;
-  instr_handler[15] = &Script::instrBitwise;
-  instr_handler[16] = &Script::instrConcat;
-  instr_handler[17] = &Script::instrGetChar;
-  instr_handler[18] = &Script::instrSetChar;
-  instr_handler[19] = &Script::instrJmp;
-  instr_handler[20] = &Script::instrBranch;
-  instr_handler[21] = &Script::instrBranch;
-  instr_handler[22] = &Script::instrBranch;
-  instr_handler[23] = &Script::instrBranch;
-  instr_handler[24] = &Script::instrBranch;
-  instr_handler[25] = &Script::instrBranch;
-  instr_handler[26] = &Script::instrPush;
-  instr_handler[27] = &Script::instrPop;
-  instr_handler[28] = &Script::instrCall;
-  instr_handler[29] = &Script::instrRet;
-  instr_handler[30] = &Script::instrPause;
-  instr_handler[31] = &Script::instrExit;
-  instr_handler[32] = &Script::instrPrint;
+  instr_handler[INSTR_MOV] = &Script::instrMov;
+  instr_handler[INSTR_MEM] = &Script::instrMem;
+  instr_handler[INSTR_REF] = &Script::instrRef;
+  instr_handler[INSTR_ADD] = &Script::instrArithmetic;
+  instr_handler[INSTR_SUB] = &Script::instrArithmetic;
+  instr_handler[INSTR_MUL] = &Script::instrArithmetic;
+  instr_handler[INSTR_DIV] = &Script::instrArithmetic;
+  instr_handler[INSTR_MOD] = &Script::instrArithmetic;
+  instr_handler[INSTR_EXP] = &Script::instrArithmetic;
+  instr_handler[INSTR_NEG] = &Script::instrArithmetic;
+  instr_handler[INSTR_INC] = &Script::instrArithmetic;
+  instr_handler[INSTR_DEC] = &Script::instrArithmetic;
+  instr_handler[INSTR_AND] = &Script::instrBitwise;
+  instr_handler[INSTR_OR] = &Script::instrBitwise;
+  instr_handler[INSTR_XOR] = &Script::instrBitwise;
+  instr_handler[INSTR_NOT] = &Script::instrBitwise;
+  instr_handler[INSTR_SHL] = &Script::instrBitwise;
+  instr_handler[INSTR_SHR] = &Script::instrBitwise;
+  instr_handler[INSTR_CONCAT] = &Script::instrConcat;
+  instr_handler[INSTR_GETCHAR] = &Script::instrGetChar;
+  instr_handler[INSTR_SETCHAR] = &Script::instrSetChar;
+  instr_handler[INSTR_JMP] = &Script::instrJmp;
+  instr_handler[INSTR_JE] = &Script::instrBranch;
+  instr_handler[INSTR_JNE] = &Script::instrBranch;
+  instr_handler[INSTR_JG] = &Script::instrBranch;
+  instr_handler[INSTR_JL] = &Script::instrBranch;
+  instr_handler[INSTR_JGE] = &Script::instrBranch;
+  instr_handler[INSTR_JLE] = &Script::instrBranch;
+  instr_handler[INSTR_PUSH] = &Script::instrPush;
+  instr_handler[INSTR_POP] = &Script::instrPop;
+  instr_handler[INSTR_CALL] = &Script::instrCall;
+  instr_handler[INSTR_RET] = &Script::instrRet;
+  instr_handler[INSTR_PAUSE] = &Script::instrPause;
+  instr_handler[INSTR_EXIT] = &Script::instrExit;
+  instr_handler[INSTR_PRINT] = &Script::instrPrint;
 }
 
 void Script::load (string file_name)
@@ -83,8 +85,10 @@ void Script::reset (int argc, char **argv)
  
   stack.reset ();
 
-  // reserve bottom of the stack for global variables
-  stack.pushFrame (global_data_size);
+  // reserve bottom of the stack for global variables.
+  // allocate additional dummy spot at the bottom-most (index 0) stack,
+  // since global variable indexing start at 1.
+  stack.pushFrame (global_data_size + 1);
   // now, push stack frame for main:
   // first, push command line arguments if any.
   // arguments start from index 2 (0=vm, 1=exec file) 
@@ -134,6 +138,22 @@ void Script::execute ()
 void Script::instrMov ()
 {
   resolveOpCopy (0, resolveOpValue (1));
+}
+
+void Script::instrMem ()
+{
+  // load the value located at the given stack index
+  int abs_index = resolveOpAsInt (1) + resolveOpAsInt (2);
+  resolveOpCopy (0, stack.getValue (abs_index));
+}
+
+void Script::instrRef ()
+{
+  Value ref;
+  ref.type = OP_TYPE_INT;
+  // record the stack index (referencing from the bottom) of the given variable
+  ref.int_literal = stack.resolveIndex (resolveOpStackIndex (1));
+  resolveOpCopy (0, ref);
 }
 
 void Script::instrArithmetic ()
