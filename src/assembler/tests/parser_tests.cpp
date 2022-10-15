@@ -303,7 +303,7 @@ TEST_CASE ("Instruction parsing error", "[parser]")
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
 
-  SECTION ("calling undefined variable")
+  SECTION ("Calling undefined variable")
   {
     string input = "\n\nfunc myFunc\n"
                    "{ \n"
@@ -313,11 +313,22 @@ TEST_CASE ("Instruction parsing error", "[parser]")
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
 
-  SECTION ("calling undefined function")
+  SECTION ("Calling undefined function")
   {
     string input = "\n\nfunc myFunc\n"
                    "{ \n"
                    "call noFunc\n"
+                   "}";
+
+    REQUIRE (testParse (input) == EXIT_FAILURE);
+  }
+
+  SECTION ("Incorrect use of ref instruction")
+  {
+    string input = "\n\nfunc myFunc\n"
+                   "{ \n"
+                   "var x\n"
+                   "ref x, 2\n"
                    "}";
 
     REQUIRE (testParse (input) == EXIT_FAILURE);

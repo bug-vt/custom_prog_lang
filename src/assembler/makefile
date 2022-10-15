@@ -16,10 +16,10 @@ asm_parser.o: asm_parser.cpp asm_lexer.cpp func_table.cpp symbol_table.cpp label
 	$(CC) $(CFLAGS) -c asm_parser.cpp asm_lexer.cpp func_table.cpp symbol_table.cpp label_table.cpp string_table.cpp token.cpp code_gen.cpp
 
 asm_lexer.o: asm_lexer.cpp instr_lookup.cpp error.cpp
-	$(CC) $(CFLAGS) -c lexer_tests.cpp asm_lexer.cpp instr_lookup.cpp error.cpp
+	$(CC) $(CFLAGS) -c asm_lexer.cpp instr_lookup.cpp error.cpp
 
 clean:
-	rm *.o *.executable
+	rm *.o
 
 clean2:
 	rm assembler decoder
