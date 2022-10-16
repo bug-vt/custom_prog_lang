@@ -147,13 +147,13 @@ TEST_CASE ("Writing a lw instruction", "[code_gen]")
                  "{ \n"
                  "var x\n"
                  "var y\n"
-                 "lw x, 12\n"
-                 "lw y, x\n"
+                 "lw x, 12, 0\n"
+                 "lw y, x, 2\n"
                  "}";
   string expected = "Instruction stream:\n"
                     "3\n"
-                    "2 2 3 -2 0 0 12 0\n"
-                    "2 2 3 -3 0 3 -2 0\n"
+                    "2 3 3 -2 0 0 12 0 0 0 0\n"
+                    "2 3 3 -3 0 3 -2 0 0 2 0\n"
                     "32 0\n";
 
   REQUIRE (testCodeGen (input, GEN_INSTR) == EXIT_SUCCESS);

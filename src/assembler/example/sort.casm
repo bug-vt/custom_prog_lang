@@ -1,81 +1,86 @@
+var start
+
 func main
 {
   param argc
-  param inputs 
-  
-  var i
-  mov i, 0
-  var count
-  mov count, 0
-  
+  var arr_ptr
+  ref arr_ptr, start
+  inc arr_ptr
+
   print "Before: "
-original_inputs:
-  print inputs[i]
-  print " "
-  dec i
-  inc count
-  jl count, argc, original_inputs
-  print "\n"
+  push arr_ptr
+  push argc
+  call printArray
+
+  push arr_ptr
+  push argc
+  call insertion_sort
 
   print "After:  "
-  mov i, 0
-  mov count, 0
-push_param:
-  var elem
-  mov elem, 0
-  add elem, inputs[i]
-  push elem 
-  dec i
-  inc count
-  jl count, argc, push_param
-
-  push count
-
-  call insertion_sort
+  push arr_ptr
+  push argc
+  call printArray
 }
 
 func insertion_sort
 {
   param n
-  param array
+  param arr_base
   
-  neg n
-  var i
-  mov i, -1
+  var i 
+  mov i, 1
 
 outer_loop:
-  var key     
-  mov key, array[i]         ; record the element that we want to
-  var j                     ; insert into currently sorted subarray
+  var key 
+  lw key, arr_base, i       ; record the element that we want to
+                            ; insert into currently sorted subarray
+  var j                     
   mov j, i
-  inc j
+  dec j
 
-inner_loop:
-  je j, 1, skip            ; iterate over the subarray and find the
-  jle array[j], key, skip   ; position where element can be insert into.
+inner_loop:                 ; iterate over the subarray and find the
+                            ; position where element can be insert into.
+  var elem
+  lw elem, arr_base, j      ; elem = array[j]
+
+  var arr_j                 ; coerce array[j] to int
+  mov arr_j, 0
+  add arr_j, elem
+
+  je j, -1, skip             
+  jle arr_j, key, skip   
+  
   var new_j
   mov new_j, j
-  dec new_j
-  mov array[new_j], array[j]
-  inc j
+  inc new_j
+  sw arr_base, new_j, arr_j
+  dec j
   jmp inner_loop
 
 skip:                       ; insert the element into the found position
-  mov new_j, j              ; which grow the sorted subarray 
-  dec new_j
-  mov array[new_j], key 
+                            ; which grow the sorted subarray 
+  mov new_j, j
+  inc new_j
+  sw arr_base, new_j, key
   
-  dec i
-  jg i, n, outer_loop       ; move onto next element
-
-
-  mov i, 0                  ; at this point, array should be sorted
-show_result:
-  print array[i]
-  print " "
-  dec i
-  jg i, n, show_result
-
-  print "\n"
+  inc i
+  jl i, n, outer_loop       ; move onto next element
 }
 
+func printArray
+{
+  param size
+  param base 
+
+  var count
+  mov count, 0
+
+loop:
+  var elem
+  lw elem, base, count
+  print elem 
+  print " "
+  inc count
+  jl count, size, loop
+  print "\n"
+}

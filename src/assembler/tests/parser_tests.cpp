@@ -351,7 +351,7 @@ TEST_CASE ("Basic input parsing", "[parser]")
 
 TEST_CASE ("Parsing file", "[parser]")
 {
-  ifstream input ("../example/example.assembly");
+  ifstream input ("../example/example.casm");
   REQUIRE (input.good ());
 
   stringstream buffer;

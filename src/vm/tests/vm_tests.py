@@ -105,7 +105,7 @@ class TestVM (unittest.TestCase):
         sorted_arr = sorted ([int (i) for i in unsorted_arr])
 
         expected = "Before: "
-        for i in range (len (unsorted_arr)):
+        for i in reversed (range (len (unsorted_arr))):
           expected += str (unsorted_arr[i]) + " "
         expected += "\nAfter:  "
         for i in range (len (sorted_arr)):
@@ -124,7 +124,8 @@ class TestVM (unittest.TestCase):
         expected = ("7\n"
                     "3\n"
                     "7\n"
-                    "7\n")
+                    "7\n"
+                    "42\n")
         out = runVM ("../example/pass_by_ref.casm");
         self.assertEqual (out, expected);
 

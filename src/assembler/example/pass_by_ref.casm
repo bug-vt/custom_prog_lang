@@ -12,25 +12,30 @@ func main
 
   push x_ref
   call firstFunc
+
+  print x
+  print "\n"
 }
 
 func firstFunc
 {
   param x_ref
   var y
-  mem y, x_ref, 0
+  lw y, x_ref, 0
   print y
   print "\n"
 
   push x_ref
   call secondFunc
+
+  sw x_ref, 0, 42
 }
 
 func secondFunc
 {
   param x_ref
   var y
-  mem y, x_ref, 0
+  lw y, x_ref, 0
   print y
   print "\n"
 }

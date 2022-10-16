@@ -13,8 +13,9 @@ Script::Script ()
 {
   // register functions to the instruction handler table
   instr_handler[INSTR_MOV] = &Script::instrMov;
-  instr_handler[INSTR_MEM] = &Script::instrMem;
   instr_handler[INSTR_REF] = &Script::instrRef;
+  instr_handler[INSTR_LW] = &Script::instrLw;
+  instr_handler[INSTR_SW] = &Script::instrSw;
   instr_handler[INSTR_ADD] = &Script::instrArithmetic;
   instr_handler[INSTR_SUB] = &Script::instrArithmetic;
   instr_handler[INSTR_MUL] = &Script::instrArithmetic;
@@ -140,13 +141,6 @@ void Script::instrMov ()
   resolveOpCopy (0, resolveOpValue (1));
 }
 
-void Script::instrMem ()
-{
-  // load the value located at the given stack index
-  int abs_index = resolveOpAsInt (1) + resolveOpAsInt (2);
-  resolveOpCopy (0, stack.getValue (abs_index));
-}
-
 void Script::instrRef ()
 {
   Value ref;
@@ -154,6 +148,20 @@ void Script::instrRef ()
   // record the stack index (referencing from the bottom) of the given variable
   ref.int_literal = stack.resolveIndex (resolveOpStackIndex (1));
   resolveOpCopy (0, ref);
+}
+
+void Script::instrLw ()
+{
+  // load the value located at the given stack index
+  int abs_index = resolveOpAsInt (1) + resolveOpAsInt (2);
+  resolveOpCopy (0, stack.getValue (abs_index));
+}
+
+void Script::instrSw ()
+{
+  // load the value located at the given stack index
+  int abs_index = resolveOpAsInt (0) + resolveOpAsInt (1);
+  stack.setValue (abs_index, resolveOpValue (2));
 }
 
 void Script::instrArithmetic ()

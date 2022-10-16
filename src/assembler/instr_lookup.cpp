@@ -24,8 +24,8 @@ InstrLookupTable::InstrLookupTable ()
   // memory
   instr_lookup["mov"] = {0, {DESTINATION, SOURCE}};
   instr_lookup["ref"] = {1, {DESTINATION, OP_FLAG_TYPE_MEM}}; 
-  instr_lookup["lw"]  = {2, {DESTINATION, OP_ADDR}};
-  instr_lookup["sw"]  = {3, {OP_ADDR, SOURCE}};
+  instr_lookup["lw"]  = {2, {DESTINATION, OP_ADDR, OP_OFFSET}};
+  instr_lookup["sw"]  = {3, {OP_ADDR, OP_OFFSET, SOURCE}};
   // arithmetic
   instr_lookup["add"] = {4, {DESTINATION, OP_NUMBER}};
   instr_lookup["sub"] = {5, {DESTINATION, OP_NUMBER}};
@@ -46,7 +46,7 @@ InstrLookupTable::InstrLookupTable ()
   // string processing
   instr_lookup["concat"] =  {19, {DESTINATION, OP_STRING}};
   instr_lookup["getChar"] = {20, {DESTINATION, OP_STRING, OP_OFFSET}};
-  instr_lookup["setChar"] = {21, {OP_OFFSET, DESTINATION, OP_STRING}};
+  instr_lookup["setChar"] = {21, {DESTINATION, OP_OFFSET, OP_STRING}};
   // conditional branching
   instr_lookup["jmp"] = {22, {OP_FLAG_TYPE_LABEL}}; 
   instr_lookup["je"] =  {23, {SOURCE, SOURCE, OP_FLAG_TYPE_LABEL}}; 
