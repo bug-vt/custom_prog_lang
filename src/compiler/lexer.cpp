@@ -10,18 +10,14 @@ using std::istringstream;
 
 
 enum LexState {LEX_STATE_START,
-               LEX_STATE_NEGATIVE,
                LEX_STATE_INT,
                LEX_STATE_FLOAT,
+               LEX_STATE_IDENT,
+               LEX_STATE_OP,
+               LEX_STATE_DELIM,
                LEX_STATE_STRING,
                LEX_STATE_STRING_ESCAPE,
                LEX_STATE_CLOSE_QUOTE,
-               LEX_STATE_IDENT,
-               LEX_STATE_DELIM,
-               LEX_STATE_COMMENT,
-               LEX_STATE_LINE_COMMENT,
-               LEX_STATE_BLOCK_COMMENT,
-               LEX_STATE_BLOCK_COMMENT_END,
                LEX_STATE_INVALID};
 
 
@@ -68,20 +64,57 @@ Lexer::Lexer (string raw_source)
   delim[')'] = TOKEN_TYPE_CLOSE_PAREN;
   delim[';'] = TOKEN_TYPE_SEMICOLON;
 
+  // list of operators
+  // arithmetic
+  op["="] = TOKEN_TYPE_ASSIGN;
+  op["+"] = TOKEN_TYPE_ADD;
+  op["-"] = TOKEN_TYPE_SUB;
+  op["*"] = TOKEN_TYPE_MUL;
+  op["/"] = TOKEN_TYPE_DIV;
+  op["%"] = TOKEN_TYPE_MOD;
+  op["^"] = TOKEN_TYPE_EXP;
+  op["++"] = TOKEN_TYPE_INC;
+  op["--"] = TOKEN_TYPE_DEC;
+  op["+="] = TOKEN_TYPE_ASSIGN_ADD;
+  op["-="] = TOKEN_TYPE_ASSIGN_SUB;
+  op["*="] = TOKEN_TYPE_ASSIGN_MUL;
+  op["/="] = TOKEN_TYPE_ASSIGN_DIV;
+  op["%="] = TOKEN_TYPE_ASSIGN_MOD;
+  op["^="] = TOKEN_TYPE_ASSIGN_EXP;
+  // bitwise
+  op["&"] = TOKEN_TYPE_BITWISE_AND;
+  op["|"] = TOKEN_TYPE_BITWISE_OR;
+  op["#"] = TOKEN_TYPE_BITWISE_XOR;
+  op["~"] = TOKEN_TYPE_BITWISE_NOT;
+  op["<<"] = TOKEN_TYPE_BITWISE_SHIFT_LEFT;
+  op[">>"] = TOKEN_TYPE_BITWISE_SHIFT_RIGHT;
+  op["&="] = TOKEN_TYPE_ASSIGN_AND;
+  op["|="] = TOKEN_TYPE_ASSIGN_OR;
+  op["#="] = TOKEN_TYPE_ASSIGN_XOR;
+  op["<<="] = TOKEN_TYPE_ASSIGN_SHIFT_LEFT;
+  op[">>="] = TOKEN_TYPE_ASSIGN_SHIFT_RIGHT;
+  // logical
+  op["&&"] = TOKEN_TYPE_LOGICAL_AND;
+  op["||"] = TOKEN_TYPE_LOGICAL_OR;
+  op["!"] = TOKEN_TYPE_LOGICAL_NOT;
+  // relational
+  op["=="] = TOKEN_TYPE_EQUAL;
+  op["!="] = TOKEN_TYPE_NOT_EQUAL;
+  op["<"] = TOKEN_TYPE_LESS;
+  op[">"] = TOKEN_TYPE_GREATER;
+  op["<="] = TOKEN_TYPE_LESS_EQUAL;
+  op[">="] = TOKEN_TYPE_GREATER_EQUAL;
+
   // initialize state machine
   state_machine[LEX_STATE_START] = &Lexer::lexStateStart; 
-  state_machine[LEX_STATE_NEGATIVE] = &Lexer::lexStateNegative; 
   state_machine[LEX_STATE_INT] = &Lexer::lexStateInt; 
   state_machine[LEX_STATE_FLOAT] = &Lexer::lexStateFloat; 
   state_machine[LEX_STATE_IDENT] = &Lexer::lexStateIdent; 
+  state_machine[LEX_STATE_OP] = &Lexer::lexStateOp; 
   state_machine[LEX_STATE_DELIM] = &Lexer::lexStateDelim; 
   state_machine[LEX_STATE_STRING] = &Lexer::lexStateString; 
   state_machine[LEX_STATE_STRING_ESCAPE] = &Lexer::lexStateStringEscape; 
   state_machine[LEX_STATE_CLOSE_QUOTE] = &Lexer::lexStateCloseQuote; 
-  state_machine[LEX_STATE_COMMENT] = &Lexer::lexStateComment; 
-  state_machine[LEX_STATE_LINE_COMMENT] = &Lexer::lexStateLineComment; 
-  state_machine[LEX_STATE_BLOCK_COMMENT] = &Lexer::lexStateBlockComment; 
-  state_machine[LEX_STATE_BLOCK_COMMENT_END] = &Lexer::lexStateBlockCommentEnd; 
   state_machine[LEX_STATE_INVALID] = &Lexer::lexStateInvalid; 
 }
 
@@ -128,7 +161,7 @@ Token Lexer::getNextToken ()
   curr_lexeme.lexeme_end--;
 
   // determine token type from lexing state.
-  Token token_type;
+  Token token_type = TOKEN_TYPE_INVALID;
   switch (curr_lex_state)
   {
     case LEX_STATE_START:
@@ -150,6 +183,12 @@ Token Lexer::getNextToken ()
       // identifier
       else
         token_type = TOKEN_TYPE_IDENT;
+      break;
+
+    case LEX_STATE_OP:
+      // find matching operator 
+      if (op.find (curr_lexeme.lexeme) != op.end ())
+        token_type = op[curr_lexeme.lexeme];
       break;
 
     case LEX_STATE_DELIM:
@@ -262,6 +301,18 @@ int Lexer::getLexemeStartIndex ()
   return curr_lexeme.lexeme_start;
 }
 
+bool Lexer::isOpChar (char curr_char)
+{
+  if (curr_char == '+' || curr_char == '-' || curr_char == '*' 
+      || curr_char == '/' || curr_char == '^' || curr_char == '%'
+      || curr_char == '&' || curr_char == '|' || curr_char == '#'
+      || curr_char == '~' || curr_char == '!' || curr_char == '=' 
+      || curr_char == '<' || curr_char == '>')
+    return true;
+
+  return false;
+}
+
 
 // ---------------------------------------------------------------------
 // Lexer States
@@ -274,14 +325,14 @@ void Lexer::lexStateStart (char curr_char)
     curr_lexeme.lexeme_start++;
     add_curr_char = false;
   }
-  else if (curr_char == '-')
-    curr_lex_state = LEX_STATE_NEGATIVE;
   else if (isdigit (curr_char))
     curr_lex_state = LEX_STATE_INT;
   else if (curr_char == '.')
     curr_lex_state = LEX_STATE_FLOAT;
   else if (isalpha (curr_char) || curr_char == '_')
     curr_lex_state = LEX_STATE_IDENT;
+  else if (isOpChar (curr_char))
+    curr_lex_state = LEX_STATE_OP;
   else if (delim.find (curr_char) != delim.end ())
     curr_lex_state = LEX_STATE_DELIM;
   else if (curr_char == '"')
@@ -289,33 +340,9 @@ void Lexer::lexStateStart (char curr_char)
     curr_lex_state = LEX_STATE_STRING;
     add_curr_char = false;
   }
-  else if (curr_char == '/')
-  {
-    curr_lex_state = LEX_STATE_COMMENT;
-    add_curr_char = false;
-  }
   // invalid character is read 
   else
     curr_lex_state = LEX_STATE_INVALID;
-}
-
-void Lexer::lexStateNegative (char curr_char)
-{
-  if (isdigit (curr_char))
-    curr_lex_state = LEX_STATE_INT;
-  else if (curr_char == '.')
-    curr_lex_state = LEX_STATE_FLOAT;
-  // invalid character is read 
-  else
-  {
-    // white space or delimiter is read
-    if (isspace (curr_char) || delim.find (curr_char) != delim.end ())
-    {
-      add_curr_char = false;
-      lexeme_done = true;
-    }
-    curr_lex_state = LEX_STATE_INVALID;
-  }
 }
 
 void Lexer::lexStateInt (char curr_char)
@@ -323,9 +350,10 @@ void Lexer::lexStateInt (char curr_char)
   if (isdigit (curr_char)) { }
   else if (curr_char == '.')
     curr_lex_state = LEX_STATE_FLOAT;
-  // white space or delimiter is read
+  // white space, delimiter, or operator is read
   else if (isspace (curr_char)
-           || delim.find (curr_char) != delim.end ())
+           || delim.find (curr_char) != delim.end ()
+           || isOpChar (curr_char))
   {
     add_curr_char = false;
     lexeme_done = true;
@@ -338,9 +366,10 @@ void Lexer::lexStateInt (char curr_char)
 void Lexer::lexStateFloat (char curr_char)
 {
   if (isdigit (curr_char)) { }
-  // white space or delimiter is read
+  // white space, delimiter, or operator is read
   else if (isspace (curr_char)
-           || delim.find (curr_char) != delim.end ())
+           || delim.find (curr_char) != delim.end ()
+           || isOpChar (curr_char))
   {
     add_curr_char = false;
     lexeme_done = true;
@@ -353,9 +382,10 @@ void Lexer::lexStateFloat (char curr_char)
 void Lexer::lexStateIdent (char curr_char)
 {
   if (isalpha (curr_char) || isdigit (curr_char) || curr_char == '_') {}
-  // white space or delimiter is read
+  // white space, delimiter, or operator is read
   else if (isspace (curr_char)
-           || delim.find (curr_char) != delim.end ())
+           || delim.find (curr_char) != delim.end ()
+           || isOpChar (curr_char))
   {
     add_curr_char = false;
     lexeme_done = true;
@@ -363,6 +393,17 @@ void Lexer::lexStateIdent (char curr_char)
   // invalid character is read 
   else
     curr_lex_state = LEX_STATE_INVALID;
+}
+
+void Lexer::lexStateOp (char curr_char)
+{
+  if (isOpChar (curr_char)) {} 
+  // white space, delimiter, number, alpha, or etc is read
+  else 
+  {
+    add_curr_char = false;
+    lexeme_done = true;
+  }
 }
 
 void Lexer::lexStateDelim (char curr_char)
@@ -410,45 +451,6 @@ void Lexer::lexStateCloseQuote (char curr_char)
   // At this point, string lexeme is done.
   add_curr_char = false;
   lexeme_done = true;
-}
-
-void Lexer::lexStateComment (char curr_char)
-{
-  add_curr_char = false;
-
-  if (curr_char == '/')
-    curr_lex_state = LEX_STATE_LINE_COMMENT;
-  else if (curr_char == '*')
-    curr_lex_state = LEX_STATE_BLOCK_COMMENT;
-  // invalid character is read 
-  else
-    curr_lex_state = LEX_STATE_INVALID;
-}
-
-void Lexer::lexStateLineComment (char curr_char)
-{
-  add_curr_char = false;
-
-  if (curr_char == '\n')
-    curr_lex_state = LEX_STATE_START;
-}
-
-void Lexer::lexStateBlockComment (char curr_char)
-{
-  add_curr_char = false;
-  
-  if (curr_char == '*')
-    curr_lex_state = LEX_STATE_BLOCK_COMMENT_END;
-}
-
-void Lexer::lexStateBlockCommentEnd (char curr_char)
-{
-  add_curr_char = false;
-
-  if (curr_char == '/')
-    curr_lex_state = LEX_STATE_START;
-  else
-    curr_lex_state = LEX_STATE_BLOCK_COMMENT;
 }
 
 void Lexer::lexStateInvalid (char curr_char)

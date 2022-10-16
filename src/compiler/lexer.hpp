@@ -2,7 +2,6 @@
 #define LEXER_HPP
 
 #include <string>
-#include <map>
 #include <unordered_map>
 #include <vector>
 #include "token.hpp"
@@ -36,9 +35,10 @@ class Lexer
     // source code
     std::vector<std::string> source_code;
 
-    // reserved words/delimiters
-    std::map<std::string, Token> reserved_word; 
-    std::map<char, Token> delim;
+    // reserved words, delimiters, operators
+    std::unordered_map<std::string, Token> reserved_word; 
+    std::unordered_map<char, Token> delim;
+    std::unordered_map<std::string, Token> op;
 
     // lexer internal 
     Lexeme curr_lexeme;
@@ -51,23 +51,20 @@ class Lexer
     char getNextChar ();
     void copyLexeme (Lexeme &dest, Lexeme &source);
     void undoGetNextToken ();
+    bool isOpChar (char curr_char);
 
     // state machine 
     std::unordered_map<int, void (Lexer::*)(char)> state_machine;
     // lexer states
     void lexStateStart (char curr_char);
-    void lexStateNegative (char curr_char);
     void lexStateInt (char curr_char);
     void lexStateFloat (char curr_char);
     void lexStateIdent (char curr_char);
+    void lexStateOp (char curr_char);
     void lexStateDelim (char curr_char);
     void lexStateString (char curr_char);
     void lexStateStringEscape (char curr_char);
     void lexStateCloseQuote (char curr_char);
-    void lexStateComment (char curr_char);
-    void lexStateLineComment (char curr_char);
-    void lexStateBlockComment (char curr_char);
-    void lexStateBlockCommentEnd (char curr_char);
     void lexStateInvalid (char curr_char);
 };
 

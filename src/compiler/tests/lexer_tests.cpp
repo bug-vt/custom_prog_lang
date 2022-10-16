@@ -44,16 +44,26 @@ TEST_CASE ("Negative intger/float lexing", "[lexer]")
   string input = "-1    -1.0 -4.2   -99 -.123  ";
   
   Lexer lexer (input);
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_SUB);
+  REQUIRE (lexer.getCurrLexeme () == "-");
   REQUIRE (lexer.getNextToken () == TOKEN_TYPE_INT);
-  REQUIRE (lexer.getCurrLexeme () == "-1");
+  REQUIRE (lexer.getCurrLexeme () == "1");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_SUB);
+  REQUIRE (lexer.getCurrLexeme () == "-");
   REQUIRE (lexer.getNextToken () == TOKEN_TYPE_FLOAT);
-  REQUIRE (lexer.getCurrLexeme () == "-1.0");
+  REQUIRE (lexer.getCurrLexeme () == "1.0");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_SUB);
+  REQUIRE (lexer.getCurrLexeme () == "-");
   REQUIRE (lexer.getNextToken () == TOKEN_TYPE_FLOAT);
-  REQUIRE (lexer.getCurrLexeme () == "-4.2");
+  REQUIRE (lexer.getCurrLexeme () == "4.2");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_SUB);
+  REQUIRE (lexer.getCurrLexeme () == "-");
   REQUIRE (lexer.getNextToken () == TOKEN_TYPE_INT);
-  REQUIRE (lexer.getCurrLexeme () == "-99");
+  REQUIRE (lexer.getCurrLexeme () == "99");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_SUB);
+  REQUIRE (lexer.getCurrLexeme () == "-");
   REQUIRE (lexer.getNextToken () == TOKEN_TYPE_FLOAT);
-  REQUIRE (lexer.getCurrLexeme () == "-.123");
+  REQUIRE (lexer.getCurrLexeme () == ".123");
 }
 
 TEST_CASE ("Basic identifier lexing", "[lexer]")
@@ -119,6 +129,75 @@ TEST_CASE ("Lexing reserved word", "[lexer]")
   REQUIRE (lexer.getCurrLexeme () == "func");
 }
 
+TEST_CASE ("lexing Operator", "[lexer]")
+{
+  string input = " +    / -=   /= ++ <<=   & !   ";
+  
+  Lexer lexer (input);
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_ADD);
+  REQUIRE (lexer.getCurrLexeme () == "+");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_DIV);
+  REQUIRE (lexer.getCurrLexeme () == "/");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_ASSIGN_SUB);
+  REQUIRE (lexer.getCurrLexeme () == "-=");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_ASSIGN_DIV);
+  REQUIRE (lexer.getCurrLexeme () == "/=");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_INC);
+  REQUIRE (lexer.getCurrLexeme () == "++");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_ASSIGN_SHIFT_LEFT);
+  REQUIRE (lexer.getCurrLexeme () == "<<=");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_BITWISE_AND);
+  REQUIRE (lexer.getCurrLexeme () == "&");
+  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_LOGICAL_NOT);
+  REQUIRE (lexer.getCurrLexeme () == "!");
+}
+
+TEST_CASE ("Lexing number, identifier, and operators", "[lexer]")
+{
+  string input = " x= 12+y;    x -=1;x--;z= !y ;  ";
+  
+  Lexer lexer (input);
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_IDENT);
+  REQUIRE (lexer.getCurrLexeme () == "x");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_ASSIGN);
+  REQUIRE (lexer.getCurrLexeme () == "=");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_INT);
+  REQUIRE (lexer.getCurrLexeme () == "12");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_ADD);
+  REQUIRE (lexer.getCurrLexeme () == "+");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_IDENT);
+  REQUIRE (lexer.getCurrLexeme () == "y");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_SEMICOLON);
+  REQUIRE (lexer.getCurrLexeme () == ";");
+  
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_IDENT);
+  REQUIRE (lexer.getCurrLexeme () == "x");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_ASSIGN_SUB);
+  REQUIRE (lexer.getCurrLexeme () == "-=");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_INT);
+  REQUIRE (lexer.getCurrLexeme () == "1");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_SEMICOLON);
+  REQUIRE (lexer.getCurrLexeme () == ";");
+
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_IDENT);
+  REQUIRE (lexer.getCurrLexeme () == "x");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_DEC);
+  REQUIRE (lexer.getCurrLexeme () == "--");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_SEMICOLON);
+  REQUIRE (lexer.getCurrLexeme () == ";");
+
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_IDENT);
+  REQUIRE (lexer.getCurrLexeme () == "z");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_ASSIGN);
+  REQUIRE (lexer.getCurrLexeme () == "=");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_LOGICAL_NOT);
+  REQUIRE (lexer.getCurrLexeme () == "!");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_IDENT);
+  REQUIRE (lexer.getCurrLexeme () == "y");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_SEMICOLON);
+  REQUIRE (lexer.getCurrLexeme () == ";");
+}
+
 TEST_CASE ("Basic delim lexing", "[lexer]")
 {
   string input = " ;    , [   ]   ";
@@ -156,6 +235,7 @@ TEST_CASE ("String lexing with escape characters", "[lexer]")
   REQUIRE (lexer.getCurrLexeme () == "newline\n tab\t quote\" ");
 }
 
+/*
 TEST_CASE ("Lexing line comment", "[lexer]")
 {
   string input = "// this is comment \n \
@@ -168,10 +248,11 @@ TEST_CASE ("Lexing line comment", "[lexer]")
   REQUIRE (lexer.getNextToken () == TOKEN_TYPE_INT);
   REQUIRE (lexer.getCurrLexeme () == "123");
 }
+*/
 
 TEST_CASE ("Lexing block comment", "[lexer]")
 {
-  string input = "cs4974 "
+  string input = "cs4974"
                  "/* starting block comment \n"
                  "var x = \"still inside comment\"\n"
                  "2*2 ending comment */"
@@ -186,7 +267,13 @@ TEST_CASE ("Lexing block comment", "[lexer]")
 
 TEST_CASE ("Lexing multi-line input", "[lexer]")
 {
+  /*
   string input = "// comment first line\n \
+                  var xyz\n \
+                  param qqq \n \
+                  jg 4.8, 7.3";
+                  */
+  string input = "\n \
                   var xyz\n \
                   param qqq \n \
                   jg 4.8, 7.3";
@@ -225,7 +312,7 @@ TEST_CASE ("Peek next token", "[lexer]")
 
 TEST_CASE ("Lexing Invalid token", "[lexer]")
 {
-  string input = "  7ident  1.2. ident! @  -  -12-\n";
+  string input = "  7ident  1.2. ident@ */   /- \n";
   
   Lexer lexer (input);
   CHECK (lexer.getNextToken () == TOKEN_TYPE_INVALID);
@@ -233,13 +320,11 @@ TEST_CASE ("Lexing Invalid token", "[lexer]")
   CHECK (lexer.getNextToken () == TOKEN_TYPE_INVALID);
   CHECK (lexer.getCurrLexeme () == "1.2.");
   CHECK (lexer.getNextToken () == TOKEN_TYPE_INVALID);
-  CHECK (lexer.getCurrLexeme () == "ident!");
+  CHECK (lexer.getCurrLexeme () == "ident@");
   CHECK (lexer.getNextToken () == TOKEN_TYPE_INVALID);
-  CHECK (lexer.getCurrLexeme () == "@");
+  CHECK (lexer.getCurrLexeme () == "*/");
   CHECK (lexer.getNextToken () == TOKEN_TYPE_INVALID);
-  CHECK (lexer.getCurrLexeme () == "-");
-  CHECK (lexer.getNextToken () == TOKEN_TYPE_INVALID);
-  CHECK (lexer.getCurrLexeme () == "-12-");
+  CHECK (lexer.getCurrLexeme () == "/-");
 }
 
 TEST_CASE ("Lexing until EOF", "[lexer]")
