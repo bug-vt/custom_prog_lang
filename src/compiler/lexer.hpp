@@ -65,6 +65,9 @@ class Lexer
     void lexStateStringEscape (char curr_char);
     void lexStateCloseQuote (char curr_char);
     void lexStateComment (char curr_char);
+    void lexStateLineComment (char curr_char);
+    void lexStateBlockComment (char curr_char);
+    void lexStateBlockCommentEnd (char curr_char);
     void lexStateInvalid (char curr_char);
 };
 

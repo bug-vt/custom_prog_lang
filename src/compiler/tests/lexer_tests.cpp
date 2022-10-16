@@ -156,10 +156,10 @@ TEST_CASE ("String lexing with escape characters", "[lexer]")
   REQUIRE (lexer.getCurrLexeme () == "newline\n tab\t quote\" ");
 }
 
-TEST_CASE ("Lexing comment", "[lexer]")
+TEST_CASE ("Lexing line comment", "[lexer]")
 {
-  string input = "# this is comment \n \
-                  xyz # another comment\n \
+  string input = "// this is comment \n \
+                  xyz // another comment\n \
                   123";
   
   Lexer lexer (input);
@@ -169,9 +169,24 @@ TEST_CASE ("Lexing comment", "[lexer]")
   REQUIRE (lexer.getCurrLexeme () == "123");
 }
 
+TEST_CASE ("Lexing block comment", "[lexer]")
+{
+  string input = "cs4974 "
+                 "/* starting block comment \n"
+                 "var x = \"still inside comment\"\n"
+                 "2*2 ending comment */"
+                 "123";
+  
+  Lexer lexer (input);
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_IDENT);
+  REQUIRE (lexer.getCurrLexeme () == "cs4974");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_INT);
+  REQUIRE (lexer.getCurrLexeme () == "123");
+}
+
 TEST_CASE ("Lexing multi-line input", "[lexer]")
 {
-  string input = "# comment first line\n \
+  string input = "// comment first line\n \
                   var xyz\n \
                   param qqq \n \
                   jg 4.8, 7.3";

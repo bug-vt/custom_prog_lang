@@ -19,6 +19,9 @@ enum LexState {LEX_STATE_START,
                LEX_STATE_IDENT,
                LEX_STATE_DELIM,
                LEX_STATE_COMMENT,
+               LEX_STATE_LINE_COMMENT,
+               LEX_STATE_BLOCK_COMMENT,
+               LEX_STATE_BLOCK_COMMENT_END,
                LEX_STATE_INVALID};
 
 
@@ -76,6 +79,9 @@ Lexer::Lexer (string raw_source)
   state_machine[LEX_STATE_STRING_ESCAPE] = &Lexer::lexStateStringEscape; 
   state_machine[LEX_STATE_CLOSE_QUOTE] = &Lexer::lexStateCloseQuote; 
   state_machine[LEX_STATE_COMMENT] = &Lexer::lexStateComment; 
+  state_machine[LEX_STATE_LINE_COMMENT] = &Lexer::lexStateLineComment; 
+  state_machine[LEX_STATE_BLOCK_COMMENT] = &Lexer::lexStateBlockComment; 
+  state_machine[LEX_STATE_BLOCK_COMMENT_END] = &Lexer::lexStateBlockCommentEnd; 
   state_machine[LEX_STATE_INVALID] = &Lexer::lexStateInvalid; 
 }
 
@@ -283,7 +289,7 @@ void Lexer::lexStateStart (char curr_char)
     curr_lex_state = LEX_STATE_STRING;
     add_curr_char = false;
   }
-  else if (curr_char == '#')
+  else if (curr_char == '/')
   {
     curr_lex_state = LEX_STATE_COMMENT;
     add_curr_char = false;
@@ -410,8 +416,39 @@ void Lexer::lexStateComment (char curr_char)
 {
   add_curr_char = false;
 
+  if (curr_char == '/')
+    curr_lex_state = LEX_STATE_LINE_COMMENT;
+  else if (curr_char == '*')
+    curr_lex_state = LEX_STATE_BLOCK_COMMENT;
+  // invalid character is read 
+  else
+    curr_lex_state = LEX_STATE_INVALID;
+}
+
+void Lexer::lexStateLineComment (char curr_char)
+{
+  add_curr_char = false;
+
   if (curr_char == '\n')
     curr_lex_state = LEX_STATE_START;
+}
+
+void Lexer::lexStateBlockComment (char curr_char)
+{
+  add_curr_char = false;
+  
+  if (curr_char == '*')
+    curr_lex_state = LEX_STATE_BLOCK_COMMENT_END;
+}
+
+void Lexer::lexStateBlockCommentEnd (char curr_char)
+{
+  add_curr_char = false;
+
+  if (curr_char == '/')
+    curr_lex_state = LEX_STATE_START;
+  else
+    curr_lex_state = LEX_STATE_BLOCK_COMMENT;
 }
 
 void Lexer::lexStateInvalid (char curr_char)
