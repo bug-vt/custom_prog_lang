@@ -3,6 +3,7 @@
 
 #include <string>
 #include <map>
+#include <unordered_map>
 #include <vector>
 #include "instr_lookup.hpp"
 #include "token.hpp"
@@ -52,6 +53,8 @@ class AsmLexer
     void copyLexeme (Lexeme &dest, Lexeme &source);
     void undoGetNextToken ();
 
+    // state machine 
+    std::unordered_map<int, void (AsmLexer::*)(char)> state_machine;
     // lexer states
     void lexStateStart (char curr_char);
     void lexStateNegative (char curr_char);

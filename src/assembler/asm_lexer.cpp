@@ -58,6 +58,19 @@ AsmLexer::AsmLexer (string raw_source)
   delim['{'] = TOKEN_TYPE_OPEN_BRACE;
   delim['}'] = TOKEN_TYPE_CLOSE_BRACE;
   delim['\n'] = TOKEN_TYPE_NEWLINE;
+
+  // initialize state machine
+  state_machine[LEX_STATE_START] = &AsmLexer::lexStateStart; 
+  state_machine[LEX_STATE_NEGATIVE] = &AsmLexer::lexStateNegative; 
+  state_machine[LEX_STATE_INT] = &AsmLexer::lexStateInt; 
+  state_machine[LEX_STATE_FLOAT] = &AsmLexer::lexStateFloat; 
+  state_machine[LEX_STATE_IDENT] = &AsmLexer::lexStateIdent; 
+  state_machine[LEX_STATE_DELIM] = &AsmLexer::lexStateDelim; 
+  state_machine[LEX_STATE_STRING] = &AsmLexer::lexStateString; 
+  state_machine[LEX_STATE_STRING_ESCAPE] = &AsmLexer::lexStateStringEscape; 
+  state_machine[LEX_STATE_CLOSE_QUOTE] = &AsmLexer::lexStateCloseQuote; 
+  state_machine[LEX_STATE_COMMENT] = &AsmLexer::lexStateComment; 
+  state_machine[LEX_STATE_INVALID] = &AsmLexer::lexStateInvalid; 
 }
 
 string AsmLexer::getCurrLexeme ()
@@ -89,52 +102,8 @@ Token AsmLexer::getNextToken ()
 
     add_curr_char = true;
     
-    switch (curr_lex_state)
-    {
-      case LEX_STATE_START:
-        lexStateStart (curr_char);
-        break;
-
-      case LEX_STATE_NEGATIVE:
-        lexStateNegative (curr_char);
-        break;
-
-      case LEX_STATE_INT:
-        lexStateInt (curr_char);
-        break;
-
-      case LEX_STATE_FLOAT:
-        lexStateFloat (curr_char);
-        break;
-
-      case LEX_STATE_IDENT:
-        lexStateIdent (curr_char);
-        break;
-
-      case LEX_STATE_DELIM:
-        lexStateDelim (curr_char);
-        break;
-
-      case LEX_STATE_STRING:
-        lexStateString (curr_char);
-        break;
-
-      case LEX_STATE_STRING_ESCAPE:
-        lexStateStringEscape (curr_char);
-        break;
-
-      case LEX_STATE_CLOSE_QUOTE:
-        lexStateCloseQuote (curr_char);
-        break;
-
-      case LEX_STATE_COMMENT:
-        lexStateComment (curr_char);
-        break;
-
-      case LEX_STATE_INVALID:
-        lexStateInvalid (curr_char);
-        break;
-    }
+    // invoke appropriate function from table, index by current state number 
+    (*this.*state_machine.at (curr_lex_state)) (curr_char);
 
     if (add_curr_char)
       curr_lexeme.lexeme += curr_char;
