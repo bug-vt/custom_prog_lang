@@ -20,14 +20,20 @@
                              | OP_FLAG_TYPE_STR   \
                              | OP_FLAG_TYPE_MEM   \
                              | OP_FLAG_TYPE_REG)
-#define SRC_NUMBER          (OP_FLAG_TYPE_INT \
+#define OP_NUMBER           (OP_FLAG_TYPE_INT \
                              | OP_FLAG_TYPE_FLOAT \
                              | OP_FLAG_TYPE_MEM   \
                              | OP_FLAG_TYPE_REG)
-#define SRC_INTEGER         (OP_FLAG_TYPE_INT \
+#define OP_WORD             (OP_FLAG_TYPE_INT \
                              | OP_FLAG_TYPE_MEM   \
                              | OP_FLAG_TYPE_REG)
-#define SRC_STRING          (OP_FLAG_TYPE_STR \
+#define OP_ADDR             (OP_FLAG_TYPE_INT \
+                             | OP_FLAG_TYPE_MEM   \
+                             | OP_FLAG_TYPE_REG)
+#define OP_OFFSET           (OP_FLAG_TYPE_INT \
+                             | OP_FLAG_TYPE_MEM   \
+                             | OP_FLAG_TYPE_REG)
+#define OP_STRING           (OP_FLAG_TYPE_STR \
                              | OP_FLAG_TYPE_MEM   \
                              | OP_FLAG_TYPE_REG)
 
