@@ -33,6 +33,9 @@ Lexer::Lexer (string raw_source)
     source_code.push_back (line);
   }
 
+  // remove comments
+  Preprocess::removeComments (source_code);
+
   // initialize lexeme
   curr_lexeme.lexeme_start = 0;
   curr_lexeme.lexeme_end = 0;

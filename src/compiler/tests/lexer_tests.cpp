@@ -1,5 +1,6 @@
 #include "catch.hpp"
 #include "../lexer.hpp"
+#include "../preprocess.hpp"
 #include <fstream>
 #include <iostream>
 #include <sys/wait.h>
@@ -10,8 +11,52 @@ using std::stringstream;
 using std::cout;
 using std::endl;
 using std::string;
+using std::vector;
 
 
+TEST_CASE ("Removing line comment", "[preprocess]")
+{
+  vector<string> code;
+  code.push_back ("var x = 1; // some comment\n");
+
+  Preprocess::removeComments (code);
+  REQUIRE (code[0] == "var x = 1; ");
+}
+
+TEST_CASE ("Removing line comment2", "[preprocess]")
+{
+  vector<string> code;
+  code.push_back ("//var x = 1;\n");
+  code.push_back ("xyz // comment\n");
+  code.push_back ("hello world\n");
+
+  Preprocess::removeComments (code);
+  REQUIRE (code[0] == "");
+  REQUIRE (code[1] == "xyz ");
+  REQUIRE (code[2] == "hello world\n");
+}
+
+TEST_CASE ("Removing inner block comment", "[preprocess]")
+{
+  vector<string> code;
+  code.push_back ("xyz =/* comment */1 * y; // some comment");
+
+  Preprocess::removeComments (code);
+  REQUIRE (code[0] == "xyz =             1 * y; ");
+}
+
+TEST_CASE ("Removing multi-line block comment", "[preprocess]")
+{
+  vector<string> code;
+  code.push_back ("x = 42; /* comment about x = 42// comment");
+  code.push_back ("y *= 1\n");
+  code.push_back ("z += 1*/ x--;");
+
+  Preprocess::removeComments (code);
+  REQUIRE (code[0] == "x = 42;                                  ");
+  REQUIRE (code[1] == "       ");
+  REQUIRE (code[2] == "         x--;");
+}
 
 TEST_CASE ("Basic integer lexing", "[lexer]")
 {
@@ -235,7 +280,6 @@ TEST_CASE ("String lexing with escape characters", "[lexer]")
   REQUIRE (lexer.getCurrLexeme () == "newline\n tab\t quote\" ");
 }
 
-/*
 TEST_CASE ("Lexing line comment", "[lexer]")
 {
   string input = "// this is comment \n \
@@ -243,12 +287,11 @@ TEST_CASE ("Lexing line comment", "[lexer]")
                   123";
   
   Lexer lexer (input);
-  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_IDENT);
-  REQUIRE (lexer.getCurrLexeme () == "xyz");
-  REQUIRE (lexer.getNextToken () == TOKEN_TYPE_INT);
-  REQUIRE (lexer.getCurrLexeme () == "123");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_IDENT);
+  CHECK (lexer.getCurrLexeme () == "xyz");
+  CHECK (lexer.getNextToken () == TOKEN_TYPE_INT);
+  CHECK (lexer.getCurrLexeme () == "123");
 }
-*/
 
 TEST_CASE ("Lexing block comment", "[lexer]")
 {
@@ -267,13 +310,8 @@ TEST_CASE ("Lexing block comment", "[lexer]")
 
 TEST_CASE ("Lexing multi-line input", "[lexer]")
 {
-  /*
+ 
   string input = "// comment first line\n \
-                  var xyz\n \
-                  param qqq \n \
-                  jg 4.8, 7.3";
-                  */
-  string input = "\n \
                   var xyz\n \
                   param qqq \n \
                   jg 4.8, 7.3";
