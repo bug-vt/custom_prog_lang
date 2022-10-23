@@ -22,9 +22,6 @@ string token2string (Token token)
     case TOKEN_TYPE_IDENT:
       out = "Identifier";
       break;
-    case TOKEN_TYPE_COLON:
-      out = "Colon";
-      break;
     case TOKEN_TYPE_OPEN_BRACKET:
       out = "Open bracket";
       break;
@@ -40,38 +37,59 @@ string token2string (Token token)
     case TOKEN_TYPE_CLOSE_BRACE:
       out = "Close brace";
       break;
+    case TOKEN_TYPE_OPEN_PAREN:
+      out = "Open brace";
+      break;
+    case TOKEN_TYPE_CLOSE_PAREN:
+      out = "Close brace";
+      break;
+    case TOKEN_TYPE_SEMICOLON:
+      out = "Semi Colon";
+      break;
     case TOKEN_TYPE_VAR:
-      out = "var";
+      out = "var keyword";
       break;
     case TOKEN_TYPE_TRUE:
-      out = "true";
+      out = "true keyword";
       break;
     case TOKEN_TYPE_FALSE:
-      out = "false";
+      out = "false keyword";
       break;
     case TOKEN_TYPE_IF:
-      out = "if";
+      out = "if keyword";
       break;
     case TOKEN_TYPE_ELSE:
-      out = "else";
+      out = "else keyword";
       break;
     case TOKEN_TYPE_BREAK:
-      out = "break";
+      out = "break keyword";
       break;
     case TOKEN_TYPE_CONTINUE:
-      out = "continue";
+      out = "continue keyword";
       break;
     case TOKEN_TYPE_FOR:
-      out = "for";
+      out = "for keyword";
       break;
     case TOKEN_TYPE_WHILE:
-      out = "while";
+      out = "while keyword";
       break;
     case TOKEN_TYPE_FUNC:
-      out = "func";
+      out = "function keyword";
       break;
     case TOKEN_TYPE_RETURN:
-      out = "return";
+      out = "return keyword";
+      break;
+    case TOKEN_TYPE_ASSIGN:
+      out = "Assignment operator";
+      break;
+    case TOKEN_TYPE_ADD:
+      out = "Addition operator";
+      break;
+    case TOKEN_TYPE_SUB:
+      out = "Subtraction operator";
+      break;
+    case TOKEN_TYPE_MUL:
+      out = "Multiplication operator";
       break;
     default:
       out = "Invalid";

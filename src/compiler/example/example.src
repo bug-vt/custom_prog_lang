@@ -1,0 +1,22 @@
+// comment about myFunc
+func myFunc (param0, param1, param2)
+{
+  print (param0);
+  return (parm1 * param2);
+}
+
+// comment about main
+func main ()
+{
+  var str;
+  var x;
+
+  /*
+  var unused = 0;
+  */
+
+  str = "CS4974 independent study";
+  x = 42;
+
+  myFunc (str, 3.14, x);
+}

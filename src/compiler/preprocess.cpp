@@ -53,6 +53,7 @@ void Preprocess::removeComments (vector<string> &source_code)
           if (curr_char == '/')
           {
             curr_line = curr_line.substr (0, curr_char_index - 1);
+            curr_line += "\n";
             curr_state = STATE_START;
           }
           // block comment:

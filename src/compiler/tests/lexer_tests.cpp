@@ -20,7 +20,7 @@ TEST_CASE ("Removing line comment", "[preprocess]")
   code.push_back ("var x = 1; // some comment\n");
 
   Preprocess::removeComments (code);
-  REQUIRE (code[0] == "var x = 1; ");
+  REQUIRE (code[0] == "var x = 1; \n");
 }
 
 TEST_CASE ("Removing line comment2", "[preprocess]")
@@ -31,9 +31,39 @@ TEST_CASE ("Removing line comment2", "[preprocess]")
   code.push_back ("hello world\n");
 
   Preprocess::removeComments (code);
-  REQUIRE (code[0] == "");
-  REQUIRE (code[1] == "xyz ");
+  REQUIRE (code[0] == "\n");
+  REQUIRE (code[1] == "xyz \n");
   REQUIRE (code[2] == "hello world\n");
+}
+
+TEST_CASE ("Removing line comment3", "[preprocess]")
+{
+
+  vector<string> code;
+  code.push_back ("// first comment\n");
+  code.push_back ("func myFunc ()\n");
+  code.push_back ("{");
+  code.push_back ("  return 1;");
+  code.push_back ("}");
+  code.push_back ("\n");
+  code.push_back ("// second comment\n");
+  code.push_back ("func main ()\n");
+  code.push_back ("{");
+  code.push_back ("4974\n");
+  code.push_back ("}");
+
+  Preprocess::removeComments (code);
+  REQUIRE (code[0] == "\n");
+  REQUIRE (code[1] == "func myFunc ()\n");
+  REQUIRE (code[2] == "{");
+  REQUIRE (code[3] == "  return 1;");
+  REQUIRE (code[4] == "}");
+  REQUIRE (code[5] == "\n");
+  REQUIRE (code[6] == "\n");
+  REQUIRE (code[7] == "func main ()\n");
+  REQUIRE (code[8] == "{");
+  REQUIRE (code[9] == "4974\n");
+  REQUIRE (code[10] == "}");
 }
 
 TEST_CASE ("Removing inner block comment", "[preprocess]")
@@ -42,7 +72,7 @@ TEST_CASE ("Removing inner block comment", "[preprocess]")
   code.push_back ("xyz =/* comment */1 * y; // some comment");
 
   Preprocess::removeComments (code);
-  REQUIRE (code[0] == "xyz =             1 * y; ");
+  REQUIRE (code[0] == "xyz =             1 * y; \n");
 }
 
 TEST_CASE ("Removing multi-line block comment", "[preprocess]")
@@ -409,10 +439,9 @@ TEST_CASE ("Test displaying error", "[lexer]")
 }
 */
 
-/*
 TEST_CASE ("Lexing file", "[lexer]")
 {
-  ifstream input ("../example/example.casm");
+  ifstream input ("../example/example.src");
   REQUIRE (input.good ());
   stringstream buffer;
   buffer << input.rdbuf ();
@@ -422,19 +451,18 @@ TEST_CASE ("Lexing file", "[lexer]")
   Token curr_token = lexer.getNextToken ();
   while (curr_token != TOKEN_TYPE_EOF)
   {
-//    
-//    string lexeme = lexer.getCurrLexeme ();
-//    if (lexeme == "\n")
-//      lexeme = "\\n";
-//
+    
+    string lexeme = lexer.getCurrLexeme ();
+    if (lexeme == "\n")
+      lexeme = "\\n";
+
 //    // display lexmeme and token type for each token
 //    cout << lexeme << "\t\t"
 //         << token2string (curr_token) << endl;
 //    
-    CHECK (curr_token != TOKEN_TYPE_INVALID);
+//    CHECK (curr_token != TOKEN_TYPE_INVALID);
 
     // get next token
     curr_token = lexer.getNextToken ();
   }
 }
-*/
