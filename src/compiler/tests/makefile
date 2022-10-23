@@ -4,12 +4,17 @@ CC=g++
 CFLAGS=-Wall -g
 
 build: compiler_tests.cpp lexer_tests.o parser_tests.o \
+			 parser.o \
 			 lexer.o preprocess.o token.o
 	$(CC) $(CFLAGS) -o compiler_tests compiler_tests.cpp lexer_tests.o parser_tests.o \
+			 parser.o \
 			 lexer.o preprocess.o token.o 
 
-parser_tests.o: parser_tests.cpp
+parser_tests.o: parser_tests.cpp parser.o
 	$(CC) $(CFLAGS) -c parser_tests.cpp 
+
+parser.o: ../parser.cpp lexer.o
+	$(CC) $(CFLAGS) -c ../parser.cpp 
 	
 lexer_tests.o: lexer_tests.cpp lexer.o ../token.cpp
 	$(CC) $(CFLAGS) -c lexer_tests.cpp ../token.cpp 
