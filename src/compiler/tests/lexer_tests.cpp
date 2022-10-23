@@ -408,7 +408,6 @@ TEST_CASE ("Lexing until EOF", "[lexer]")
   CHECK (lexer.getCurrLexeme () == "");
 }
 
-/*
 TEST_CASE ("Test displaying error", "[lexer]")
 {
   string input = "var xyz\n \
@@ -425,7 +424,7 @@ TEST_CASE ("Test displaying error", "[lexer]")
     while (curr_token != TOKEN_TYPE_EOF)
     {
       if (curr_token == TOKEN_TYPE_INVALID)
-        //exitOnCodeError ("code error", lexer);
+        lexer.error ("code error");
 
       curr_token = lexer.getNextToken ();
     }
@@ -437,7 +436,6 @@ TEST_CASE ("Test displaying error", "[lexer]")
   int ret_val = WEXITSTATUS (status);
   REQUIRE (ret_val == EXIT_FAILURE);
 }
-*/
 
 TEST_CASE ("Lexing file", "[lexer]")
 {
@@ -447,11 +445,12 @@ TEST_CASE ("Lexing file", "[lexer]")
   buffer << input.rdbuf ();
 
   Lexer lexer (buffer.str ());
+  int token_count = 0;
   // loop until all tokens are consumed.
   Token curr_token = lexer.getNextToken ();
   while (curr_token != TOKEN_TYPE_EOF)
   {
-    
+    token_count++; 
     string lexeme = lexer.getCurrLexeme ();
     if (lexeme == "\n")
       lexeme = "\\n";
@@ -459,10 +458,11 @@ TEST_CASE ("Lexing file", "[lexer]")
 //    // display lexmeme and token type for each token
 //    cout << lexeme << "\t\t"
 //         << token2string (curr_token) << endl;
-//    
-//    CHECK (curr_token != TOKEN_TYPE_INVALID);
+    
+    CHECK (curr_token != TOKEN_TYPE_INVALID);
 
     // get next token
     curr_token = lexer.getNextToken ();
   }
+  REQUIRE (token_count == 52);
 }

@@ -2,6 +2,7 @@
 #include <cctype>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 using std::string;
 using std::cout;
@@ -278,6 +279,23 @@ void Lexer::reset ()
   curr_lex_state = LEX_STATE_INVALID;
 }
 
+void Lexer::error (string msg)
+{
+  cout << "Error: " << msg << endl;
+  cout << "Line: " << curr_lexeme.line_index << endl;
+
+  // replace all tabs to white space
+  string line = curr_lexeme.line;
+  replace (line.begin (), line.end (), '\t', ' '); 
+
+  // show error line and caret at the start of the error lexeme
+  cout << line;
+  cout << string (curr_lexeme.lexeme_start, ' ') << '^' << endl;
+
+  cout << "Fail to assemble\n" << endl;
+  exit (EXIT_FAILURE);
+}
+
 
 void Lexer::copyLexeme (Lexeme &dest, Lexeme &source)
 {
@@ -288,21 +306,6 @@ void Lexer::copyLexeme (Lexeme &dest, Lexeme &source)
   dest.line_index = source.line_index;
 }
 
-
-string Lexer::getCurrLine ()
-{
-  return curr_lexeme.line;
-}
-
-int Lexer::getCurrLineIndex ()
-{
-  return curr_lexeme.line_index;
-}
-
-int Lexer::getLexemeStartIndex ()
-{
-  return curr_lexeme.lexeme_start;
-}
 
 bool Lexer::isOpChar (char curr_char)
 {
