@@ -56,6 +56,10 @@ void Parser::parseStatement ()
       parseFunc ();
       break;
 
+    case TOKEN_TYPE_VAR:
+      parseVar ();
+      break;
+
     default:
       lexer.error ("Unexpected token");
   }
@@ -123,4 +127,32 @@ void Parser::parseFunc ()
   
   // return to global scope
   curr_scope = GLOBAL_SCOPE;
+}
+
+void Parser::parseVar ()
+{
+  readToken (TOKEN_TYPE_IDENT);
+
+  string ident = lexer.getCurrLexeme ();
+  // for now, consider as a variable (array have size >= 1)
+  int size = 1;
+
+  // if next token is open bracket,
+  // verify if the identifier is an array and change to identified size
+  if (lexer.peekNextToken () == TOKEN_TYPE_OPEN_BRACKET)
+  {
+    readToken (TOKEN_TYPE_OPEN_BRACKET);
+
+    readToken (TOKEN_TYPE_INT);
+    size = stoi (lexer.getCurrLexeme ());
+    
+    readToken (TOKEN_TYPE_CLOSE_BRACKET);
+  }
+
+  // add symbol to the symbol table and check for redefinition
+  Symbol symbol (ident, curr_scope); 
+  if (symbol_table.addSymbol (symbol, size, SYMBOL_TYPE_VAR) == -1)
+    lexer.error ("Identifier with same name already exists inside the same scope");
+
+  readToken (TOKEN_TYPE_SEMICOLON);
 }

@@ -105,14 +105,20 @@ TEST_CASE ("Function parsing error", "[parser]")
     string input = "\n\nfunc myFunc \n \n {\n} ";
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
+
+  SECTION ("No comma")
+  {
+    string input = "func myFunc (param0 param1) \n {\n} ";
+    REQUIRE (testParse (input) == EXIT_FAILURE);
+  }
 }
 
-/*
+
 TEST_CASE ("Basic var/var[] parsing", "[parser]")
 {
-  string input = "var xyz   \n"
-                 "    var array[40] \n"
-                 "  var arr [ 30 ]";
+  string input = "var xyz;   \n"
+                 "    var array[40] ;\n"
+                 "  var arr [ 30 ];";
   REQUIRE (testParse (input) == EXIT_SUCCESS);
 }
 
@@ -120,172 +126,42 @@ TEST_CASE ("var/var[] parsing error", "[parser]")
 {
   SECTION ("No identifier")
   {
-    string input = "var 123   \n";
+    string input = "var 123;   \n";
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
 
   SECTION ("Two identifier")
   {
-    string input = "  var x y   \n";
+    string input = "  var x y;   \n";
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
 
   SECTION ("No open bracket")
   {
-    string input = "  var z 33]   \n";
+    string input = "  var z 33];   \n";
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
 
   SECTION ("No close bracket")
   {
-    string input = "  var z [33   \n";
+    string input = "  var z [33;   \n";
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
 
   SECTION ("No index between brackets")
   {
-    string input = "  var z []   \n";
+    string input = "  var z [] ;  \n";
+    REQUIRE (testParse (input) == EXIT_FAILURE);
+  }
+
+  SECTION ("No semi-colon")
+  {
+    string input = "  var xyz   \n";
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
 }
 
-TEST_CASE ("Basic param parsing", "[parser]")
-{
-  string input = "\n\nfunc myFunc\n"
-                 "{ \n"
-                 "param x \n"
-                 "param y \n"
-                 "}";
-
-  REQUIRE (testParse (input) == EXIT_SUCCESS);
-}
-
-TEST_CASE ("param parsing error", "[parser]")
-{
-  SECTION ("Defined in global scope")
-  {
-    string input = "param x \n"
-                   "func myFunc\n"
-                   "{ \n"
-                   "}";
-    REQUIRE (testParse (input) == EXIT_FAILURE);
-  }
-
-  SECTION ("No identifier")
-  {
-    string input = "\n\nfunc myFunc\n"
-                   "{ \n"
-                   "param 123 \n"
-                   "}";
-    REQUIRE (testParse (input) == EXIT_FAILURE);
-  }
-}
-
-TEST_CASE ("Basic line label parsing", "[parser]")
-{
-  SECTION ("Placing new line after label")
-  {
-    string input = "func myFunc\n"
-                   "{ \n"
-                   "start:\n"
-                   "        var hello \n"
-                   "}";
-    REQUIRE (testParse (input) == EXIT_SUCCESS);
-  }
-
-  SECTION ("Not placing new line after label")
-  {
-    string input = "func myFunc\n"
-                   "{ \n"
-                   "start:  var hello \n"
-                   "}";
-    REQUIRE (testParse (input) == EXIT_SUCCESS);
-  }
-}
-
-TEST_CASE ("Basic instruction parsing", "[parser]")
-{
-  SECTION ("ret instruction")
-  {
-    string input = "\n\nfunc myFunc\n"
-                   "{ \n"
-                   "ret \n"
-                   "}";
-
-    REQUIRE (testParse (input) == EXIT_SUCCESS);
-  }
-
-  SECTION ("push instruction")
-  {
-    string input = "\n\nfunc myFunc\n"
-                   "{ \n"
-                   "push -42 \n"
-                   "}";
-
-    REQUIRE (testParse (input) == EXIT_SUCCESS);
-  }
-
-  SECTION ("mov instruction")
-  {
-    string input = "\n\nfunc myFunc\n"
-                   "{ \n"
-                   "var x\n"
-                   "mov x, 33 \n"
-                   "}";
-
-    REQUIRE (testParse (input) == EXIT_SUCCESS);
-  }
-  
-  SECTION ("jg instruction")
-  {
-    string input = "\n\nfunc myFunc\n"
-                   "{ \n"
-                   "here:"
-                   "jg 12.3, 8.2, here \n"
-                   "}";
-
-    REQUIRE (testParse (input) == EXIT_SUCCESS);
-  }
-
-  SECTION ("add instruction with array")
-  {
-    string input = "\n\nfunc myFunc\n"
-                   "{ \n"
-                   "var xyz[10]\n"
-                   "var y\n"
-                   "add xyz[2], y \n"
-                   "}";
-
-    REQUIRE (testParse (input) == EXIT_SUCCESS);
-  }
-
-  SECTION ("mov instruction with string")
-  {
-    string input = "\n\nfunc myFunc\n"
-                   "{ \n"
-                   "var str \n"
-                   "mov str, \"Hello wordl!\" \n"
-                   "}";
-
-    REQUIRE (testParse (input) == EXIT_SUCCESS);
-  }
-
-  SECTION ("call instruction")
-  {
-    string input = "\n\nfunc someFunc\n"
-                   "{ \n"
-                   "var x\n"
-                   "add x, 2\n"
-                   "}"
-                   "\n\nfunc myFunc\n"
-                   "{ \n"
-                   "call someFunc\n"
-                   "}";
-
-    REQUIRE (testParse (input) == EXIT_SUCCESS);
-  }
-}
-
+/*
 TEST_CASE ("parsing global variable as operand", "[parser]")
 {
   string input = "var GLOBAL_VAR\n" 
@@ -325,7 +201,6 @@ TEST_CASE ("Test forward referencing", "[parser]")
 
     REQUIRE (testParse (input) == EXIT_SUCCESS);
   }
-
 }
 
 TEST_CASE ("Instruction parsing error", "[parser]")
@@ -381,20 +256,6 @@ TEST_CASE ("Instruction parsing error", "[parser]")
 
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
-}
-
-TEST_CASE ("Basic input parsing", "[parser]")
-{
-  string input = "\n\nfunc myFunc\n"
-                 "{ \n"
-                 "start:\n"
-                 "        var hello \n"
-                 "        var world[ 42] \n"
-                 "        param x \n"
-                 "finish: param y \n"
-                 "}";
-
-  REQUIRE (testParse (input) == EXIT_SUCCESS);
 }
 
 TEST_CASE ("Parsing file", "[parser]")

@@ -35,6 +35,7 @@ class Parser
     void parseStatement ();
     void parseBlock ();
     void parseFunc ();
+    void parseVar ();
 };
 
 #endif
