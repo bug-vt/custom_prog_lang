@@ -7,7 +7,7 @@
 #include "string_table.hpp"
 #include "symbol_table.hpp"
 //#include "icode.hpp"
-//#include "code_gen.hpp"
+#include "code_gen.hpp"
 #include <fstream>
 
 
@@ -17,6 +17,7 @@ class Parser
     Parser () { }
     Parser (std::string raw_source);
     void parse ();
+    CodeGen createCodeGen (); 
     
   private:
     // variables for tracking current function

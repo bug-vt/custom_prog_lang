@@ -1,0 +1,21 @@
+/*
+ * Test code with empty function body
+ */
+
+// globals
+var global_x;
+var global_y;
+
+// test function
+func testFunc (x, y)
+{
+  var tmp1;
+  var tmp2;
+}
+
+// main function
+func main ()
+{
+  var local_x;
+  var local_y;
+}

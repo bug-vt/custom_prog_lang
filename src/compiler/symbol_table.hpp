@@ -62,6 +62,8 @@ class SymbolTable
   private:
     int symbol_count;
     std::unordered_map<Symbol, SymbolInfo> symbol_table;
+
+  friend class CodeGen;
 };
 
 

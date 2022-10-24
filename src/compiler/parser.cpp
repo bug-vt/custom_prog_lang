@@ -11,6 +11,16 @@ Parser::Parser (string raw_source)
   lexer = Lexer (raw_source);
 }
 
+CodeGen Parser::createCodeGen ()
+{
+  CodeGen code_gen;
+  // put tables 
+  code_gen.sym_table = symbol_table;
+  code_gen.func_table = func_table;
+
+  return code_gen;
+}
+
 void Parser::readToken (Token req_token)
 {
   if (lexer.getNextToken () != req_token)
@@ -113,7 +123,7 @@ void Parser::parseFunc ()
     }
 
     // store parameters in symbol table (reverse (right-to-left) order)
-    for (int i = param_list.size () - 1; i > 0; i--)
+    for (int i = param_list.size () - 1; i >= 0; i--)
       symbol_table.addSymbol (param_list[i], 1, SYMBOL_TYPE_PARAM);
     // record parameter count
     func_table.setFunc (curr_scope, param_list.size ());
