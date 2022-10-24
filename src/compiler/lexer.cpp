@@ -292,7 +292,7 @@ void Lexer::error (string msg)
   cout << line;
   cout << string (curr_lexeme.lexeme_start, ' ') << '^' << endl;
 
-  cout << "Fail to assemble\n" << endl;
+  cout << "Fail to compile\n" << endl;
   exit (EXIT_FAILURE);
 }
 

@@ -50,41 +50,64 @@ TEST_CASE ("Empty statements/blocks parsing", "[parser]")
   }
 }
 
-/*
 TEST_CASE ("Basic function directive parsing", "[parser]")
 {
-  string input = "\n\nfunc myFunc\n { \n }";
+  SECTION ("No parameter")
+  {
+    string input = "\n\nfunc myFunc ()\n { \n }";
 
-  REQUIRE (testParse (input) == EXIT_SUCCESS);
+    REQUIRE (testParse (input) == EXIT_SUCCESS);
+  }
+
+  SECTION ("One parameter")
+  {
+    string input = "func myFunc (param0)\n {  }";
+
+    REQUIRE (testParse (input) == EXIT_SUCCESS);
+  }
+
+  SECTION ("Multiple parameters")
+  {
+    string input = "func myFunc (param0, param1, param2)\n {  }";
+
+    REQUIRE (testParse (input) == EXIT_SUCCESS);
+  }
 }
 
 TEST_CASE ("Function parsing error", "[parser]")
 {
   SECTION ("No function name")
   {
-    string input = "\n\nfunc 123\n { \n }";
+    string input = "\n\nfunc 123 ()\n { \n }";
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
 
   SECTION ("No open brace")
   {
-    string input = "\n\nfunc myFunc\n \n }";
+    string input = "\n\nfunc myFunc ()\n \n }";
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
 
   SECTION ("No close brace")
   {
-    string input = "\n\nfunc myFunc\n \n {\n ";
+    string input = "\n\nfunc myFunc ()\n \n {\n ";
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
 
   SECTION ("Two open brace")
   {
-    string input = "\n\nfunc myFunc\n \n {\n { \n }";
+    string input = "\n\nfunc myFunc ()\n \n {\n { \n }";
+    REQUIRE (testParse (input) == EXIT_FAILURE);
+  }
+
+  SECTION ("No parenthesis")
+  {
+    string input = "\n\nfunc myFunc \n \n {\n} ";
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
 }
 
+/*
 TEST_CASE ("Basic var/var[] parsing", "[parser]")
 {
   string input = "var xyz   \n"
@@ -384,18 +407,18 @@ TEST_CASE ("Parsing file", "[parser]")
 
   REQUIRE (testParse (buffer.str ()) == EXIT_SUCCESS);
 }
-
+*/
 // ----------------------------------------------------------------
 // Tests for tables
 
 TEST_CASE ("Test function table", "[func_table]")
 {
   FuncTable func_table;
-  REQUIRE (func_table.addFunc ("myFunc1", 0) == 1);
+  REQUIRE (func_table.addFunc ("myFunc1") == 1);
 
   SECTION ("Trying to add function with same name")
   {
-    REQUIRE (func_table.addFunc ("myFunc1", 0) == -1);
+    REQUIRE (func_table.addFunc ("myFunc1") == -1);
   }
 
   SECTION ("Get function that exists inside table")
@@ -403,7 +426,7 @@ TEST_CASE ("Test function table", "[func_table]")
     FuncInfo func_info;
     REQUIRE_NOTHROW (func_info = func_table.getFunc ("myFunc1"));
     REQUIRE (func_table.getFuncIndex ("myFunc1") == 1);
-    REQUIRE (func_info.entry_point == 0);
+    REQUIRE (func_info.param_count == 0);
   }
 
   SECTION ("Get function that does NOT exists inside table")
@@ -413,10 +436,9 @@ TEST_CASE ("Test function table", "[func_table]")
 
   SECTION ("Set parameters and local data size")
   {
-    func_table.setFunc (1, 2, 3);
+    func_table.setFunc (1, 2);
     FuncInfo func_info = func_table.getFunc ("myFunc1");
     REQUIRE (func_info.param_count == 2);
-    REQUIRE (func_info.local_data_size == 3);
   }
 
   SECTION ("Test situation when caller try to modify content inside table")
@@ -431,4 +453,3 @@ TEST_CASE ("Test function table", "[func_table]")
     REQUIRE (same_info.param_count == 0);
   }
 }
-*/
