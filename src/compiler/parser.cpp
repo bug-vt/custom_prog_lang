@@ -1,5 +1,6 @@
 #include "parser.hpp"
 #include <vector>
+#include <iostream>
 
 #define GLOBAL_SCOPE 0
 
@@ -8,7 +9,13 @@ using std::vector;
 
 Parser::Parser (string raw_source)
 {
+  // initialize lexer
   lexer = Lexer (raw_source);
+  // Add two temporary variables to simulate general-purpose registers 
+  Symbol tmp_var0 ("_T0", GLOBAL_SCOPE);
+  Symbol tmp_var1 ("_T1", GLOBAL_SCOPE);
+  tmp0_sym_index = symbol_table.addSymbol (tmp_var0, 1, SYMBOL_TYPE_VAR);
+  tmp1_sym_index = symbol_table.addSymbol (tmp_var1, 1, SYMBOL_TYPE_VAR);
 }
 
 CodeGen Parser::createCodeGen ()
@@ -68,6 +75,10 @@ void Parser::parseStatement ()
 
     case TOKEN_TYPE_VAR:
       parseVar ();
+      break;
+
+    case TOKEN_TYPE_INT:
+      parseExpr ();
       break;
 
     default:
@@ -166,3 +177,65 @@ void Parser::parseVar ()
 
   readToken (TOKEN_TYPE_SEMICOLON);
 }
+
+void Parser::parseExpr ()
+{
+  lexer.undoGetNextToken ();
+  parseSubExpr ();
+}
+
+void Parser::parseSubExpr ()
+{
+  int instr_index;
+  Token op_token;
+  
+  FuncInfo& curr_func = func_table.at (curr_scope);
+  // first operand
+  lexer.getNextToken (); 
+  instr_index = curr_func.icode.addInstr (INSTR_PUSH);
+  curr_func.icode.addIntOp (instr_index, stoi (lexer.getCurrLexeme ()));
+  while (true)
+  {
+    Token token = lexer.getNextToken (); 
+    if (token != TOKEN_TYPE_ADD && token != TOKEN_TYPE_SUB)
+    {
+      lexer.undoGetNextToken ();
+      break;
+    }
+    
+    op_token = token;
+
+    // second operand
+    lexer.getNextToken (); 
+    instr_index = curr_func.icode.addInstr (INSTR_PUSH);
+    curr_func.icode.addIntOp (instr_index, stoi (lexer.getCurrLexeme ()));
+
+    // pop the first operand to _t1
+    instr_index = curr_func.icode.addInstr (INSTR_POP);
+    curr_func.icode.addVarOp (instr_index, tmp1_sym_index);
+
+    // pop the second operand to _t2
+    instr_index = curr_func.icode.addInstr (INSTR_POP);
+    curr_func.icode.addVarOp (instr_index, tmp0_sym_index);
+    
+    int op_instr;
+    switch (op_token)
+    {
+      case TOKEN_TYPE_ADD:
+        op_instr = INSTR_ADD;
+        break;
+      case TOKEN_TYPE_SUB:
+        op_instr = INSTR_SUB;
+        break;
+    }
+
+    instr_index = curr_func.icode.addInstr (op_instr);
+    curr_func.icode.addVarOp (instr_index, tmp0_sym_index);
+    curr_func.icode.addVarOp (instr_index, tmp1_sym_index);
+
+    // push the result
+    instr_index = curr_func.icode.addInstr (INSTR_PUSH);
+    curr_func.icode.addVarOp (instr_index, tmp0_sym_index);
+  }
+}
+

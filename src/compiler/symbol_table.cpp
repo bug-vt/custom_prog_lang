@@ -53,6 +53,16 @@ SymbolInfo SymbolTable::getSymbol (Symbol symbol)
   return found;
 }
 
+string SymbolTable::at (int index)
+{
+  for (auto const& x : symbol_table)
+  {
+    if (x.second.symbol_index == index)
+      return x.first.ident;
+  }
+  throw std::runtime_error ("No such symbol for given index");
+}
+
 int SymbolTable::getSize (Symbol symbol)
 {
   int size;

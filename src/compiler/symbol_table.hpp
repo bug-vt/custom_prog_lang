@@ -56,6 +56,7 @@ class SymbolTable
     SymbolTable ();
     int addSymbol (Symbol symbol, int size, int type);
     SymbolInfo getSymbol (Symbol symbol);
+    std::string at (int index);
     int getSize (Symbol symbol);
     void print ();
 

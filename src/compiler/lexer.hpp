@@ -15,6 +15,7 @@ class Lexer
     Token getNextToken (); 
     std::string getCurrLexeme ();
     Token peekNextToken ();
+    void undoGetNextToken ();
     bool goToNextLine ();
     void reset ();
     void error (std::string msg);
@@ -47,7 +48,6 @@ class Lexer
     // helper functions
     char getNextChar ();
     void copyLexeme (Lexeme &dest, Lexeme &source);
-    void undoGetNextToken ();
     bool isOpChar (char curr_char);
 
     // state machine 

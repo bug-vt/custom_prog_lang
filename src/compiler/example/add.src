@@ -1,0 +1,8 @@
+/*
+ * Test for simple add expression
+ */
+
+func main ()
+{
+  1 + 2 + 4;
+}

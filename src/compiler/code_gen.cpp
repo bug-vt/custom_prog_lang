@@ -1,11 +1,25 @@
 #include "code_gen.hpp"
 #include <cstring>
+#include <iostream>
 
 #define GLOBAL_SCOPE 0
 
 using std::ostream;
+using std::cout;
 using std::endl;
 using std::string;
+
+std::string mnemonics[] =
+{
+  "mov", "ref", "lw", "sw",
+  "add", "sub", "mul", "div", "mod", "exp", "neg", "inc", "dec",
+  "and", "or", "xor", "not" ,"shl", "shr",
+  "concat", "getChar", "setChar", 
+  "jmp", "je", "jne", "jg", "jl", "jge", "jle",
+  "push", "pop",
+  "call", "ret",
+  "pause", "exit", "print"
+};
 
 void CodeGen::init (string input_file_name, string output_file_name)
 {
@@ -78,7 +92,47 @@ void CodeGen::writeFunc (FuncInfo func, int func_index)
   writeScopeSymbols (func_index, SYMBOL_TYPE_VAR);
 
   // write function body
-  // Todo...
+  int body_size = func.icode.icode_stream.size ();
+  if (body_size > 0)
+  {
+    for (int i = 0; i < body_size; i++)
+    {
+      ICodeNode curr_node = func.icode.icode_stream.at (i); 
+      switch (curr_node.type)
+      {
+        // write instruction
+        case ICODE_NODE_INSTR:
+          {
+            // write mnemonic
+            output << "  " << mnemonics[curr_node.instr.opcode] << "  ";
+            int op_count = curr_node.instr.op_list.size ();
+            // write operands
+            for (int op_index = 0; op_index < op_count; op_index++)
+            {
+              Op op = curr_node.instr.op_list.at (op_index);
+              switch (op.type)
+              {
+                case OP_TYPE_INT:
+                  output << op.int_literal;
+                  break;
+                case OP_TYPE_VAR:
+                  output << sym_table.at (op.symbol_index);
+                  break;
+                default:
+                  break;
+              }
+
+              if (op_index < op_count - 1)
+                output << ", ";
+            }
+          }
+        default:
+          break;
+      }
+      // write newline and move to next instruction
+      output << endl;
+    }
+  }
   
   output << "}" << endl;
 }

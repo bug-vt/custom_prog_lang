@@ -79,7 +79,7 @@ void FuncTable::setFunc (int func_index, int param_count)
   func_table.at (func_index).param_count = param_count;
 }
 
-FuncInfo FuncTable::at (int index)
+FuncInfo& FuncTable::at (int index)
 {
   return func_table.at (index);
 }

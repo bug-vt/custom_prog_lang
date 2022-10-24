@@ -6,7 +6,7 @@
 #include "func_table.hpp"
 #include "string_table.hpp"
 #include "symbol_table.hpp"
-//#include "icode.hpp"
+#include "icode.hpp"
 #include "code_gen.hpp"
 #include <fstream>
 
@@ -26,6 +26,10 @@ class Parser
     // lexer
     Lexer lexer;
 
+    // general-purpose registers
+    int tmp0_sym_index;
+    int tmp1_sym_index;
+
     // tables
     FuncTable func_table;
     StringTable str_table;
@@ -37,6 +41,8 @@ class Parser
     void parseBlock ();
     void parseFunc ();
     void parseVar ();
+    void parseExpr ();
+    void parseSubExpr ();
 };
 
 #endif
