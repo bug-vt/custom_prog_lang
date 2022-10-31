@@ -26,11 +26,12 @@ def defineAst (output_dir, base_name, types):
   output.write ("#include \"token.hpp\"\n")
   output.write ("#include <string>\n")
   output.write ("\n")
-  output.write ("class Expr;\n")
-  output.write ("class Binary;\n")
-  output.write ("class Grouping;\n")
-  output.write ("class Literal;\n")
-  output.write ("class Unary;\n")
+
+  # forward referencing
+  for elem in types:
+    class_name = elem.split (":")[0].strip ()
+    output.write ("class " + class_name + ";\n")
+
   output.write ("\n")
   defineVisitor (output, base_name, types)
   output.write ("\n")
@@ -69,7 +70,7 @@ def defineType (output, base_name, class_name, fields):
 
   # visitor pattern. visit method for its own type
   output.write ("\n")
-  output.write ("  virtual std::string accept (Visitor &visitor)\n")
+  output.write ("  std::string accept (Visitor &visitor)\n")
   output.write ("  {\n")
   output.write ("    return visitor.visit" + class_name + base_name + " (this);\n");
   output.write ("  }\n")

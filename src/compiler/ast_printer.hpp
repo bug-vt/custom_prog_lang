@@ -5,19 +5,21 @@
 #include "icode.hpp"
 #include <vector>
 #include "expr.hpp"
+#include "token.hpp"
 
 
 struct AstPrinter : public Visitor
 {
   std::string print (Expr *expr)
   {
+    // To do: undefined reference error when base class accept method is not defined.
     return expr->accept (*this);
   }
 
   std::string visitBinaryExpr (Binary *expr) 
   {
     std::vector<Expr *> exprs = {expr->left, expr->right};
-    return parenthesize ("+", exprs);
+    return parenthesize (token2string (expr->op), exprs);
   }
 
   std::string visitGroupingExpr (Grouping *expr)
@@ -37,7 +39,7 @@ struct AstPrinter : public Visitor
   std::string visitUnaryExpr (Unary *expr)
   {
     std::vector<Expr *> exprs = {expr->right};
-    return parenthesize ("-", exprs);
+    return parenthesize (token2string (expr->op), exprs);
   }
 
   std::string parenthesize (std::string name, std::vector<Expr *> exprs)

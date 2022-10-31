@@ -80,16 +80,109 @@ string token2string (Token token)
       out = "return keyword";
       break;
     case TOKEN_TYPE_ASSIGN:
-      out = "Assignment operator";
+      out = "=";
       break;
     case TOKEN_TYPE_ADD:
-      out = "Addition operator";
+      out = "+";
       break;
     case TOKEN_TYPE_SUB:
-      out = "Subtraction operator";
+      out = "-";
       break;
     case TOKEN_TYPE_MUL:
-      out = "Multiplication operator";
+      out = "*";
+      break;
+    case TOKEN_TYPE_DIV:
+      out = "/";
+      break;
+    case TOKEN_TYPE_MOD:
+      out = "%";
+      break;
+    case TOKEN_TYPE_EXP:
+      out = "^";
+      break;
+    case TOKEN_TYPE_INC:
+      out = "++";
+      break;
+    case TOKEN_TYPE_DEC:
+      out = "--";
+      break;
+    case TOKEN_TYPE_ASSIGN_ADD:
+      out = "+=";
+      break;
+    case TOKEN_TYPE_ASSIGN_SUB:
+      out = "-=";
+      break;
+    case TOKEN_TYPE_ASSIGN_MUL:
+      out = "*=";
+      break;
+    case TOKEN_TYPE_ASSIGN_DIV:
+      out = "/=";
+      break;
+    case TOKEN_TYPE_ASSIGN_MOD:
+      out = "%=";
+      break;
+    case TOKEN_TYPE_ASSIGN_EXP:
+      out = "^=";
+      break;
+    case TOKEN_TYPE_BITWISE_AND:
+      out = "&";
+      break;
+    case TOKEN_TYPE_BITWISE_OR:
+      out = "|";
+      break;
+    case TOKEN_TYPE_BITWISE_XOR:
+      out = "#";
+      break;
+    case TOKEN_TYPE_BITWISE_NOT:
+      out = "~";
+      break;
+    case TOKEN_TYPE_BITWISE_SHIFT_LEFT:
+      out = "<<";
+      break;
+    case TOKEN_TYPE_BITWISE_SHIFT_RIGHT:
+      out = ">>";
+      break;
+    case TOKEN_TYPE_ASSIGN_AND:
+      out = "&=";
+      break;
+    case TOKEN_TYPE_ASSIGN_OR:
+      out = "|=";
+      break;
+    case TOKEN_TYPE_ASSIGN_XOR:
+      out = "#=";
+      break;
+    case TOKEN_TYPE_ASSIGN_SHIFT_LEFT:
+      out = "<<=";
+      break;
+    case TOKEN_TYPE_ASSIGN_SHIFT_RIGHT:
+      out = ">>=";
+      break;
+    case TOKEN_TYPE_LOGICAL_AND:
+      out = "&&";
+      break;
+    case TOKEN_TYPE_LOGICAL_OR:
+      out = "||";
+      break;
+    case TOKEN_TYPE_LOGICAL_NOT:
+      out = "!";
+      break;
+    case TOKEN_TYPE_EQUAL:
+      out = "==";
+      break;
+    case TOKEN_TYPE_NOT_EQUAL:
+      out = "!=";
+      break;
+    case TOKEN_TYPE_LESS:
+      out = "<";
+      break;
+    case TOKEN_TYPE_GREATER:
+      out = ">";
+      break;
+    case TOKEN_TYPE_LESS_EQUAL:
+      out = "<=";
+      break;
+    case TOKEN_TYPE_GREATER_EQUAL:
+      out = ">=";
       break;
     default:
       out = "Invalid";

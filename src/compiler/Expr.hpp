@@ -5,7 +5,6 @@
 #include "token.hpp"
 #include <string>
 
-class Expr;
 class Binary;
 class Grouping;
 class Literal;
@@ -33,7 +32,7 @@ struct Binary : public Expr
     this->right = right;
   }
 
-  virtual std::string accept (Visitor &visitor)
+  std::string accept (Visitor &visitor)
   {
     return visitor.visitBinaryExpr (this);
   }
@@ -50,7 +49,7 @@ struct Grouping : public Expr
     this->expression = expression;
   }
 
-  virtual std::string accept (Visitor &visitor)
+  std::string accept (Visitor &visitor)
   {
     return visitor.visitGroupingExpr (this);
   }
@@ -65,7 +64,7 @@ struct Literal : public Expr
     this->value = value;
   }
 
-  virtual std::string accept (Visitor &visitor)
+  std::string accept (Visitor &visitor)
   {
     return visitor.visitLiteralExpr (this);
   }
@@ -81,7 +80,7 @@ struct Unary : public Expr
     this->right = right;
   }
 
-  virtual std::string accept (Visitor &visitor)
+  std::string accept (Visitor &visitor)
   {
     return visitor.visitUnaryExpr (this);
   }
