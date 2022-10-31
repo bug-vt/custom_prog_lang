@@ -80,6 +80,8 @@ void Parser::parseStatement ()
       break;
 
     case TOKEN_TYPE_INT:
+    case TOKEN_TYPE_OPEN_PAREN:
+      lexer.undoGetNextToken ();
       ast = parseExpr ();
       break;
 
@@ -182,7 +184,6 @@ void Parser::parseVar ()
 
 Expr *Parser::parseExpr ()
 {
-  lexer.undoGetNextToken ();
   return parseTerm ();
 }
 
