@@ -1,88 +1,93 @@
+#ifndef EXPR_HPP
+#define EXPR_HPP
+
 #include "icode.hpp"
 #include "token.hpp"
+#include <string>
 
-template <typename T>
-class Visitor;
+class Expr;
+class Binary;
+class Grouping;
+class Literal;
+class Unary;
 
-class Expr
+struct Visitor
 {
+  virtual std::string visitBinaryExpr (Binary *expr) = 0;
+  virtual std::string visitGroupingExpr (Grouping *expr) = 0;
+  virtual std::string visitLiteralExpr (Literal *expr) = 0;
+  virtual std::string visitUnaryExpr (Unary *expr) = 0;
 };
 
-class Binary : public Expr
+struct Expr
 {
-  Binary (Expr left, Token op, Expr right)
+  virtual std::string accept (Visitor &visitor) { return ""; }
+};
+
+struct Binary : public Expr
+{
+  Binary (Expr *left, Token op, Expr *right)
   {
     this->left = left;
     this->op = op;
     this->right = right;
   }
 
-  template <typename T>
-  T accept (Visitor<T> visitor)
+  virtual std::string accept (Visitor &visitor)
   {
-    return visitor.visitBinaryExpr (*this);
+    return visitor.visitBinaryExpr (this);
   }
 
-  Expr left;
+  Expr *left;
   Token op;
-  Expr right;
+  Expr *right;
 };
 
-class Grouping : public Expr
+struct Grouping : public Expr
 {
-  Grouping (Expr expression)
+  Grouping (Expr *expression)
   {
     this->expression = expression;
   }
 
-  template <typename T>
-  T accept (Visitor<T> visitor)
+  virtual std::string accept (Visitor &visitor)
   {
-    return visitor.visitGroupingExpr (*this);
+    return visitor.visitGroupingExpr (this);
   }
 
-  Expr expression;
+  Expr *expression;
 };
 
-class Literal : public Expr
+struct Literal : public Expr
 {
   Literal (Op value)
   {
     this->value = value;
   }
 
-  template <typename T>
-  T accept (Visitor<T> visitor)
+  virtual std::string accept (Visitor &visitor)
   {
-    return visitor.visitLiteralExpr (*this);
+    return visitor.visitLiteralExpr (this);
   }
 
   Op value;
 };
 
-class Unary : public Expr
+struct Unary : public Expr
 {
-  Unary (Token op, Expr right)
+  Unary (Token op, Expr *right)
   {
     this->op = op;
     this->right = right;
   }
 
-  template <typename T>
-  T accept (Visitor<T> visitor)
+  virtual std::string accept (Visitor &visitor)
   {
-    return visitor.visitUnaryExpr (*this);
+    return visitor.visitUnaryExpr (this);
   }
 
   Token op;
-  Expr right;
+  Expr *right;
 };
 
-template <typename T>
-class Visitor
-{
-  virtual T visitBinaryExpr (Binary expr) = 0;
-  virtual T visitGroupingExpr (Grouping expr) = 0;
-  virtual T visitLiteralExpr (Literal expr) = 0;
-  virtual T visitUnaryExpr (Unary expr) = 0;
-};
+#endif

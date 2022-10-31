@@ -51,6 +51,8 @@ void Parser::parse ()
     else
       parseStatement ();
   }
+  AstPrinter printer;
+  std::cout << printer.print (ast) << std::endl;
 }
 
 void Parser::parseStatement ()
@@ -78,7 +80,7 @@ void Parser::parseStatement ()
       break;
 
     case TOKEN_TYPE_INT:
-      parseExpr ();
+      ast = parseExpr ();
       break;
 
     default:
@@ -178,64 +180,84 @@ void Parser::parseVar ()
   readToken (TOKEN_TYPE_SEMICOLON);
 }
 
-void Parser::parseExpr ()
+Expr *Parser::parseExpr ()
 {
   lexer.undoGetNextToken ();
-  parseSubExpr ();
+  return parseTerm ();
 }
 
-void Parser::parseSubExpr ()
+Expr *Parser::parseTerm ()
 {
-  int instr_index;
-  Token op_token;
-  
-  FuncInfo& curr_func = func_table.at (curr_scope);
-  // first operand
-  lexer.getNextToken (); 
-  instr_index = curr_func.icode.addInstr (INSTR_PUSH);
-  curr_func.icode.addIntOp (instr_index, stoi (lexer.getCurrLexeme ()));
+  Expr *expr = parseFactor ();
   while (true)
   {
-    Token token = lexer.getNextToken (); 
-    if (token != TOKEN_TYPE_ADD && token != TOKEN_TYPE_SUB)
+    Token op_token = lexer.getNextToken (); 
+    if (op_token != TOKEN_TYPE_ADD && op_token != TOKEN_TYPE_SUB)
     {
       lexer.undoGetNextToken ();
       break;
     }
     
-    op_token = token;
-
-    // second operand
-    lexer.getNextToken (); 
-    instr_index = curr_func.icode.addInstr (INSTR_PUSH);
-    curr_func.icode.addIntOp (instr_index, stoi (lexer.getCurrLexeme ()));
-
-    // pop the first operand to _t1
-    instr_index = curr_func.icode.addInstr (INSTR_POP);
-    curr_func.icode.addVarOp (instr_index, tmp1_sym_index);
-
-    // pop the second operand to _t2
-    instr_index = curr_func.icode.addInstr (INSTR_POP);
-    curr_func.icode.addVarOp (instr_index, tmp0_sym_index);
-    
-    int op_instr;
-    switch (op_token)
-    {
-      case TOKEN_TYPE_ADD:
-        op_instr = INSTR_ADD;
-        break;
-      case TOKEN_TYPE_SUB:
-        op_instr = INSTR_SUB;
-        break;
-    }
-
-    instr_index = curr_func.icode.addInstr (op_instr);
-    curr_func.icode.addVarOp (instr_index, tmp0_sym_index);
-    curr_func.icode.addVarOp (instr_index, tmp1_sym_index);
-
-    // push the result
-    instr_index = curr_func.icode.addInstr (INSTR_PUSH);
-    curr_func.icode.addVarOp (instr_index, tmp0_sym_index);
+    Expr *right = parseFactor ();
+    expr = new Binary (expr, op_token, right);
   }
+
+  return expr;
 }
+
+Expr *Parser::parseFactor ()
+{
+  Expr *expr = parseUnary ();
+
+  while (true)
+  {
+    Token op_token = lexer.getNextToken (); 
+    if (op_token != TOKEN_TYPE_DIV && op_token != TOKEN_TYPE_MUL)
+    {
+      lexer.undoGetNextToken ();
+      break;
+    }
+    
+    Expr *right = parseUnary ();
+    expr = new Binary (expr, op_token, right);
+  }
+
+  return expr;
+}
+
+Expr *Parser::parseUnary ()
+{
+  Token op_token = lexer.getNextToken (); 
+  if (op_token == TOKEN_TYPE_SUB)
+  {
+    Expr *right = parseUnary ();
+    return new Unary (op_token, right);
+  }
+  
+  lexer.undoGetNextToken ();
+
+  return parsePrimary ();
+}
+
+Expr *Parser::parsePrimary ()
+{
+  Token token = lexer.getNextToken (); 
+  if (token == TOKEN_TYPE_INT)
+  {
+    Op value;
+    value.type = OP_TYPE_INT;
+    value.int_literal = stoi (lexer.getCurrLexeme ());
+    return new Literal (value);
+  }
+
+  if (token == TOKEN_TYPE_OPEN_PAREN)
+  {
+    Expr *expr = parseExpr ();
+    readToken (TOKEN_TYPE_CLOSE_PAREN);
+    return new Grouping (expr);
+  }
+
+  lexer.error ("Expected expression.");
+}
+
 

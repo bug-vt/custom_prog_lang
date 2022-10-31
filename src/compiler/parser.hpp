@@ -10,6 +10,7 @@
 #include "code_gen.hpp"
 #include <fstream>
 #include "expr.hpp"
+#include "ast_printer.hpp"
 
 class Parser
 {
@@ -35,14 +36,20 @@ class Parser
     StringTable str_table;
     SymbolTable symbol_table;
 
+    // Abstract syntax tree
+    Expr *ast;
+
     // methods
     void readToken (Token req_token);
     void parseStatement ();
     void parseBlock ();
     void parseFunc ();
     void parseVar ();
-    void parseExpr ();
-    void parseSubExpr ();
+    Expr *parseExpr ();
+    Expr *parseTerm ();
+    Expr *parseFactor ();
+    Expr *parseUnary ();
+    Expr *parsePrimary ();
 };
 
 #endif
