@@ -8,36 +8,44 @@ def main (argc, argv):
     return
 
   output_dir = argv[1]
-  types = ["Binary   : Expr *left, Token op, Expr *right",
-           "Grouping : Expr *expression",
-           "Literal  : Op value",
-           "Unary    : Token op, Expr *right"]
+  expr_types = ["Binary   : Expr *left, Token op, Expr *right",
+                "Grouping : Expr *expression",
+                "Literal  : Op value",
+                "Unary    : Token op, Expr *right"]
 
-  defineAst (output_dir, "Expr", types)
+  defineAst (output_dir, "Expr", expr_types)
+
+  stmt_types = ["Expression : Expr *expression"]
+
+  defineAst (output_dir, "Stmt", stmt_types)
 
 
 def defineAst (output_dir, base_name, types):
   output = open (output_dir + "/" + base_name.lower () + ".hpp", "w")
  
-  output.write ("#ifndef EXPR_HPP\n")
-  output.write ("#define EXPR_HPP\n")
+  output.write ("#ifndef %s_HPP\n" % base_name.upper ())
+  output.write ("#define %s_HPP\n" % base_name.upper ())
   output.write ("\n")
   output.write ("#include \"icode.hpp\"\n")
   output.write ("#include \"token.hpp\"\n")
+  output.write ("#include \"expr.hpp\"\n")
   output.write ("#include <string>\n")
   output.write ("\n")
 
   # forward referencing
   for elem in types:
     class_name = elem.split (":")[0].strip ()
-    output.write ("class " + class_name + ";\n")
+    output.write ("struct " + class_name + ";\n")
 
   output.write ("\n")
   defineVisitor (output, base_name, types)
   output.write ("\n")
   output.write ("struct " + base_name + "\n")
   output.write ("{\n")
-  output.write ("  virtual std::string accept (Visitor &visitor) { return \"\"; }\n")
+  output.write ("  virtual std::string accept (%sVisitor &visitor)\n" % base_name)
+  output.write ("  {\n")
+  output.write ("    throw std::runtime_error (\"Visiting Expr base class\");\n")
+  output.write ("  }\n")
   output.write ("};\n")
   output.write ("\n")
 
@@ -70,7 +78,7 @@ def defineType (output, base_name, class_name, fields):
 
   # visitor pattern. visit method for its own type
   output.write ("\n")
-  output.write ("  std::string accept (Visitor &visitor)\n")
+  output.write ("  std::string accept (%sVisitor &visitor)\n" % base_name)
   output.write ("  {\n")
   output.write ("    return visitor.visit" + class_name + base_name + " (this);\n");
   output.write ("  }\n")
@@ -85,7 +93,7 @@ def defineType (output, base_name, class_name, fields):
 
 
 def defineVisitor (output, base_name, types):
-  output.write ("struct Visitor\n")
+  output.write ("struct %sVisitor\n" % base_name)
   output.write ("{\n")
   for elem in types:
     type_name = elem.split (":")[0].strip ()

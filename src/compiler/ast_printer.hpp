@@ -5,15 +5,26 @@
 #include "icode.hpp"
 #include <vector>
 #include "expr.hpp"
+#include "stmt.hpp"
 #include "token.hpp"
 
 
-struct AstPrinter : public Visitor
+struct AstPrinter : public ExprVisitor, public StmtVisitor
 {
-  std::string print (Expr *expr)
+  std::string print (std::vector<Stmt*> statements)
   {
     // To do: undefined reference error when base class accept method is not defined.
-    return expr->accept (*this);
+    std::string out = "";
+    for (int i = 0; i < statements.size (); i++)
+      out += statements[i]->accept (*this) + "\n";
+
+    return out;
+  }
+
+  std::string visitExpressionStmt (Expression *stmt)
+  {
+    std::vector<Expr *> exprs = {stmt->expression};
+    return parenthesize ("Stmt", exprs);
   }
 
   std::string visitBinaryExpr (Binary *expr) 

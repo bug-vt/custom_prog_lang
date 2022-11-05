@@ -37,10 +37,12 @@ void Parser::readToken (Token req_token)
   }
 }
 
-void Parser::parse ()
+vector<Stmt*> Parser::parse ()
 {
   lexer.reset ();
   curr_scope = GLOBAL_SCOPE; 
+
+  vector<Stmt*> statements;
 
   while (true)
   {
@@ -49,24 +51,24 @@ void Parser::parse ()
       break;
     // otherwise, go to next statement
     else
-      parseStatement ();
+      statements.push_back (parseStatement ());
   }
   AstPrinter printer;
-  std::cout << printer.print (ast) << std::endl;
+  std::cout << printer.print (statements);
+
+  return statements;
 }
 
-void Parser::parseStatement ()
+Stmt* Parser::parseStatement ()
 {
   Token first_token = lexer.getNextToken ();
   switch (first_token)
   {
-    case TOKEN_TYPE_SEMICOLON:
-      break;
-
     case TOKEN_TYPE_EOF:
       lexer.error ("Unexpected end of file");
       break;
 
+    /*
     case TOKEN_TYPE_OPEN_BRACE:
       parseBlock ();
       break;
@@ -78,18 +80,20 @@ void Parser::parseStatement ()
     case TOKEN_TYPE_VAR:
       parseVar ();
       break;
-
-    case TOKEN_TYPE_INT:
-    case TOKEN_TYPE_OPEN_PAREN:
-      lexer.undoGetNextToken ();
-      ast = parseExpr ();
-      break;
+    */
 
     default:
-      lexer.error ("Unexpected token");
+      lexer.undoGetNextToken ();
+      return parseExprStatement ();
   }
 }
 
+Stmt* Parser::parseExprStatement ()
+{
+  Expr* expr = parseExpr ();
+  readToken (TOKEN_TYPE_SEMICOLON);
+  return new Expression (expr);
+}
 
 void Parser::parseBlock ()
 {

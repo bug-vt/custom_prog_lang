@@ -10,6 +10,7 @@
 #include "code_gen.hpp"
 #include <fstream>
 #include "expr.hpp"
+#include "stmt.hpp"
 #include "ast_printer.hpp"
 
 class Parser
@@ -17,7 +18,7 @@ class Parser
   public:
     Parser () { }
     Parser (std::string raw_source);
-    void parse ();
+    std::vector<Stmt*> parse ();
     CodeGen createCodeGen (); 
     
   private:
@@ -36,20 +37,18 @@ class Parser
     StringTable str_table;
     SymbolTable symbol_table;
 
-    // Abstract syntax tree
-    Expr *ast;
-
     // methods
     void readToken (Token req_token);
-    void parseStatement ();
+    Stmt* parseStatement ();
+    Stmt* parseExprStatement ();
     void parseBlock ();
     void parseFunc ();
     void parseVar ();
-    Expr *parseExpr ();
-    Expr *parseTerm ();
-    Expr *parseFactor ();
-    Expr *parseUnary ();
-    Expr *parsePrimary ();
+    Expr* parseExpr ();
+    Expr* parseTerm ();
+    Expr* parseFactor ();
+    Expr* parseUnary ();
+    Expr* parsePrimary ();
 };
 
 #endif

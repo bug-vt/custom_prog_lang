@@ -3,14 +3,15 @@
 
 #include "icode.hpp"
 #include "token.hpp"
+#include "expr.hpp"
 #include <string>
 
-class Binary;
-class Grouping;
-class Literal;
-class Unary;
+struct Binary;
+struct Grouping;
+struct Literal;
+struct Unary;
 
-struct Visitor
+struct ExprVisitor
 {
   virtual std::string visitBinaryExpr (Binary *expr) = 0;
   virtual std::string visitGroupingExpr (Grouping *expr) = 0;
@@ -20,7 +21,10 @@ struct Visitor
 
 struct Expr
 {
-  virtual std::string accept (Visitor &visitor) { return ""; }
+  virtual std::string accept (ExprVisitor &visitor)
+  {
+    throw std::runtime_error ("Visiting Expr base class");
+  }
 };
 
 struct Binary : public Expr
@@ -32,7 +36,7 @@ struct Binary : public Expr
     this->right = right;
   }
 
-  std::string accept (Visitor &visitor)
+  std::string accept (ExprVisitor &visitor)
   {
     return visitor.visitBinaryExpr (this);
   }
@@ -49,7 +53,7 @@ struct Grouping : public Expr
     this->expression = expression;
   }
 
-  std::string accept (Visitor &visitor)
+  std::string accept (ExprVisitor &visitor)
   {
     return visitor.visitGroupingExpr (this);
   }
@@ -64,7 +68,7 @@ struct Literal : public Expr
     this->value = value;
   }
 
-  std::string accept (Visitor &visitor)
+  std::string accept (ExprVisitor &visitor)
   {
     return visitor.visitLiteralExpr (this);
   }
@@ -80,7 +84,7 @@ struct Unary : public Expr
     this->right = right;
   }
 
-  std::string accept (Visitor &visitor)
+  std::string accept (ExprVisitor &visitor)
   {
     return visitor.visitUnaryExpr (this);
   }
