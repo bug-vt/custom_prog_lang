@@ -1,5 +1,4 @@
 #include "parser.hpp"
-#include <vector>
 #include <iostream>
 #include <cassert>
 
@@ -12,11 +11,6 @@ Parser::Parser (string raw_source)
 {
   // initialize lexer
   lexer = Lexer (raw_source);
-  // Add two temporary variables to simulate general-purpose registers 
-  Symbol tmp_var0 ("_T0", GLOBAL_SCOPE);
-  Symbol tmp_var1 ("_T1", GLOBAL_SCOPE);
-  tmp0_sym_index = symbol_table.addSymbol (tmp_var0, 1, SYMBOL_TYPE_VAR);
-  tmp1_sym_index = symbol_table.addSymbol (tmp_var1, 1, SYMBOL_TYPE_VAR);
 }
 
 Token Parser::readToken (TokenType req_token)
@@ -93,11 +87,6 @@ Stmt* Parser::parseVar ()
     size = stoi (readToken (TOKEN_TYPE_INT).lexeme);
     readToken (TOKEN_TYPE_CLOSE_BRACKET);
   }
-
-  // add symbol to the symbol table and check for redefinition
-  Symbol symbol (ident.lexeme, curr_scope); 
-  if (symbol_table.addSymbol (symbol, size, SYMBOL_TYPE_VAR) == -1)
-    lexer.error ("Identifier with same name already exists inside the same scope");
  
   Expr* initializer = nullptr;
   // initialize when token '=' is present after declaration
@@ -110,69 +99,6 @@ Stmt* Parser::parseVar ()
   readToken (TOKEN_TYPE_SEMICOLON);
 
   return new Var (ident, initializer);
-}
-
-void Parser::parseBlock ()
-{
-  while (lexer.peekNextToken () != TOKEN_TYPE_CLOSE_BRACE)
-    parseStatement ();
-
-  // end the code block with closing curly brace.
-  readToken (TOKEN_TYPE_CLOSE_BRACE);
-}
-
-void Parser::parseFunc ()
-{
-  if (curr_scope != GLOBAL_SCOPE)
-    lexer.error ("Function cannot be defined inside another function");
-
-  // function name
-  readToken (TOKEN_TYPE_IDENT);
-  string func_name = lexer.getCurrLexeme ();
-  // add function to the function table and check for redefinition
-  int func_index = func_table.addFunc (func_name); 
-  if (func_index == -1)
-    lexer.error ("Function was already defined somewhere else");
-
-  // change scope to the function
-  curr_scope = func_index;
-
-  readToken (TOKEN_TYPE_OPEN_PAREN);
-  // Check if there are parameters
-  if (lexer.peekNextToken () != TOKEN_TYPE_CLOSE_PAREN)
-  {
-    vector<Symbol> param_list;
-    
-    // read parameters
-    while (true)
-    {
-      // add parameters to local parameter list
-      readToken (TOKEN_TYPE_IDENT);
-      Symbol param (lexer.getCurrLexeme (), curr_scope);  
-      param_list.push_back (param);
-
-      // check if the parser reached end of parameters
-      if (lexer.peekNextToken () == TOKEN_TYPE_CLOSE_PAREN)
-        break;
-      
-      readToken (TOKEN_TYPE_COMMA);
-    }
-
-    // store parameters in symbol table (reverse (right-to-left) order)
-    for (int i = param_list.size () - 1; i >= 0; i--)
-      symbol_table.addSymbol (param_list[i], 1, SYMBOL_TYPE_PARAM);
-    // record parameter count
-    func_table.setFunc (curr_scope, param_list.size ());
-  }
-
-  readToken (TOKEN_TYPE_CLOSE_PAREN);
-
-  // parse the function body
-  readToken (TOKEN_TYPE_OPEN_BRACE);
-  parseBlock ();
-  
-  // return to global scope
-  curr_scope = GLOBAL_SCOPE;
 }
 
 

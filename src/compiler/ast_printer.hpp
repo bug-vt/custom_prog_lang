@@ -6,10 +6,23 @@
 #include "expr.hpp"
 #include "stmt.hpp"
 #include "token.hpp"
+#include "symbol_table.hpp"
 
 
 struct AstPrinter : public ExprVisitor, public StmtVisitor
 {
+  // general-purpose registers
+  int tmp0;
+  int tmp1;
+  SymbolTable sym_table;  
+
+  AstPrinter ()
+  {
+    // Add two temporary variables to simulate general-purpose registers 
+    tmp0 = sym_table.addSymbol ("_T0");
+    tmp1 = sym_table.addSymbol ("_T1");
+  }
+
   std::string print (std::vector<Stmt*> statements)
   {
     // To do: undefined reference error when base class accept method is not defined.
@@ -31,6 +44,8 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     std::vector<Expr *> exprs;
     if (stmt->initializer)
       exprs.push_back (stmt->initializer);
+
+    sym_table.addSymbol (stmt->name.lexeme);
     return parenthesize ("Var " + stmt->name.lexeme, exprs);
   }
 
@@ -62,6 +77,7 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
 
   std::string visitVariableExpr (Variable *expr)
   {
+    sym_table.getSymbol (expr->name.lexeme);
     return expr->name.lexeme;
   }
 

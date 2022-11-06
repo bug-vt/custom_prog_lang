@@ -4,3 +4,4 @@
 
 var hello;
 var pi = 3;
+pi + 2;
