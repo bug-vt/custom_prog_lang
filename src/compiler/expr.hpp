@@ -9,6 +9,7 @@ struct Binary;
 struct Grouping;
 struct Literal;
 struct Unary;
+struct Variable;
 
 struct ExprVisitor
 {
@@ -16,6 +17,7 @@ struct ExprVisitor
   virtual std::string visitGroupingExpr (Grouping *expr) = 0;
   virtual std::string visitLiteralExpr (Literal *expr) = 0;
   virtual std::string visitUnaryExpr (Unary *expr) = 0;
+  virtual std::string visitVariableExpr (Variable *expr) = 0;
 };
 
 struct Expr
@@ -90,6 +92,21 @@ struct Unary : public Expr
 
   Token op;
   Expr *right;
+};
+
+struct Variable : public Expr
+{
+  Variable (Token name)
+  {
+    this->name = name;
+  }
+
+  std::string accept (ExprVisitor &visitor)
+  {
+    return visitor.visitVariableExpr (this);
+  }
+
+  Token name;
 };
 
 #endif

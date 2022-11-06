@@ -26,6 +26,14 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     return parenthesize ("Stmt", exprs);
   }
 
+  std::string visitVarStmt (Var *stmt)
+  {
+    std::vector<Expr *> exprs;
+    if (stmt->initializer)
+      exprs.push_back (stmt->initializer);
+    return parenthesize ("Var " + stmt->name.lexeme, exprs);
+  }
+
   std::string visitBinaryExpr (Binary *expr) 
   {
     std::vector<Expr *> exprs = {expr->left, expr->right};
@@ -38,6 +46,12 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     return parenthesize ("group", exprs);
   }
 
+  std::string visitUnaryExpr (Unary *expr)
+  {
+    std::vector<Expr *> exprs = {expr->right};
+    return parenthesize (expr->op.lexeme, exprs);
+  }
+
   std::string visitLiteralExpr (Literal *expr)
   {
     if (expr->value.type != TOKEN_TYPE_INT)
@@ -46,10 +60,9 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     return expr->value.lexeme;
   }
 
-  std::string visitUnaryExpr (Unary *expr)
+  std::string visitVariableExpr (Variable *expr)
   {
-    std::vector<Expr *> exprs = {expr->right};
-    return parenthesize (expr->op.lexeme, exprs);
+    return expr->name.lexeme;
   }
 
   std::string parenthesize (std::string name, std::vector<Expr *> exprs)

@@ -11,11 +11,13 @@ def main (argc, argv):
   expr_types = ["Binary   : Expr *left, Token op, Expr *right",
                 "Grouping : Expr *expression",
                 "Literal  : Token value",
-                "Unary    : Token op, Expr *right"]
+                "Unary    : Token op, Expr *right",
+                "Variable : Token name"]
 
   defineAst (output_dir, "Expr", expr_types)
 
-  stmt_types = ["Expression : Expr *expression"]
+  stmt_types = ["Expression : Expr *expression",
+                "Var        : Token name, Expr *initializer"]
 
   defineAst (output_dir, "Stmt", stmt_types)
 

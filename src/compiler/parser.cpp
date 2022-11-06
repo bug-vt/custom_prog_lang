@@ -1,6 +1,7 @@
 #include "parser.hpp"
 #include <vector>
 #include <iostream>
+#include <cassert>
 
 #define GLOBAL_SCOPE 0
 
@@ -18,13 +19,18 @@ Parser::Parser (string raw_source)
   tmp1_sym_index = symbol_table.addSymbol (tmp_var1, 1, SYMBOL_TYPE_VAR);
 }
 
-void Parser::readToken (TokenType req_token)
+Token Parser::readToken (TokenType req_token)
 {
-  if (lexer.getNextToken ().type != req_token)
+  Token token = lexer.getNextToken ();
+  if (token.type != req_token)
   {
     string msg = token2string (req_token) + " expected";
     lexer.error (msg); 
+    // should not reach here
+    assert (false);
   }
+
+  return token;
 }
 
 vector<Stmt*> Parser::parse ()
@@ -41,39 +47,28 @@ vector<Stmt*> Parser::parse ()
       break;
     // otherwise, go to next statement
     else
-      statements.push_back (parseStatement ());
+      statements.push_back (parseDeclaration ());
   }
 
   return statements;
 }
 
+Stmt* Parser::parseDeclaration ()
+{
+  if (lexer.getNextToken ().type == TOKEN_TYPE_VAR)
+    return parseVar ();
+
+  lexer.undoGetNextToken ();
+  return parseStatement ();
+}
+
 Stmt* Parser::parseStatement ()
 {
-  Token first_token = lexer.getNextToken ();
-  switch (first_token.type)
-  {
-    case TOKEN_TYPE_EOF:
-      lexer.error ("Unexpected end of file");
-      break;
+  if (lexer.getNextToken ().type == TOKEN_TYPE_EOF)
+    lexer.error ("Unexpected end of file");
 
-    /*
-    case TOKEN_TYPE_OPEN_BRACE:
-      parseBlock ();
-      break;
-
-    case TOKEN_TYPE_FUNC:
-      parseFunc ();
-      break;
-
-    case TOKEN_TYPE_VAR:
-      parseVar ();
-      break;
-    */
-
-    default:
-      lexer.undoGetNextToken ();
-      return parseExprStatement ();
-  }
+  lexer.undoGetNextToken ();
+  return parseExprStatement ();
 }
 
 Stmt* Parser::parseExprStatement ()
@@ -81,6 +76,40 @@ Stmt* Parser::parseExprStatement ()
   Expr* expr = parseExpr ();
   readToken (TOKEN_TYPE_SEMICOLON);
   return new Expression (expr);
+}
+
+Stmt* Parser::parseVar ()
+{
+  Token ident = readToken (TOKEN_TYPE_IDENT);
+
+  // for now, consider as a variable (array have size >= 1)
+  int size = 1;
+
+  // if next token is open bracket,
+  // verify if the identifier is an array and change to identified size
+  if (lexer.peekNextToken () == TOKEN_TYPE_OPEN_BRACKET)
+  {
+    readToken (TOKEN_TYPE_OPEN_BRACKET);
+    size = stoi (readToken (TOKEN_TYPE_INT).lexeme);
+    readToken (TOKEN_TYPE_CLOSE_BRACKET);
+  }
+
+  // add symbol to the symbol table and check for redefinition
+  Symbol symbol (ident.lexeme, curr_scope); 
+  if (symbol_table.addSymbol (symbol, size, SYMBOL_TYPE_VAR) == -1)
+    lexer.error ("Identifier with same name already exists inside the same scope");
+ 
+  Expr* initializer = nullptr;
+  // initialize when token '=' is present after declaration
+  if (lexer.peekNextToken () == TOKEN_TYPE_ASSIGN)
+  {
+    readToken (TOKEN_TYPE_ASSIGN);
+    initializer = parseExpr ();
+  }
+
+  readToken (TOKEN_TYPE_SEMICOLON);
+
+  return new Var (ident, initializer);
 }
 
 void Parser::parseBlock ()
@@ -146,33 +175,6 @@ void Parser::parseFunc ()
   curr_scope = GLOBAL_SCOPE;
 }
 
-void Parser::parseVar ()
-{
-  readToken (TOKEN_TYPE_IDENT);
-
-  string ident = lexer.getCurrLexeme ();
-  // for now, consider as a variable (array have size >= 1)
-  int size = 1;
-
-  // if next token is open bracket,
-  // verify if the identifier is an array and change to identified size
-  if (lexer.peekNextToken () == TOKEN_TYPE_OPEN_BRACKET)
-  {
-    readToken (TOKEN_TYPE_OPEN_BRACKET);
-
-    readToken (TOKEN_TYPE_INT);
-    size = stoi (lexer.getCurrLexeme ());
-    
-    readToken (TOKEN_TYPE_CLOSE_BRACKET);
-  }
-
-  // add symbol to the symbol table and check for redefinition
-  Symbol symbol (ident, curr_scope); 
-  if (symbol_table.addSymbol (symbol, size, SYMBOL_TYPE_VAR) == -1)
-    lexer.error ("Identifier with same name already exists inside the same scope");
-
-  readToken (TOKEN_TYPE_SEMICOLON);
-}
 
 Expr *Parser::parseExpr ()
 {
@@ -236,9 +238,10 @@ Expr *Parser::parsePrimary ()
 {
   Token token = lexer.getNextToken (); 
   if (token.type == TOKEN_TYPE_INT)
-  {
     return new Literal (token);
-  }
+
+  if (token.type == TOKEN_TYPE_IDENT)
+    return new Variable (token);
 
   if (token.type == TOKEN_TYPE_OPEN_PAREN)
   {
@@ -248,6 +251,8 @@ Expr *Parser::parsePrimary ()
   }
 
   lexer.error ("Expected expression.");
+  assert (false);
+  return nullptr;
 }
 
 

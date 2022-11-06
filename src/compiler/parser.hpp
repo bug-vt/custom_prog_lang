@@ -34,12 +34,13 @@ class Parser
     SymbolTable symbol_table;
 
     // methods
-    void readToken (TokenType req_token);
+    Token readToken (TokenType req_token);
     Stmt* parseStatement ();
     Stmt* parseExprStatement ();
+    Stmt* parseDeclaration ();
+    Stmt* parseVar ();
     void parseBlock ();
     void parseFunc ();
-    void parseVar ();
     Expr* parseExpr ();
     Expr* parseTerm ();
     Expr* parseFactor ();

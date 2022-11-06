@@ -6,10 +6,12 @@
 #include <string>
 
 struct Expression;
+struct Var;
 
 struct StmtVisitor
 {
   virtual std::string visitExpressionStmt (Expression *stmt) = 0;
+  virtual std::string visitVarStmt (Var *stmt) = 0;
 };
 
 struct Stmt
@@ -33,6 +35,23 @@ struct Expression : public Stmt
   }
 
   Expr *expression;
+};
+
+struct Var : public Stmt
+{
+  Var (Token name, Expr *initializer)
+  {
+    this->name = name;
+    this->initializer = initializer;
+  }
+
+  std::string accept (StmtVisitor &visitor)
+  {
+    return visitor.visitVarStmt (this);
+  }
+
+  Token name;
+  Expr *initializer;
 };
 
 #endif
