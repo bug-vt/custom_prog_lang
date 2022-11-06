@@ -1,7 +1,6 @@
 #ifndef STMT_HPP
 #define STMT_HPP
 
-#include "icode.hpp"
 #include "token.hpp"
 #include "expr.hpp"
 #include <string>

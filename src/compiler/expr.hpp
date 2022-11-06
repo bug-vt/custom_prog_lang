@@ -1,7 +1,6 @@
 #ifndef EXPR_HPP
 #define EXPR_HPP
 
-#include "icode.hpp"
 #include "token.hpp"
 #include "expr.hpp"
 #include <string>
@@ -63,7 +62,7 @@ struct Grouping : public Expr
 
 struct Literal : public Expr
 {
-  Literal (Op value)
+  Literal (Token value)
   {
     this->value = value;
   }
@@ -73,7 +72,7 @@ struct Literal : public Expr
     return visitor.visitLiteralExpr (this);
   }
 
-  Op value;
+  Token value;
 };
 
 struct Unary : public Expr

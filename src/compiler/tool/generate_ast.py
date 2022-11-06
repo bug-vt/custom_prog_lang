@@ -10,7 +10,7 @@ def main (argc, argv):
   output_dir = argv[1]
   expr_types = ["Binary   : Expr *left, Token op, Expr *right",
                 "Grouping : Expr *expression",
-                "Literal  : Op value",
+                "Literal  : Token value",
                 "Unary    : Token op, Expr *right"]
 
   defineAst (output_dir, "Expr", expr_types)
@@ -26,7 +26,6 @@ def defineAst (output_dir, base_name, types):
   output.write ("#ifndef %s_HPP\n" % base_name.upper ())
   output.write ("#define %s_HPP\n" % base_name.upper ())
   output.write ("\n")
-  output.write ("#include \"icode.hpp\"\n")
   output.write ("#include \"token.hpp\"\n")
   output.write ("#include \"expr.hpp\"\n")
   output.write ("#include <string>\n")

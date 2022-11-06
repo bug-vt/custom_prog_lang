@@ -3,7 +3,7 @@
 
 #include <string>
 
-typedef int Token;
+
 enum TokenType {TOKEN_TYPE_EOF,
                 // types
                 TOKEN_TYPE_INT,
@@ -74,6 +74,19 @@ enum TokenType {TOKEN_TYPE_EOF,
                 // invalid
                 TOKEN_TYPE_INVALID};
 
-std::string token2string (Token token);
+struct Token
+{
+  TokenType type;
+  std::string lexeme;
+
+  Token () { }
+  Token (TokenType type, std::string lexeme)
+  {
+    this->type = type;
+    this->lexeme = lexeme;
+  }
+};
+
+std::string token2string (TokenType token);
 
 #endif

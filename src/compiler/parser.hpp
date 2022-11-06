@@ -6,12 +6,9 @@
 #include "func_table.hpp"
 #include "string_table.hpp"
 #include "symbol_table.hpp"
-#include "icode.hpp"
-#include "code_gen.hpp"
 #include <fstream>
 #include "expr.hpp"
 #include "stmt.hpp"
-#include "ast_printer.hpp"
 
 class Parser
 {
@@ -19,7 +16,6 @@ class Parser
     Parser () { }
     Parser (std::string raw_source);
     std::vector<Stmt*> parse ();
-    CodeGen createCodeGen (); 
     
   private:
     // variables for tracking current function
@@ -38,7 +34,7 @@ class Parser
     SymbolTable symbol_table;
 
     // methods
-    void readToken (Token req_token);
+    void readToken (TokenType req_token);
     Stmt* parseStatement ();
     Stmt* parseExprStatement ();
     void parseBlock ();

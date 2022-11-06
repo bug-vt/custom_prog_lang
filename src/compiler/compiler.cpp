@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include "ast_printer.hpp"
 
 using std::ifstream;
 using std::stringstream;
@@ -26,11 +27,10 @@ int main (int argc, char **argv)
 
   string raw_source = loadSourceFile (argv[1]);
   Parser parser (raw_source);
-  parser.parse ();
+  vector<Stmt*> statements = parser.parse ();
 
-  CodeGen code_gen = parser.createCodeGen ();
-  code_gen.init (string (argv[1]), out_file_name);   
-  code_gen.write ();
+  AstPrinter printer;
+  std::cout << printer.print (statements);
 
   return 0;
 }

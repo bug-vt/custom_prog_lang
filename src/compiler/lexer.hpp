@@ -14,7 +14,7 @@ class Lexer
     Lexer (std::string raw_source);
     Token getNextToken (); 
     std::string getCurrLexeme ();
-    Token peekNextToken ();
+    TokenType peekNextToken ();
     void undoGetNextToken ();
     bool goToNextLine ();
     void reset ();
@@ -34,9 +34,9 @@ class Lexer
     std::vector<std::string> source_code;
 
     // reserved words, delimiters, operators
-    std::unordered_map<std::string, Token> reserved_word; 
-    std::unordered_map<char, Token> delim;
-    std::unordered_map<std::string, Token> op;
+    std::unordered_map<std::string, TokenType> reserved_word; 
+    std::unordered_map<char, TokenType> delim;
+    std::unordered_map<std::string, TokenType> op;
 
     // lexer internal 
     Lexeme curr_lexeme;

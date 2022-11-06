@@ -165,7 +165,7 @@ Token Lexer::getNextToken ()
   curr_lexeme.lexeme_end--;
 
   // determine token type from lexing state.
-  Token token_type = TOKEN_TYPE_INVALID;
+  TokenType token_type = TOKEN_TYPE_INVALID;
   switch (curr_lex_state)
   {
     case LEX_STATE_START:
@@ -207,10 +207,10 @@ Token Lexer::getNextToken ()
       token_type = TOKEN_TYPE_INVALID;
   }
   
-  return token_type;
+  return Token (token_type, curr_lexeme.lexeme);
 }
 
-Token Lexer::peekNextToken ()
+TokenType Lexer::peekNextToken ()
 {
   // temporary save current lexeme
   Lexeme tmp_lexeme;
@@ -221,7 +221,7 @@ Token Lexer::peekNextToken ()
  
   // restore back to current lexeme
   copyLexeme (curr_lexeme, tmp_lexeme);
-  return next_token;
+  return next_token.type;
 }
 
 

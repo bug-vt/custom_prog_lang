@@ -2,7 +2,7 @@
 
 using std::string;
 
-string token2string (Token token)
+string token2string (TokenType token)
 {
   string out;
   switch (token)

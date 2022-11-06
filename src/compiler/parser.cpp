@@ -18,19 +18,9 @@ Parser::Parser (string raw_source)
   tmp1_sym_index = symbol_table.addSymbol (tmp_var1, 1, SYMBOL_TYPE_VAR);
 }
 
-CodeGen Parser::createCodeGen ()
+void Parser::readToken (TokenType req_token)
 {
-  CodeGen code_gen;
-  // put tables 
-  code_gen.sym_table = symbol_table;
-  code_gen.func_table = func_table;
-
-  return code_gen;
-}
-
-void Parser::readToken (Token req_token)
-{
-  if (lexer.getNextToken () != req_token)
+  if (lexer.getNextToken ().type != req_token)
   {
     string msg = token2string (req_token) + " expected";
     lexer.error (msg); 
@@ -53,8 +43,6 @@ vector<Stmt*> Parser::parse ()
     else
       statements.push_back (parseStatement ());
   }
-  AstPrinter printer;
-  std::cout << printer.print (statements);
 
   return statements;
 }
@@ -62,7 +50,7 @@ vector<Stmt*> Parser::parse ()
 Stmt* Parser::parseStatement ()
 {
   Token first_token = lexer.getNextToken ();
-  switch (first_token)
+  switch (first_token.type)
   {
     case TOKEN_TYPE_EOF:
       lexer.error ("Unexpected end of file");
@@ -197,7 +185,7 @@ Expr *Parser::parseTerm ()
   while (true)
   {
     Token op_token = lexer.getNextToken (); 
-    if (op_token != TOKEN_TYPE_ADD && op_token != TOKEN_TYPE_SUB)
+    if (op_token.type != TOKEN_TYPE_ADD && op_token.type != TOKEN_TYPE_SUB)
     {
       lexer.undoGetNextToken ();
       break;
@@ -217,7 +205,7 @@ Expr *Parser::parseFactor ()
   while (true)
   {
     Token op_token = lexer.getNextToken (); 
-    if (op_token != TOKEN_TYPE_DIV && op_token != TOKEN_TYPE_MUL)
+    if (op_token.type != TOKEN_TYPE_DIV && op_token.type != TOKEN_TYPE_MUL)
     {
       lexer.undoGetNextToken ();
       break;
@@ -233,7 +221,7 @@ Expr *Parser::parseFactor ()
 Expr *Parser::parseUnary ()
 {
   Token op_token = lexer.getNextToken (); 
-  if (op_token == TOKEN_TYPE_SUB)
+  if (op_token.type == TOKEN_TYPE_SUB)
   {
     Expr *right = parseUnary ();
     return new Unary (op_token, right);
@@ -247,15 +235,12 @@ Expr *Parser::parseUnary ()
 Expr *Parser::parsePrimary ()
 {
   Token token = lexer.getNextToken (); 
-  if (token == TOKEN_TYPE_INT)
+  if (token.type == TOKEN_TYPE_INT)
   {
-    Op value;
-    value.type = OP_TYPE_INT;
-    value.int_literal = stoi (lexer.getCurrLexeme ());
-    return new Literal (value);
+    return new Literal (token);
   }
 
-  if (token == TOKEN_TYPE_OPEN_PAREN)
+  if (token.type == TOKEN_TYPE_OPEN_PAREN)
   {
     Expr *expr = parseExpr ();
     readToken (TOKEN_TYPE_CLOSE_PAREN);
