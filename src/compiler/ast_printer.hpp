@@ -27,8 +27,15 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
   {
     // To do: undefined reference error when base class accept method is not defined.
     std::string out = "";
-    for (int i = 0; i < (int) statements.size (); i++)
-      out += statements[i]->accept (*this) + "\n";
+    try
+    {
+      for (int i = 0; i < (int) statements.size (); i++)
+        out += statements[i]->accept (*this) + "\n";
+    }
+    catch (std::runtime_error& err)
+    {
+      out = std::string (err.what ()) + "\n"; 
+    }
 
     return out;
   }
@@ -47,6 +54,13 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
 
     sym_table.addSymbol (stmt->name.lexeme);
     return parenthesize ("Var " + stmt->name.lexeme, exprs);
+  }
+
+  std::string visitAssignExpr (Assign *expr) 
+  {
+    std::vector<Expr *> exprs = {expr->value};
+    sym_table.getSymbol (expr->name.lexeme);
+    return parenthesize (expr->name.lexeme + "=", exprs);
   }
 
   std::string visitBinaryExpr (Binary *expr) 

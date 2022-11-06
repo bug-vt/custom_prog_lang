@@ -8,7 +8,8 @@ def main (argc, argv):
     return
 
   output_dir = argv[1]
-  expr_types = ["Binary   : Expr *left, Token op, Expr *right",
+  expr_types = ["Assign   : Token name, Expr *value",
+                "Binary   : Expr *left, Token op, Expr *right",
                 "Grouping : Expr *expression",
                 "Literal  : Token value",
                 "Unary    : Token op, Expr *right",

@@ -5,3 +5,7 @@
 var hello;
 var pi = 3;
 pi + 2;
+//hi;
+pi = 44;
+pi = pi - 5;
+4 + 1 = 1 + (54 - 42 / 3);

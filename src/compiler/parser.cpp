@@ -19,7 +19,7 @@ Token Parser::readToken (TokenType req_token)
   if (token.type != req_token)
   {
     string msg = token2string (req_token) + " expected";
-    lexer.error (msg); 
+    throw std::runtime_error (msg); 
     // should not reach here
     assert (false);
   }
@@ -49,17 +49,27 @@ vector<Stmt*> Parser::parse ()
 
 Stmt* Parser::parseDeclaration ()
 {
-  if (lexer.getNextToken ().type == TOKEN_TYPE_VAR)
-    return parseVar ();
+  try
+  {
+    if (lexer.getNextToken ().type == TOKEN_TYPE_VAR)
+      return parseVar ();
 
-  lexer.undoGetNextToken ();
-  return parseStatement ();
+    lexer.undoGetNextToken ();
+    return parseStatement ();
+  }
+  catch (std::runtime_error &err)
+  {
+    lexer.error (err.what ());
+  }
+  // should not reach here
+  assert (false);
+  return nullptr;
 }
 
 Stmt* Parser::parseStatement ()
 {
   if (lexer.getNextToken ().type == TOKEN_TYPE_EOF)
-    lexer.error ("Unexpected end of file");
+    throw std::runtime_error ("Unexpected end of file");
 
   lexer.undoGetNextToken ();
   return parseExprStatement ();
@@ -102,12 +112,34 @@ Stmt* Parser::parseVar ()
 }
 
 
-Expr *Parser::parseExpr ()
+Expr* Parser::parseExpr ()
 {
-  return parseTerm ();
+  return parseAssignment ();
 }
 
-Expr *Parser::parseTerm ()
+Expr* Parser::parseAssignment ()
+{
+  Expr* expr = parseTerm ();
+
+  Token op = lexer.getNextToken ();
+  if (op.type == TOKEN_TYPE_ASSIGN)
+  {
+    Expr* value = parseAssignment ();
+
+    // l-value must be variable
+    if (dynamic_cast<Variable*> (expr) != nullptr)
+    {
+      Token name = ((Variable*) expr)->name;
+      return new Assign (name, value);
+    }
+    throw std::runtime_error ("Invalid assignment target.");
+  }
+
+  lexer.undoGetNextToken ();
+  return expr;
+}
+
+Expr* Parser::parseTerm ()
 {
   Expr *expr = parseFactor ();
   while (true)
@@ -126,7 +158,7 @@ Expr *Parser::parseTerm ()
   return expr;
 }
 
-Expr *Parser::parseFactor ()
+Expr* Parser::parseFactor ()
 {
   Expr *expr = parseUnary ();
 
@@ -146,7 +178,7 @@ Expr *Parser::parseFactor ()
   return expr;
 }
 
-Expr *Parser::parseUnary ()
+Expr* Parser::parseUnary ()
 {
   Token op_token = lexer.getNextToken (); 
   if (op_token.type == TOKEN_TYPE_SUB)
@@ -160,7 +192,7 @@ Expr *Parser::parseUnary ()
   return parsePrimary ();
 }
 
-Expr *Parser::parsePrimary ()
+Expr* Parser::parsePrimary ()
 {
   Token token = lexer.getNextToken (); 
   if (token.type == TOKEN_TYPE_INT)
@@ -176,7 +208,8 @@ Expr *Parser::parsePrimary ()
     return new Grouping (expr);
   }
 
-  lexer.error ("Expected expression.");
+  throw std::runtime_error ("Expected expression.");
+  // should not reach here
   assert (false);
   return nullptr;
 }

@@ -26,6 +26,7 @@ class Parser
     Stmt* parseExprStatement ();
     Stmt* parseDeclaration ();
     Stmt* parseVar ();
+    Expr* parseAssignment ();
     Expr* parseExpr ();
     Expr* parseTerm ();
     Expr* parseFactor ();

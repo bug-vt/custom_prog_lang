@@ -5,6 +5,7 @@
 #include "expr.hpp"
 #include <string>
 
+struct Assign;
 struct Binary;
 struct Grouping;
 struct Literal;
@@ -13,6 +14,7 @@ struct Variable;
 
 struct ExprVisitor
 {
+  virtual std::string visitAssignExpr (Assign *expr) = 0;
   virtual std::string visitBinaryExpr (Binary *expr) = 0;
   virtual std::string visitGroupingExpr (Grouping *expr) = 0;
   virtual std::string visitLiteralExpr (Literal *expr) = 0;
@@ -26,6 +28,23 @@ struct Expr
   {
     throw std::runtime_error ("Visiting Expr base class");
   }
+};
+
+struct Assign : public Expr
+{
+  Assign (Token name, Expr *value)
+  {
+    this->name = name;
+    this->value = value;
+  }
+
+  std::string accept (ExprVisitor &visitor)
+  {
+    return visitor.visitAssignExpr (this);
+  }
+
+  Token name;
+  Expr *value;
 };
 
 struct Binary : public Expr
