@@ -4,6 +4,7 @@
 #include "token.hpp"
 #include "expr.hpp"
 #include <string>
+#include <vector>
 
 struct Assign;
 struct Binary;

@@ -8,17 +8,18 @@ def main (argc, argv):
     return
 
   output_dir = argv[1]
-  expr_types = ["Assign   : Token name, Expr *value",
-                "Binary   : Expr *left, Token op, Expr *right",
-                "Grouping : Expr *expression",
-                "Literal  : Token value",
-                "Unary    : Token op, Expr *right",
-                "Variable : Token name"]
+  expr_types = ["Assign   = Token name, Expr *value",
+                "Binary   = Expr *left, Token op, Expr *right",
+                "Grouping = Expr *expression",
+                "Literal  = Token value",
+                "Unary    = Token op, Expr *right",
+                "Variable = Token name"]
 
   defineAst (output_dir, "Expr", expr_types)
 
-  stmt_types = ["Expression : Expr *expression",
-                "Var        : Token name, Expr *initializer"]
+  stmt_types = ["Block      = std::vector<Stmt*> statements",
+                "Expression = Expr *expression",
+                "Var        = Token name, Expr *initializer"]
 
   defineAst (output_dir, "Stmt", stmt_types)
 
@@ -32,11 +33,12 @@ def defineAst (output_dir, base_name, types):
   output.write ("#include \"token.hpp\"\n")
   output.write ("#include \"expr.hpp\"\n")
   output.write ("#include <string>\n")
+  output.write ("#include <vector>\n")
   output.write ("\n")
 
   # forward referencing
   for elem in types:
-    class_name = elem.split (":")[0].strip ()
+    class_name = elem.split ("=")[0].strip ()
     output.write ("struct " + class_name + ";\n")
 
   output.write ("\n")
@@ -52,8 +54,8 @@ def defineAst (output_dir, base_name, types):
   output.write ("\n")
 
   for elem in types:
-    class_name = elem.split (":")[0].strip ()
-    fields = elem.split(":")[1].strip ()
+    class_name = elem.split ("=")[0].strip ()
+    fields = elem.split("=")[1].strip ()
     defineType (output, base_name, class_name, fields)
 
   output.write ("#endif\n")
@@ -98,7 +100,7 @@ def defineVisitor (output, base_name, types):
   output.write ("struct %sVisitor\n" % base_name)
   output.write ("{\n")
   for elem in types:
-    type_name = elem.split (":")[0].strip ()
+    type_name = elem.split ("=")[0].strip ()
     output.write ("  virtual std::string visit" + type_name + base_name + " (" + \
                   type_name + " *" + base_name.lower () + ") = 0;\n")
   output.write ("};\n")

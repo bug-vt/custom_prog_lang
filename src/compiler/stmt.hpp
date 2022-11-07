@@ -4,12 +4,15 @@
 #include "token.hpp"
 #include "expr.hpp"
 #include <string>
+#include <vector>
 
+struct Block;
 struct Expression;
 struct Var;
 
 struct StmtVisitor
 {
+  virtual std::string visitBlockStmt (Block *stmt) = 0;
   virtual std::string visitExpressionStmt (Expression *stmt) = 0;
   virtual std::string visitVarStmt (Var *stmt) = 0;
 };
@@ -20,6 +23,21 @@ struct Stmt
   {
     throw std::runtime_error ("Visiting Expr base class");
   }
+};
+
+struct Block : public Stmt
+{
+  Block (std::vector<Stmt*> statements)
+  {
+    this->statements = statements;
+  }
+
+  std::string accept (StmtVisitor &visitor)
+  {
+    return visitor.visitBlockStmt (this);
+  }
+
+  std::vector<Stmt*> statements;
 };
 
 struct Expression : public Stmt

@@ -1,6 +1,5 @@
 #include "parser.hpp"
 #include <iostream>
-#include <cassert>
 
 #define GLOBAL_SCOPE 0
 
@@ -20,8 +19,6 @@ Token Parser::readToken (TokenType req_token)
   {
     string msg = token2string (req_token) + " expected";
     throw std::runtime_error (msg); 
-    // should not reach here
-    assert (false);
   }
 
   return token;
@@ -61,15 +58,24 @@ Stmt* Parser::parseDeclaration ()
   {
     lexer.error (err.what ());
   }
-  // should not reach here
-  assert (false);
-  return nullptr;
+
+  throw std::runtime_error ("Should not reach here.");
 }
 
 Stmt* Parser::parseStatement ()
 {
-  if (lexer.getNextToken ().type == TOKEN_TYPE_EOF)
-    throw std::runtime_error ("Unexpected end of file");
+  Token first_token = lexer.getNextToken ();
+  switch (first_token.type)
+  {
+    case TOKEN_TYPE_EOF:
+      throw std::runtime_error ("Unexpected end of file");
+
+    case TOKEN_TYPE_OPEN_BRACE:
+      return new Block (parseBlock ());
+
+    default:
+      break;
+  }
 
   lexer.undoGetNextToken ();
   return parseExprStatement ();
@@ -109,6 +115,21 @@ Stmt* Parser::parseVar ()
   readToken (TOKEN_TYPE_SEMICOLON);
 
   return new Var (ident, initializer);
+}
+
+vector<Stmt*> Parser::parseBlock ()
+{
+  vector<Stmt*> statements;
+
+  TokenType next_token = lexer.peekNextToken ();
+  while (next_token != TOKEN_TYPE_CLOSE_BRACE && next_token != TOKEN_TYPE_EOF)
+  {
+    statements.push_back (parseDeclaration ());
+    next_token = lexer.peekNextToken ();
+  }
+
+  readToken (TOKEN_TYPE_CLOSE_BRACE);
+  return statements;
 }
 
 
@@ -209,9 +230,6 @@ Expr* Parser::parsePrimary ()
   }
 
   throw std::runtime_error ("Expected expression.");
-  // should not reach here
-  assert (false);
-  return nullptr;
 }
 
 

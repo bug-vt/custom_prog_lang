@@ -22,6 +22,7 @@ class SymbolTable
 {
   public:
     SymbolTable ();
+    SymbolTable (SymbolTable* enclosing);
     //int addSymbol (std::string name, int size, int type);
     int addSymbol (std::string name);
     Symbol getSymbol (std::string name);
@@ -32,6 +33,7 @@ class SymbolTable
   private:
     int symbol_count;
     std::unordered_map<std::string, Symbol> symbol_table;
+    SymbolTable* enclosing;
 
   friend class CodeGen;
 };

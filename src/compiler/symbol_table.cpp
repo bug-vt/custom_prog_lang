@@ -3,6 +3,8 @@
 
 using std::string;
 using std::unordered_map;
+using std::cout;
+using std::endl;
 
 
 Symbol::Symbol (int index, int size, int type) 
@@ -12,8 +14,13 @@ Symbol::Symbol (int index, int size, int type)
   this->type = type;
 }
 
-SymbolTable::SymbolTable () : symbol_count (0), symbol_table ()
+SymbolTable::SymbolTable () : symbol_count (0), symbol_table (), enclosing (nullptr)
 {
+}
+
+SymbolTable::SymbolTable (SymbolTable* enclosing) : symbol_count (0), symbol_table ()
+{
+  this->enclosing = enclosing;
 }
 
 // Add symbol to the symbol table.
@@ -24,7 +31,10 @@ int SymbolTable::addSymbol (string name)
 {
   // check if given function is already inside the table.
   if (symbol_table.count (name))
-    throw std::runtime_error ("Identifier with same name already exists inside the same scope");
+  {
+    string msg = "Identifier with '" + name + "' already exists inside the same scope";
+    throw std::runtime_error (msg);
+  }
 
   // add the given function into the table.
   int index = symbol_count;
@@ -37,13 +47,14 @@ int SymbolTable::addSymbol (string name)
 Symbol SymbolTable::getSymbol (string name)
 {
   // see if the symbol is defined in local scope
-  if (symbol_table.count (name) == 0)
-  {
-    string msg = "Undefined variable '" + name + "'";
-    throw std::runtime_error (msg);
-  }
-        
-  return symbol_table.at (name);
+  if (symbol_table.count (name))
+    return symbol_table.at (name);
+
+  if (enclosing)
+    return enclosing->getSymbol (name);
+
+  string msg = "Undefined variable '" + name + "'";
+  throw std::runtime_error (msg);
 }
 
 string SymbolTable::at (int index)
@@ -63,10 +74,10 @@ int SymbolTable::getSize (string name)
 
 void SymbolTable::print ()
 {
-  std::cout << "---------------------------------------" << std::endl;
+  cout << "---------------------------------------" << endl;
   for (auto const& x : symbol_table)
   {
     std::cout << x.first << std::endl;
   }
-  std::cout << "---------------------------------------" << std::endl;
+  cout << "---------------------------------------" << endl;
 }
