@@ -272,6 +272,7 @@ TEST_CASE ("Parsing file", "[parser]")
 // ----------------------------------------------------------------
 // Tests for tables
 
+/*
 TEST_CASE ("Test function table", "[func_table]")
 {
   FuncTable func_table;
@@ -314,3 +315,4 @@ TEST_CASE ("Test function table", "[func_table]")
     REQUIRE (same_info.param_count == 0);
   }
 }
+*/

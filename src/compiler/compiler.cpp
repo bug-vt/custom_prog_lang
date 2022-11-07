@@ -5,8 +5,10 @@
 #include <iostream>
 #include <sstream>
 #include "ast_printer.hpp"
+#include "emitter.hpp"
 
 using std::ifstream;
+using std::ofstream;
 using std::stringstream;
 using std::cout;
 using std::endl;
@@ -32,6 +34,11 @@ int main (int argc, char **argv)
   AstPrinter printer;
   std::cout << printer.print (statements);
 
+  ofstream out_file (out_file_name);
+  Emitter emitter;
+  out_file << emitter.walkAst (statements);
+
+  out_file.close ();
   return 0;
 }
 
