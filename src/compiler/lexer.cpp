@@ -57,6 +57,7 @@ Lexer::Lexer (string raw_source)
   reserved_word["while"] = TOKEN_TYPE_WHILE;
   reserved_word["func"] = TOKEN_TYPE_FUNC;
   reserved_word["return"] = TOKEN_TYPE_RETURN;
+  reserved_word["print"] = TOKEN_TYPE_PRINT;
 
   // list of delimiters
   delim['['] = TOKEN_TYPE_OPEN_BRACKET;

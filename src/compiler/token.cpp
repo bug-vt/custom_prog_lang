@@ -184,6 +184,9 @@ string token2string (TokenType token)
     case TOKEN_TYPE_GREATER_EQUAL:
       out = ">=";
       break;
+    case TOKEN_TYPE_PRINT:
+      out = "print";
+      break;
     default:
       out = "Invalid";
   }

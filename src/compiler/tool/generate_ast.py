@@ -19,6 +19,7 @@ def main (argc, argv):
 
   stmt_types = ["Block      = std::vector<Stmt*> statements",
                 "Expression = Expr *expression",
+                "Print      = Expr *expression",
                 "Var        = Token name, Expr *initializer"]
 
   defineAst (output_dir, "Stmt", stmt_types)

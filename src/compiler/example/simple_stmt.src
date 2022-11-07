@@ -17,3 +17,4 @@ pi = pi - 5;
   local;
 }
 //local;
+print pi;

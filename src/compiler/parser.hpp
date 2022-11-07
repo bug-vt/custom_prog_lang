@@ -24,6 +24,7 @@ class Parser
     Token readToken (TokenType req_token);
     Stmt* parseStatement ();
     Stmt* parseExprStatement ();
+    Stmt* parsePrintStatement ();
     Stmt* parseDeclaration ();
     Stmt* parseVar ();
     std::vector<Stmt*> parseBlock ();

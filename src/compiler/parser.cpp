@@ -70,6 +70,9 @@ Stmt* Parser::parseStatement ()
     case TOKEN_TYPE_EOF:
       throw std::runtime_error ("Unexpected end of file");
 
+    case TOKEN_TYPE_PRINT:
+      return parsePrintStatement ();
+
     case TOKEN_TYPE_OPEN_BRACE:
       return new Block (parseBlock ());
 
@@ -86,6 +89,13 @@ Stmt* Parser::parseExprStatement ()
   Expr* expr = parseExpr ();
   readToken (TOKEN_TYPE_SEMICOLON);
   return new Expression (expr);
+}
+
+Stmt* Parser::parsePrintStatement ()
+{
+  Expr* expr = parseExpr ();
+  readToken (TOKEN_TYPE_SEMICOLON);
+  return new Print (expr);
 }
 
 Stmt* Parser::parseVar ()

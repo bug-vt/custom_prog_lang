@@ -47,7 +47,13 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
   std::string visitExpressionStmt (Expression* stmt)
   {
     std::vector<Expr *> exprs = {stmt->expression};
-    return parenthesize ("Stmt", exprs);
+    return parenthesize ("Expr", exprs);
+  }
+
+  std::string visitPrintStmt (Print* stmt)
+  {
+    std::vector<Expr *> exprs = {stmt->expression};
+    return parenthesize ("Print", exprs);
   }
 
   std::string visitVarStmt (Var* stmt)

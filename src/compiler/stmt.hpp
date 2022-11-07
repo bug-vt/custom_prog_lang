@@ -8,12 +8,14 @@
 
 struct Block;
 struct Expression;
+struct Print;
 struct Var;
 
 struct StmtVisitor
 {
   virtual std::string visitBlockStmt (Block *stmt) = 0;
   virtual std::string visitExpressionStmt (Expression *stmt) = 0;
+  virtual std::string visitPrintStmt (Print *stmt) = 0;
   virtual std::string visitVarStmt (Var *stmt) = 0;
 };
 
@@ -50,6 +52,21 @@ struct Expression : public Stmt
   std::string accept (StmtVisitor &visitor)
   {
     return visitor.visitExpressionStmt (this);
+  }
+
+  Expr *expression;
+};
+
+struct Print : public Stmt
+{
+  Print (Expr *expression)
+  {
+    this->expression = expression;
+  }
+
+  std::string accept (StmtVisitor &visitor)
+  {
+    return visitor.visitPrintStmt (this);
   }
 
   Expr *expression;

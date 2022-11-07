@@ -71,6 +71,8 @@ enum TokenType {TOKEN_TYPE_EOF,
                 TOKEN_TYPE_GREATER,
                 TOKEN_TYPE_LESS_EQUAL,
                 TOKEN_TYPE_GREATER_EQUAL,
+                // test
+                TOKEN_TYPE_PRINT,
                 // invalid
                 TOKEN_TYPE_INVALID};
 
