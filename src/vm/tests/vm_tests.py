@@ -129,5 +129,12 @@ class TestVM (unittest.TestCase):
         out = runVM ("../example/pass_by_ref.casm");
         self.assertEqual (out, expected);
 
+    def testPop (self):
+        expected = ("2\n"
+                    "1\n"
+                    "hello world\n")
+        out = runVM ("../example/pop.casm");
+        self.assertEqual (out, expected);
+
 if __name__ == '__main__':
     unittest.main ()

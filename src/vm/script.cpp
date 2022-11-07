@@ -397,6 +397,7 @@ void Script::instrPush ()
 
 void Script::instrPop ()
 {
+  resolveOpCopy (0, stack.pop ());
 }
 
 void Script::instrCall ()

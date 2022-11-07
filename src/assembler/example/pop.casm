@@ -1,0 +1,18 @@
+func main
+{
+  var x
+  var y
+  push 1
+  push 2
+  
+  pop x
+  pop y
+  print x
+  print "\n"
+  print y
+  print "\n"
+
+  push "hello world\n"
+  pop x
+  print x
+}
