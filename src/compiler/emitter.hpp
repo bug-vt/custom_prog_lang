@@ -95,6 +95,7 @@ struct Emitter : public ExprVisitor, public StmtVisitor
     out += emit (expr->value);
     out += "  pop _t0\n";
     out += "  mov " + expr->name.lexeme + std::string (scope) + ", _t0\n";
+    out += "  push " + expr->name.lexeme + std::string (scope) + "\n";
     return out;
   }
 

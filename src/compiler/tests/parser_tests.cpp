@@ -3,19 +3,27 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <fstream>
+#include "../ast_printer.hpp"
 
 using std::ifstream;
 using std::string;
 using std::stringstream;
+using std::vector;
 
-int testParse (string input)
+int testParse (string input, string expected="")
 {
   pid_t pid = fork ();
   // child
   if (pid == 0)
   {
     Parser parser (input);
-    parser.parse ();
+    vector<Stmt*> statements = parser.parse ();
+
+    if (expected != "")
+    {
+      AstPrinter printer;
+      REQUIRE (expected == printer.print (statements)); 
+    }
     exit (EXIT_SUCCESS);
   }
   // parent
@@ -26,15 +34,8 @@ int testParse (string input)
   return ret_val;
 }
 
-TEST_CASE ("Empty statements/blocks parsing", "[parser]")
+TEST_CASE ("Empty blocks parsing", "[parser]")
 {
-  SECTION ("Empty statement")
-  {
-    string input = "\n\n\n;";
-
-    REQUIRE (testParse (input) == EXIT_SUCCESS);
-  }
-
   SECTION ("Empty block")
   {
     string input = "\n\n\n { \n }";
@@ -42,14 +43,15 @@ TEST_CASE ("Empty statements/blocks parsing", "[parser]")
     REQUIRE (testParse (input) == EXIT_SUCCESS);
   }
 
-  SECTION ("Nested empty statements/blocks")
+  SECTION ("Nested empty blocks")
   {
-    string input = "{;} ;;; {}{}{} ; {;;}";
+    string input = "{  {{}}{}  {}}";
 
     REQUIRE (testParse (input) == EXIT_SUCCESS);
   }
 }
 
+/*
 TEST_CASE ("Basic function directive parsing", "[parser]")
 {
   SECTION ("No parameter")
@@ -112,6 +114,7 @@ TEST_CASE ("Function parsing error", "[parser]")
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
 }
+*/
 
 
 TEST_CASE ("Basic var/var[] parsing", "[parser]")
@@ -119,7 +122,11 @@ TEST_CASE ("Basic var/var[] parsing", "[parser]")
   string input = "var xyz;   \n"
                  "    var array[40] ;\n"
                  "  var arr [ 30 ];";
-  REQUIRE (testParse (input) == EXIT_SUCCESS);
+  string expected = "(Var xyz)\n"
+                    "(Var array)\n"
+                    "(Var arr)\n";
+
+  REQUIRE (testParse (input, expected) == EXIT_SUCCESS);
 }
 
 TEST_CASE ("var/var[] parsing error", "[parser]")
@@ -161,97 +168,92 @@ TEST_CASE ("var/var[] parsing error", "[parser]")
   }
 }
 
-/*
 TEST_CASE ("parsing global variable as operand", "[parser]")
 {
-  string input = "var GLOBAL_VAR\n" 
-                 "func someFunc\n"
+  string input = "var GLOBAL_VAR = 42;\n" 
+                 //"func someFunc\n"
                  "{ \n"
-                 "add GLOBAL_VAR, 2\n"
+                 "  var local = GLOBAL_VAR + 2;\n"
                  "}";
+  string expected = "(Var GLOBAL_VAR 42)\n"
+                    "(Var local (+ GLOBAL_VAR 2))\n";
 
-  REQUIRE (testParse (input) == EXIT_SUCCESS);
+  REQUIRE (testParse (input, expected) == EXIT_SUCCESS);
 }
 
-TEST_CASE ("Test forward referencing", "[parser]")
+TEST_CASE ("Testing basic parsing", "[parser]")
 {
-  SECTION ("forward referencing label")
+  SECTION ("Assignments")
   {
-    string input = "func someFunc\n"
+    string input = //"\n\nfunc myFunc\n"
                    "{ \n"
-                   "jmp hello\n"
-                   "push 2\n"
-                   "hello:\n"
+                   "  var y;\n"
+                   "  var x = y = 123;\n"
                    "}";
 
-    REQUIRE (testParse (input) == EXIT_SUCCESS);
+    string expected = "(Var y)\n"
+                      "(Var x (y= 123))\n";
+    REQUIRE (testParse (input, expected) == EXIT_SUCCESS);
   }
 
-  SECTION ("forward referencing function")
+  SECTION ("Left-associativity")
   {
-    string input = "func someFunc\n"
+    string input = //"\n\nfunc myFunc\n"
                    "{ \n"
-                   "call otherFunc\n"
-                   "}\n"
-                   "func otherFunc\n"
-                   "{ \n"
-                   "var tmp\n"
-                   "mov tmp, 88\n"
-                   "}\n";
+                   "  1 + 2 + 3 + 4 + 5;\n"
+                   "}";
 
-    REQUIRE (testParse (input) == EXIT_SUCCESS);
+    string expected = "(Expr (+ (+ (+ (+ 1 2) 3) 4) 5))\n";
+    REQUIRE (testParse (input, expected) == EXIT_SUCCESS);
   }
 }
 
-TEST_CASE ("Instruction parsing error", "[parser]")
+TEST_CASE ("Testing parsing error", "[parser]")
 {
-  SECTION ("Incorrect add instruction")
+  SECTION ("No semi-colon")
   {
-    string input = "\n\nfunc myFunc\n"
+    string input = //"\n\nfunc myFunc\n"
                    "{ \n"
-                   "add 2, 2 \n"
+                   "  var abc = 4\n"
                    "}";
 
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
 
-  SECTION ("Incorrect sub instruction")
+  SECTION ("Equality instead of assignment")
   {
-    string input = "\n\nfunc myFunc\n"
+    string input = //"\n\nfunc myFunc\n"
                    "{ \n"
-                   "var y\n"
-                   "sub y, :\n"
+                   "  var x == 33;\n"
                    "}";
 
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
 
-  SECTION ("Calling undefined variable")
+  SECTION ("Incorrect l-value")
   {
-    string input = "\n\nfunc myFunc\n"
+    string input = //"\n\nfunc myFunc\n"
                    "{ \n"
-                   "mul xzy, 10\n"
+                   "  123 = 6;\n"
                    "}";
 
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
 
-  SECTION ("Calling undefined function")
+  SECTION ("Dangling block")
   {
-    string input = "\n\nfunc myFunc\n"
+    string input = //"\n\nfunc myFunc\n"
                    "{ \n"
-                   "call noFunc\n"
-                   "}";
+                   "  var hello = 0;\n";
 
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
 
-  SECTION ("Incorrect use of ref instruction")
+  SECTION ("Expected expression for r-value")
   {
-    string input = "\n\nfunc myFunc\n"
+    string input = //"\n\nfunc myFunc\n"
                    "{ \n"
-                   "var x\n"
-                   "ref x, 2\n"
+                   "  var x = var y = 1;\n"
                    "}";
 
     REQUIRE (testParse (input) == EXIT_FAILURE);
@@ -260,7 +262,7 @@ TEST_CASE ("Instruction parsing error", "[parser]")
 
 TEST_CASE ("Parsing file", "[parser]")
 {
-  ifstream input ("../example/example.casm");
+  ifstream input ("../example/add.src");
   REQUIRE (input.good ());
 
   stringstream buffer;
@@ -268,7 +270,7 @@ TEST_CASE ("Parsing file", "[parser]")
 
   REQUIRE (testParse (buffer.str ()) == EXIT_SUCCESS);
 }
-*/
+
 // ----------------------------------------------------------------
 // Tests for tables
 

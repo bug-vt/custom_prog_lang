@@ -1,0 +1,13 @@
+var pi = 3;
+pi = 44;
+pi = pi - 5;
+print pi;
+
+// shadowing
+{
+  pi = 99;
+  var pi = 32;
+  print pi;
+}
+
+print pi;

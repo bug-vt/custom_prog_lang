@@ -75,11 +75,12 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     
     for (Stmt* statement : stmt->statements)
       out += statement->accept (*this) + "\n";
-   
+    
     delete current;
     this->sym_table = previous;
-
-    return out;
+  
+    // remove extra newline at the end of the string
+    return out = out.substr (0, out.length () - 1);
   }
 
   std::string visitAssignExpr (Assign* expr) 
