@@ -1,0 +1,3 @@
+var pi = 33;
+pi = "Hello";
+print pi;

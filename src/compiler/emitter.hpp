@@ -110,22 +110,22 @@ struct Emitter : public ExprVisitor, public StmtVisitor
     switch (expr->op.type)
     {
       case TOKEN_TYPE_EQUAL:
-        out += "  seq _t0, _t1\n";
+        out += "  seq _t0, _t0, _t1\n";
         break;
       case TOKEN_TYPE_NOT_EQUAL:
-        out += "  sne _t0, _t1\n";
+        out += "  sne _t0, _t0, _t1\n";
         break;
       case TOKEN_TYPE_LESS:
-        out += "  slt _t0, _t1\n";
+        out += "  slt _t0, _t0, _t1\n";
         break;
       case TOKEN_TYPE_GREATER:
-        out += "  sgt _t0, _t1\n";
+        out += "  sgt _t0, _t0, _t1\n";
         break;
       case TOKEN_TYPE_LESS_EQUAL:
-        out += "  sle _t0, _t1\n";
+        out += "  sle _t0, _t0, _t1\n";
         break;
       case TOKEN_TYPE_GREATER_EQUAL:
-        out += "  sge _t0, _t1\n";
+        out += "  sge _t0, _t0, _t1\n";
         break;
       case TOKEN_TYPE_ADD:
         out += "  add _t0, _t1\n";
