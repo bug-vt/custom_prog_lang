@@ -109,6 +109,24 @@ struct Emitter : public ExprVisitor, public StmtVisitor
 
     switch (expr->op.type)
     {
+      case TOKEN_TYPE_EQUAL:
+        out += "  seq _t0, _t1\n";
+        break;
+      case TOKEN_TYPE_NOT_EQUAL:
+        out += "  sne _t0, _t1\n";
+        break;
+      case TOKEN_TYPE_LESS:
+        out += "  slt _t0, _t1\n";
+        break;
+      case TOKEN_TYPE_GREATER:
+        out += "  sgt _t0, _t1\n";
+        break;
+      case TOKEN_TYPE_LESS_EQUAL:
+        out += "  sle _t0, _t1\n";
+        break;
+      case TOKEN_TYPE_GREATER_EQUAL:
+        out += "  sge _t0, _t1\n";
+        break;
       case TOKEN_TYPE_ADD:
         out += "  add _t0, _t1\n";
         break;
@@ -140,25 +158,27 @@ struct Emitter : public ExprVisitor, public StmtVisitor
     std::string out = "";
     out += emit (expr->right);
 
+    out += "  pop _t0\n";
+
     switch (expr->op.type)
     {
+      case TOKEN_TYPE_LOGICAL_NOT:
+        out += "  not _t0\n";
+        break;
       case TOKEN_TYPE_SUB:
-        out += "  pop _t0\n";
         out += "  neg _t0\n";
-        out += "  push _t0\n";
         break;
       default:
         throw std::runtime_error ("Invalid Unary operator");
     }
+
+    out += "  push _t0\n";
 
     return out;
   }
 
   std::string visitLiteralExpr (Literal* expr)
   {
-    if (expr->value.type != TOKEN_TYPE_INT)
-      return "nil";
-
     return "  push " + expr->value.lexeme + "\n";
   }
 

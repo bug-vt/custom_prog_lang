@@ -150,7 +150,7 @@ Expr* Parser::parseExpr ()
 
 Expr* Parser::parseAssignment ()
 {
-  Expr* expr = parseTerm ();
+  Expr* expr = parseEquality ();
 
   Token op = lexer.getNextToken ();
   if (op.type == TOKEN_TYPE_ASSIGN)
@@ -167,6 +167,50 @@ Expr* Parser::parseAssignment ()
   }
 
   lexer.undoGetNextToken ();
+  return expr;
+}
+
+Expr* Parser::parseEquality ()
+{
+  Expr* expr = parseComparison ();
+
+  while (true)
+  {
+    Token op_token = lexer.getNextToken (); 
+    if (op_token.type != TOKEN_TYPE_NOT_EQUAL 
+        && op_token.type != TOKEN_TYPE_EQUAL)
+    {
+      lexer.undoGetNextToken ();
+      break;
+    }
+    
+    Expr *right = parseComparison ();
+    expr = new Binary (expr, op_token, right);
+  }
+
+  return expr;
+}
+
+Expr* Parser::parseComparison ()
+{
+  Expr* expr = parseTerm ();
+
+  while (true)
+  {
+    Token op_token = lexer.getNextToken (); 
+    if (op_token.type != TOKEN_TYPE_GREATER 
+        && op_token.type != TOKEN_TYPE_GREATER_EQUAL
+        && op_token.type != TOKEN_TYPE_LESS 
+        && op_token.type != TOKEN_TYPE_LESS_EQUAL)
+    {
+      lexer.undoGetNextToken ();
+      break;
+    }
+    
+    Expr *right = parseTerm ();
+    expr = new Binary (expr, op_token, right);
+  }
+
   return expr;
 }
 
@@ -212,7 +256,8 @@ Expr* Parser::parseFactor ()
 Expr* Parser::parseUnary ()
 {
   Token op_token = lexer.getNextToken (); 
-  if (op_token.type == TOKEN_TYPE_SUB)
+  if (op_token.type == TOKEN_TYPE_SUB 
+      || op_token.type == TOKEN_TYPE_LOGICAL_NOT)
   {
     Expr *right = parseUnary ();
     return new Unary (op_token, right);
@@ -226,12 +271,19 @@ Expr* Parser::parseUnary ()
 Expr* Parser::parsePrimary ()
 {
   Token token = lexer.getNextToken (); 
-  if (token.type == TOKEN_TYPE_INT)
+  // Literal
+  if (token.type == TOKEN_TYPE_FALSE 
+      || token.type == TOKEN_TYPE_TRUE
+      || token.type == TOKEN_TYPE_INT 
+      || token.type == TOKEN_TYPE_FLOAT 
+      || token.type == TOKEN_TYPE_STRING)
     return new Literal (token);
 
+  // Variable
   if (token.type == TOKEN_TYPE_IDENT)
     return new Variable (token);
 
+  // Grouping
   if (token.type == TOKEN_TYPE_OPEN_PAREN)
   {
     Expr *expr = parseExpr ();

@@ -109,9 +109,6 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
 
   std::string visitLiteralExpr (Literal* expr)
   {
-    if (expr->value.type != TOKEN_TYPE_INT)
-      return "nil";
-
     return expr->value.lexeme;
   }
 

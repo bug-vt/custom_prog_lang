@@ -345,7 +345,7 @@ void Lexer::lexStateStart (char curr_char)
   else if (curr_char == '"')
   {
     curr_lex_state = LEX_STATE_STRING;
-    add_curr_char = false;
+    //add_curr_char = false;
   }
   // invalid character is read 
   else
@@ -424,7 +424,7 @@ void Lexer::lexStateString (char curr_char)
 {
   if (curr_char == '"')
   {
-    add_curr_char = false;
+    //add_curr_char = false;
     curr_lex_state = LEX_STATE_CLOSE_QUOTE;
   }
   else if (curr_char == '\\')

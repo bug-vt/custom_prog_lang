@@ -28,8 +28,10 @@ class Parser
     Stmt* parseDeclaration ();
     Stmt* parseVar ();
     std::vector<Stmt*> parseBlock ();
-    Expr* parseAssignment ();
     Expr* parseExpr ();
+    Expr* parseAssignment ();
+    Expr* parseEquality ();
+    Expr* parseComparison ();
     Expr* parseTerm ();
     Expr* parseFactor ();
     Expr* parseUnary ();
