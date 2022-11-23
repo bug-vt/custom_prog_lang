@@ -1,0 +1,25 @@
+func main
+{
+  var x
+  var tmp
+  var result
+
+  mov x, "Hello World!"
+  
+  var i
+  mov i, 0
+
+substring:
+  getChar tmp, x, i
+  concat result, tmp
+  inc i
+
+  var condition
+  slt condition, i, 6
+  je condition, 1, substring
+
+  print x
+  print "\n"
+  print result
+  print "\n"
+}

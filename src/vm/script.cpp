@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <cmath>
+#include <cassert>
 
 using std::string;
 using std::ifstream;
@@ -100,10 +101,11 @@ void Script::reset (int argc, char **argv)
     int str_index = str_table.size ();
     for (int i = argc - 1; i > 1; i--)
     {
-      str_table[str_index + i] = string (argv[i]);
+      assert (!str_table.count (str_index + i - 2));
+      str_table[str_index + i - 2] = string (argv[i]);
       Value arg;
       arg.type = OP_TYPE_STR;
-      arg.string_index = str_index + i;
+      arg.string_index = str_index + i - 2;
       stack.push (arg);
     }
 
@@ -283,10 +285,42 @@ void Script::instrBitwise ()
 
 void Script::instrConcat ()
 {
+  // make a local copy of destination operand
+  Value dest = resolveOpValue (0);
+
+  // concatenate destination and source string 
+  string new_str = resolveOpAsString (0) + resolveOpAsString (1);
+  int str_index = str_table.size ();
+  assert (!str_table.count (str_index));
+  str_table[str_index] = new_str;
+
+  // update destination operand to new string
+  dest.type = OP_TYPE_STR;
+  dest.string_index = str_index;
+  // write the result to destination operand
+  resolveOpCopy (0, dest);
 }
 
 void Script::instrGetChar ()
 {
+  // make a local copy of destination operand
+  Value dest = resolveOpValue (0);
+
+  string ref_str = resolveOpAsString (1);
+  int index = resolveOpAsInt (2);
+  if (index < 0 || index >= ref_str.length ())
+    throw std::runtime_error ("gerChar: String index out of bound");
+
+  // fetch one character from string located in specified index
+  char get_char = ref_str.at (index);
+  int str_index = str_table.size ();
+  assert (!str_table.count (str_index));
+  str_table[str_index] = string (1, get_char);
+
+  dest.type = OP_TYPE_STR;
+  dest.string_index = str_index;
+  // write the result to destination operand
+  resolveOpCopy (0, dest);
 }
 
 void Script::instrSetChar ()
@@ -297,10 +331,11 @@ void Script::instrCmp ()
 {
   int opcode = instr_stream.at (instr_index).opcode;
 
+  // make a local copy of destination operand
   Value dest = resolveOpValue (0);
-  Value op1 = resolveOpValue (1);
   
   // comparison between operand 1 and operand 2
+  Value op1 = resolveOpValue (1);
   bool condition = false;
   if (op1.type == OP_TYPE_INT)
   {
