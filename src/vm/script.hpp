@@ -58,7 +58,6 @@ class Script
     void instrSw ();
     void instrArithmetic ();
     void instrBitwise ();
-    void instrConcat ();
     void instrGetChar ();
     void instrSetChar ();
     void instrCmp ();

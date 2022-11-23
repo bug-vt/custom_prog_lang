@@ -32,7 +32,6 @@ Script::Script ()
   instr_handler[INSTR_NOT] = &Script::instrBitwise;
   instr_handler[INSTR_SHL] = &Script::instrBitwise;
   instr_handler[INSTR_SHR] = &Script::instrBitwise;
-  instr_handler[INSTR_CONCAT] = &Script::instrConcat;
   instr_handler[INSTR_GETCHAR] = &Script::instrGetChar;
   instr_handler[INSTR_SETCHAR] = &Script::instrSetChar;
   instr_handler[INSTR_SEQ] = &Script::instrCmp;
@@ -239,6 +238,17 @@ void Script::instrArithmetic ()
         break;
     }
   }
+  else if (dest.type == OP_TYPE_STR && opcode == INSTR_ADD)
+  {
+    // concatenate destination and source string 
+    string new_str = resolveOpAsString (0) + resolveOpAsString (1);
+    int str_index = str_table.size ();
+    assert (!str_table.count (str_index));
+    str_table[str_index] = new_str;
+
+    // update destination operand to new string
+    dest.string_index = str_index;
+  }
   else
     throw std::runtime_error ("Unsupported arithmetic operand type");
 
@@ -283,23 +293,6 @@ void Script::instrBitwise ()
   resolveOpCopy (0, dest);
 }
 
-void Script::instrConcat ()
-{
-  // make a local copy of destination operand
-  Value dest = resolveOpValue (0);
-
-  // concatenate destination and source string 
-  string new_str = resolveOpAsString (0) + resolveOpAsString (1);
-  int str_index = str_table.size ();
-  assert (!str_table.count (str_index));
-  str_table[str_index] = new_str;
-
-  // update destination operand to new string
-  dest.type = OP_TYPE_STR;
-  dest.string_index = str_index;
-  // write the result to destination operand
-  resolveOpCopy (0, dest);
-}
 
 void Script::instrGetChar ()
 {

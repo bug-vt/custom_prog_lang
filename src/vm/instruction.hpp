@@ -23,24 +23,23 @@ enum InstrOpcode {INSTR_MOV,      // 0
                   INSTR_NOT,      // 16
                   INSTR_SHL,      // 17
                   INSTR_SHR,      // 18
-                  INSTR_CONCAT,   // 19
-                  INSTR_GETCHAR,  // 20
-                  INSTR_SETCHAR,  // 21
-                  INSTR_SEQ,      // 22
-                  INSTR_SNE,      // 23
-                  INSTR_SGT,      // 24
-                  INSTR_SLT,      // 25
-                  INSTR_SGE,      // 26
-                  INSTR_SLE,      // 27
-                  INSTR_JMP,      // 28
-                  INSTR_JE,       // 29
-                  INSTR_PUSH,     // 30
-                  INSTR_POP,      // 31
-                  INSTR_CALL,     // 32
-                  INSTR_RET,      // 33
-                  INSTR_PAUSE,    // 34
-                  INSTR_EXIT,     // 35
-                  INSTR_PRINT};   // 36
+                  INSTR_GETCHAR,  // 19
+                  INSTR_SETCHAR,  // 20 
+                  INSTR_SEQ,      // 21
+                  INSTR_SNE,      // 22
+                  INSTR_SGT,      // 23
+                  INSTR_SLT,      // 24
+                  INSTR_SGE,      // 25
+                  INSTR_SLE,      // 26
+                  INSTR_JMP,      // 27
+                  INSTR_JE,       // 28
+                  INSTR_PUSH,     // 29
+                  INSTR_POP,      // 30
+                  INSTR_CALL,     // 31
+                  INSTR_RET,      // 32
+                  INSTR_PAUSE,    // 33
+                  INSTR_EXIT,     // 34
+                  INSTR_PRINT};   // 35
 
 
 enum OpType {OP_TYPE_INT,

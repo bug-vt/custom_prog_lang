@@ -8,7 +8,7 @@ func main
   
   var str
   mov str, x
-  concat str, y
+  add str, y
 
   print x
   print "\n"

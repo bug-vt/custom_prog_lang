@@ -3,7 +3,8 @@ func main
   var x
   var tmp
   var result
-
+  
+  mov result, ""
   mov x, "Hello World!"
   
   var i
@@ -11,7 +12,7 @@ func main
 
 substring:
   getChar tmp, x, i
-  concat result, tmp
+  add result, tmp
   inc i
 
   var condition
