@@ -34,13 +34,14 @@ Script::Script ()
   instr_handler[INSTR_CONCAT] = &Script::instrConcat;
   instr_handler[INSTR_GETCHAR] = &Script::instrGetChar;
   instr_handler[INSTR_SETCHAR] = &Script::instrSetChar;
+  instr_handler[INSTR_SEQ] = &Script::instrCmp;
+  instr_handler[INSTR_SNE] = &Script::instrCmp;
+  instr_handler[INSTR_SGT] = &Script::instrCmp;
+  instr_handler[INSTR_SLT] = &Script::instrCmp;
+  instr_handler[INSTR_SGE] = &Script::instrCmp;
+  instr_handler[INSTR_SLE] = &Script::instrCmp;
   instr_handler[INSTR_JMP] = &Script::instrJmp;
   instr_handler[INSTR_JE] = &Script::instrBranch;
-  instr_handler[INSTR_JNE] = &Script::instrBranch;
-  instr_handler[INSTR_JG] = &Script::instrBranch;
-  instr_handler[INSTR_JL] = &Script::instrBranch;
-  instr_handler[INSTR_JGE] = &Script::instrBranch;
-  instr_handler[INSTR_JLE] = &Script::instrBranch;
   instr_handler[INSTR_PUSH] = &Script::instrPush;
   instr_handler[INSTR_POP] = &Script::instrPop;
   instr_handler[INSTR_CALL] = &Script::instrCall;
@@ -292,6 +293,97 @@ void Script::instrSetChar ()
 {
 }
 
+void Script::instrCmp ()
+{
+  int opcode = instr_stream.at (instr_index).opcode;
+
+  Value dest = resolveOpValue (0);
+  Value op1 = resolveOpValue (1);
+  
+  // comparison between operand 1 and operand 2
+  bool condition = false;
+  if (op1.type == OP_TYPE_INT)
+  {
+    switch (opcode)
+    {
+      case INSTR_SEQ:
+        condition = op1.int_literal == resolveOpAsInt (2);
+        break;
+      case INSTR_SNE:
+        condition = op1.int_literal != resolveOpAsInt (2);
+        break;
+      case INSTR_SGT:
+        condition = op1.int_literal > resolveOpAsInt (2);
+        break;
+      case INSTR_SLT:
+        condition = op1.int_literal < resolveOpAsInt (2);
+        break;
+      case INSTR_SGE:
+        condition = op1.int_literal >= resolveOpAsInt (2);
+        break;
+      case INSTR_SLE:
+        condition = op1.int_literal <= resolveOpAsInt (2);
+        break;
+    }
+  }
+  else if (op1.type == OP_TYPE_FLOAT)
+  {
+    switch (opcode)
+    {
+      case INSTR_SEQ:
+        condition = op1.float_literal == resolveOpAsFloat (2);
+        break;
+      case INSTR_SNE:
+        condition = op1.float_literal != resolveOpAsFloat (2);
+        break;
+      case INSTR_SGT:
+        condition = op1.float_literal > resolveOpAsFloat (2);
+        break;
+      case INSTR_SLT:
+        condition = op1.float_literal < resolveOpAsFloat (2);
+        break;
+      case INSTR_SGE:
+        condition = op1.float_literal >= resolveOpAsFloat (2);
+        break;
+      case INSTR_SLE:
+        condition = op1.float_literal <= resolveOpAsFloat (2);
+        break;
+    }
+  }
+  else if (op1.type == OP_TYPE_STR)
+  {
+    string op1_str = str_table.at (op1.string_index);
+    switch (opcode)
+    {
+      case INSTR_SEQ:
+        condition = op1_str == resolveOpAsString (2);
+        break;
+      case INSTR_SNE:
+        condition = op1_str != resolveOpAsString (2);
+        break;
+      case INSTR_SGT:
+        condition = op1_str > resolveOpAsString (2);
+        break;
+      case INSTR_SLT:
+        condition = op1_str < resolveOpAsString (2);
+        break;
+      case INSTR_SGE:
+        condition = op1_str >= resolveOpAsString (2);
+        break;
+      case INSTR_SLE:
+        condition = op1_str <= resolveOpAsString (2);
+        break;
+    }
+  }
+  else
+    throw std::runtime_error ("Unsupported relational operand type");
+  
+  dest.type = OP_TYPE_INT; 
+  dest.int_literal = condition;
+  // write the result to destination operand
+  resolveOpCopy (0, dest);
+}
+
 void Script::instrJmp ()
 {
   int target_index = resolveOpAsInstrIndex (0);
@@ -316,21 +408,6 @@ void Script::instrBranch ()
       case INSTR_JE:
         branch = op0.int_literal == resolveOpAsInt (1);
         break;
-      case INSTR_JNE:
-        branch = op0.int_literal != resolveOpAsInt (1);
-        break;
-      case INSTR_JG:
-        branch = op0.int_literal > resolveOpAsInt (1);
-        break;
-      case INSTR_JL:
-        branch = op0.int_literal < resolveOpAsInt (1);
-        break;
-      case INSTR_JGE:
-        branch = op0.int_literal >= resolveOpAsInt (1);
-        break;
-      case INSTR_JLE:
-        branch = op0.int_literal <= resolveOpAsInt (1);
-        break;
     }
   }
   else if (op0.type == OP_TYPE_FLOAT)
@@ -339,21 +416,6 @@ void Script::instrBranch ()
     {
       case INSTR_JE:
         branch = op0.float_literal == resolveOpAsFloat (1);
-        break;
-      case INSTR_JNE:
-        branch = op0.float_literal != resolveOpAsFloat (1);
-        break;
-      case INSTR_JG:
-        branch = op0.float_literal > resolveOpAsFloat (1);
-        break;
-      case INSTR_JL:
-        branch = op0.float_literal < resolveOpAsFloat (1);
-        break;
-      case INSTR_JGE:
-        branch = op0.float_literal >= resolveOpAsFloat (1);
-        break;
-      case INSTR_JLE:
-        branch = op0.float_literal <= resolveOpAsFloat (1);
         break;
     }
   }
@@ -364,21 +426,6 @@ void Script::instrBranch ()
     {
       case INSTR_JE:
         branch = op0_str == resolveOpAsString (1);
-        break;
-      case INSTR_JNE:
-        branch = op0_str != resolveOpAsString (1);
-        break;
-      case INSTR_JG:
-        branch = op0_str > resolveOpAsString (1);
-        break;
-      case INSTR_JL:
-        branch = op0_str < resolveOpAsString (1);
-        break;
-      case INSTR_JGE:
-        branch = op0_str >= resolveOpAsString (1);
-        break;
-      case INSTR_JLE:
-        branch = op0_str <= resolveOpAsString (1);
         break;
     }
   }

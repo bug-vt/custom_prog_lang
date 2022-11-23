@@ -61,6 +61,7 @@ class Script
     void instrConcat ();
     void instrGetChar ();
     void instrSetChar ();
+    void instrCmp ();
     void instrJmp ();
     void instrBranch ();
     void instrPush ();
