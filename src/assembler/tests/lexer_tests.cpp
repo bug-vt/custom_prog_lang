@@ -1,6 +1,5 @@
 #include "catch.hpp"
 #include "../asm_lexer.hpp"
-#include "../error.hpp"
 #include <fstream>
 #include <iostream>
 #include <sys/wait.h>
@@ -278,7 +277,7 @@ TEST_CASE ("Test displaying error", "[lexer]")
     while (curr_token != TOKEN_TYPE_EOF)
     {
       if (curr_token == TOKEN_TYPE_INVALID)
-        exitOnCodeError ("code error", lexer);
+        lexer.error ("code error");
 
       curr_token = lexer.getNextToken ();
     }

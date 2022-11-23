@@ -19,10 +19,7 @@ class AsmLexer
     Token peekNextToken ();
     bool goToNextLine ();
     void reset ();
-    // used for displaying error
-    std::string getCurrLine ();
-    int getCurrLineIndex ();
-    int getLexemeStartIndex ();
+    void error (std::string msg);
   
   private:
     struct Lexeme

@@ -3,6 +3,7 @@
 #include <iostream>
 #include "instr_lookup.hpp"
 #include <sstream>
+#include <algorithm>
 
 using std::string;
 using std::cout;
@@ -235,6 +236,23 @@ void AsmLexer::reset ()
   curr_lex_state = LEX_STATE_INVALID;
 }
 
+void AsmLexer::error (string msg)
+{
+  cout << "Error: " << msg << endl;
+  cout << "Line: " << curr_lexeme.line_index << endl;
+
+  // replace all tabs to white space
+  string line = curr_lexeme.line;
+  replace (line.begin (), line.end (), '\t', ' '); 
+
+  // show error line and caret at the start of the error lexeme
+  cout << line;
+  cout << string (curr_lexeme.lexeme_start, ' ') << '^' << endl;
+
+  cout << "Fail to compile\n" << endl;
+  exit (EXIT_FAILURE);
+}
+
 
 void AsmLexer::copyLexeme (Lexeme &dest, Lexeme &source)
 {
@@ -245,21 +263,6 @@ void AsmLexer::copyLexeme (Lexeme &dest, Lexeme &source)
   dest.line_index = source.line_index;
 }
 
-
-string AsmLexer::getCurrLine ()
-{
-  return curr_lexeme.line;
-}
-
-int AsmLexer::getCurrLineIndex ()
-{
-  return curr_lexeme.line_index;
-}
-
-int AsmLexer::getLexemeStartIndex ()
-{
-  return curr_lexeme.lexeme_start;
-}
 
 
 // ---------------------------------------------------------------------
