@@ -187,13 +187,24 @@ TEST_CASE ("Basic instruction parsing", "[parser]")
 
     REQUIRE (testParse (input) == EXIT_SUCCESS);
   }
+
+  SECTION ("slt instruction")
+  {
+    string input = "\n\nfunc myFunc\n"
+                   "{ \n"
+                   "var t0\n"
+                   "slt t0, t0, 8.2\n"
+                   "}";
+
+    REQUIRE (testParse (input) == EXIT_SUCCESS);
+  }
   
-  SECTION ("jg instruction")
+  SECTION ("je instruction")
   {
     string input = "\n\nfunc myFunc\n"
                    "{ \n"
                    "here:"
-                   "jg 12.3, 8.2, here \n"
+                   "je 12.3, 8.2, here \n"
                    "}";
 
     REQUIRE (testParse (input) == EXIT_SUCCESS);
