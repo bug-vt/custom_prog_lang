@@ -45,6 +45,21 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     return out;
   }
 
+  std::string visitIfStmt (If* stmt)
+  {
+    std::vector<Expr *> exprs = {stmt->condition};
+    std::string out = "(If " + parenthesize ("Condition", exprs);
+    out += stmt->thenBranch->accept (*this) + "\n";
+    out += ")\n";
+    if (stmt->elseBranch != nullptr)
+    {
+      out += "(Else\n";
+      out += stmt->elseBranch->accept (*this) + "\n";
+      out += ")\n";
+    }
+    return out;
+  }
+
   std::string visitExpressionStmt (Expression* stmt)
   {
     std::vector<Expr *> exprs = {stmt->expression};

@@ -20,6 +20,7 @@ class Parser
     // methods
     Token readToken (TokenType req_token);
     Stmt* parseStatement ();
+    Stmt* parseIfStatement ();
     Stmt* parseExprStatement ();
     Stmt* parsePrintStatement ();
     Stmt* parseDeclaration ();

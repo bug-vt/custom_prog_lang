@@ -52,6 +52,18 @@ class TestVM (unittest.TestCase):
         out = runProg ("../example/string.src");
         self.assertEqual (out, expected);
 
+    def testIfThenElse (self):
+        expected = ("inside then branch\n"
+                    "42\n")
+        out = runProg ("../example/if_then_else.src");
+        self.assertEqual (out, expected);
+
+    def testNestedControlFlow (self):
+        expected = ("hi\n"
+                    "water\n"
+                    "windy\n")
+        out = runProg ("../example/nested_control_flow.src");
+        self.assertEqual (out, expected);
 
 if __name__ == '__main__':
     unittest.main ()

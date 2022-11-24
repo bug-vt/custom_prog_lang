@@ -12,8 +12,13 @@
 
 struct Emitter : public ExprVisitor, public StmtVisitor
 {
+  // variable for assigning unique number to label
+  int jump_target_id;  
 
-  Emitter () { }
+  Emitter () 
+  { 
+    jump_target_id = 0;
+  }
 
   // watch out for undefined reference error when base class accept method is not defined.
   std::string walkAst (std::vector<Stmt*> statements)
@@ -34,6 +39,37 @@ struct Emitter : public ExprVisitor, public StmtVisitor
     }
 
     out += "}\n";
+    return out;
+  }
+
+  std::string visitIfStmt (If* stmt)
+  {
+    std::string out = "";
+    out += emit (stmt->condition);
+
+    std::string false_block = getNextLabel ();
+    out += "  pop _t0\n";
+    out += "  je _t0, 0, " + false_block + "\n";
+
+    out += stmt->thenBranch->accept (*this) + "\n";
+
+    if (stmt->elseBranch != nullptr)
+    {
+      // at the end of the true block,
+      // add unconditional jump to skip false block
+      std::string skip_false_block = getNextLabel ();
+      out += "  jmp " + skip_false_block + "\n";
+     
+      // place label for false block 
+      out += false_block + ":\n";
+      out += stmt->elseBranch->accept (*this) + "\n";
+      // place label for skipping false block
+      out += skip_false_block + ":\n";
+    }
+    else
+      // place label for skipping true block
+      out += false_block + ":\n";
+
     return out;
   }
 
@@ -168,6 +204,11 @@ struct Emitter : public ExprVisitor, public StmtVisitor
 
   std::string visitLiteralExpr (Literal* expr)
   {
+    if (expr->value.type == TOKEN_TYPE_FALSE)
+      return "  push 0\n";
+    if (expr->value.type == TOKEN_TYPE_TRUE)
+      return "  push 1\n";
+
     return "  push " + expr->value.lexeme + "\n";
   }
 
@@ -180,6 +221,11 @@ struct Emitter : public ExprVisitor, public StmtVisitor
   std::string emit (Expr* expr)
   {
     return expr->accept (*this);
+  }
+
+  std::string getNextLabel ()
+  {
+    return "_L" + std::to_string (jump_target_id++);
   }
 };
 

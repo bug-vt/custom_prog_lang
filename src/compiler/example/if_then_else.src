@@ -1,0 +1,13 @@
+var result;
+if (true)
+{
+  result = 42; 
+  print "inside then branch";
+}
+else
+{
+  result = -1;
+  print "inside else branch";
+}
+
+print result;

@@ -8,6 +8,7 @@
 
 struct Block;
 struct Expression;
+struct If;
 struct Print;
 struct Var;
 
@@ -15,6 +16,7 @@ struct StmtVisitor
 {
   virtual std::string visitBlockStmt (Block *stmt) = 0;
   virtual std::string visitExpressionStmt (Expression *stmt) = 0;
+  virtual std::string visitIfStmt (If *stmt) = 0;
   virtual std::string visitPrintStmt (Print *stmt) = 0;
   virtual std::string visitVarStmt (Var *stmt) = 0;
 };
@@ -55,6 +57,25 @@ struct Expression : public Stmt
   }
 
   Expr *expression;
+};
+
+struct If : public Stmt
+{
+  If (Expr *condition, Stmt *thenBranch, Stmt *elseBranch)
+  {
+    this->condition = condition;
+    this->thenBranch = thenBranch;
+    this->elseBranch = elseBranch;
+  }
+
+  std::string accept (StmtVisitor &visitor)
+  {
+    return visitor.visitIfStmt (this);
+  }
+
+  Expr *condition;
+  Stmt *thenBranch;
+  Stmt *elseBranch;
 };
 
 struct Print : public Stmt

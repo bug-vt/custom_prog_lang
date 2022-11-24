@@ -68,6 +68,9 @@ Stmt* Parser::parseStatement ()
     case TOKEN_TYPE_EOF:
       throw std::runtime_error ("Unexpected end of file");
 
+    case TOKEN_TYPE_IF:
+      return parseIfStatement ();
+
     case TOKEN_TYPE_PRINT:
       return parsePrintStatement ();
 
@@ -80,6 +83,23 @@ Stmt* Parser::parseStatement ()
 
   lexer.undoGetNextToken ();
   return parseExprStatement ();
+}
+
+Stmt* Parser::parseIfStatement ()
+{
+  readToken (TOKEN_TYPE_OPEN_PAREN);
+  Expr* condition = parseExpr ();
+  readToken (TOKEN_TYPE_CLOSE_PAREN);
+
+  Stmt* thenBranch = parseStatement ();
+  Stmt* elseBranch = nullptr;
+  if (lexer.peekNextToken () == TOKEN_TYPE_ELSE)
+  {
+    readToken (TOKEN_TYPE_ELSE);
+    elseBranch = parseStatement ();
+  }
+
+  return new If (condition, thenBranch, elseBranch);
 }
 
 Stmt* Parser::parseExprStatement ()
