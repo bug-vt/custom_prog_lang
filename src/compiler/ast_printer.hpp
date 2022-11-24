@@ -69,6 +69,11 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     return out;
   }
 
+  std::string visitGotoStmt (Goto* stmt)
+  {
+    return "(" + stmt->token.lexeme + ")\n";
+  }
+
   std::string visitExpressionStmt (Expression* stmt)
   {
     std::vector<Expr *> exprs = {stmt->expression};

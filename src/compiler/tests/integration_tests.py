@@ -82,5 +82,25 @@ class TestVM (unittest.TestCase):
         out = runProg ("../example/while.src");
         self.assertEqual (out, expected);
 
+    def testGoto (self):
+        expected = ("1\n"
+                    "3\n"
+                    "4\n")
+        out = runProg ("../example/goto.src");
+        self.assertEqual (out, expected);
+
+    def testNestedWhile (self):
+        expected = ("0\n"
+                    "-1\n"
+                    "3\n"
+                    "0\n"
+                    "-1\n"
+                    "5\n"
+                    "0\n"
+                    "-1\n"
+                    "9\n")
+        out = runProg ("../example/nested_while.src");
+        self.assertEqual (out, expected);
+
 if __name__ == '__main__':
     unittest.main ()

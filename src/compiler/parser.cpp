@@ -74,6 +74,10 @@ Stmt* Parser::parseStatement ()
     case TOKEN_TYPE_WHILE:
       return parseWhileStatement ();
 
+    case TOKEN_TYPE_BREAK:
+    case TOKEN_TYPE_CONTINUE:
+      return parseGotoStatement ();
+
     case TOKEN_TYPE_PRINT:
       return parsePrintStatement ();
 
@@ -114,6 +118,15 @@ Stmt* Parser::parseWhileStatement ()
   Stmt* body = parseStatement ();
 
   return new While (condition, body);
+}
+
+Stmt* Parser::parseGotoStatement ()
+{
+  lexer.undoGetNextToken ();
+  Token token = lexer.getNextToken ();
+
+  readToken (TOKEN_TYPE_SEMICOLON);
+  return new Goto (token);
 }
 
 Stmt* Parser::parseExprStatement ()

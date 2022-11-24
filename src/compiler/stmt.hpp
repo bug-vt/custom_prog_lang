@@ -9,18 +9,20 @@
 struct Block;
 struct Expression;
 struct If;
+struct While;
+struct Goto;
 struct Print;
 struct Var;
-struct While;
 
 struct StmtVisitor
 {
   virtual std::string visitBlockStmt (Block *stmt) = 0;
   virtual std::string visitExpressionStmt (Expression *stmt) = 0;
   virtual std::string visitIfStmt (If *stmt) = 0;
+  virtual std::string visitWhileStmt (While *stmt) = 0;
+  virtual std::string visitGotoStmt (Goto *stmt) = 0;
   virtual std::string visitPrintStmt (Print *stmt) = 0;
   virtual std::string visitVarStmt (Var *stmt) = 0;
-  virtual std::string visitWhileStmt (While *stmt) = 0;
 };
 
 struct Stmt
@@ -80,6 +82,38 @@ struct If : public Stmt
   Stmt *elseBranch;
 };
 
+struct While : public Stmt
+{
+  While (Expr *condition, Stmt *body)
+  {
+    this->condition = condition;
+    this->body = body;
+  }
+
+  std::string accept (StmtVisitor &visitor)
+  {
+    return visitor.visitWhileStmt (this);
+  }
+
+  Expr *condition;
+  Stmt *body;
+};
+
+struct Goto : public Stmt
+{
+  Goto (Token token)
+  {
+    this->token = token;
+  }
+
+  std::string accept (StmtVisitor &visitor)
+  {
+    return visitor.visitGotoStmt (this);
+  }
+
+  Token token;
+};
+
 struct Print : public Stmt
 {
   Print (Expr *expression)
@@ -112,23 +146,6 @@ struct Var : public Stmt
   Token name;
   Expr *initializer;
   int scope;
-};
-
-struct While : public Stmt
-{
-  While (Expr *condition, Stmt *body)
-  {
-    this->condition = condition;
-    this->body = body;
-  }
-
-  std::string accept (StmtVisitor &visitor)
-  {
-    return visitor.visitWhileStmt (this);
-  }
-
-  Expr *condition;
-  Stmt *body;
 };
 
 #endif

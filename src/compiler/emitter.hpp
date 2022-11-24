@@ -12,8 +12,22 @@
 
 struct Emitter : public ExprVisitor, public StmtVisitor
 {
+  struct LoopLabels
+  {
+    std::string start;
+    std::string end;
+
+    LoopLabels () { }
+    LoopLabels (std::string start, std::string end)
+    {
+      this->start = start;
+      this->end = end;
+    }
+  };
   // variable for assigning unique number to label
   int jump_target_id;  
+  // store outer loop labels 
+  std::vector<LoopLabels> loop_stack;
 
   Emitter () 
   { 
@@ -86,12 +100,33 @@ struct Emitter : public ExprVisitor, public StmtVisitor
     out += "  pop _t0\n";
     out += "  je _t0, 0, " + end_label + "\n";
 
+    // place innermost loop labels at the top of the stack
+    LoopLabels labels (start_label, end_label);
+    loop_stack.push_back (labels);
+
     out += stmt->body->accept (*this) + "\n";
+    
+    // restore stack back to what it was before 
+    loop_stack.pop_back ();
+
     // loop back to start
     out += "  jmp " + start_label + "\n";
     
     // place end label to skip body in false condition
     out += end_label + ":\n";
+    return out;
+  }
+
+  std::string visitGotoStmt (Goto* stmt)
+  {
+    std::string out = "";
+    // get innermost loop labels from stack
+    LoopLabels labels = loop_stack.back ();
+    if (stmt->token.type == TOKEN_TYPE_BREAK)
+      out = "  jmp " + labels.end + "\n";
+    if (stmt->token.type == TOKEN_TYPE_CONTINUE)
+      out = "  jmp " + labels.start + "\n";
+
     return out;
   }
 

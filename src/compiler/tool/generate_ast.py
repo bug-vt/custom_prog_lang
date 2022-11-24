@@ -21,9 +21,10 @@ def main (argc, argv):
   stmt_types = ["Block      = std::vector<Stmt*> statements",
                 "Expression = Expr *expression",
                 "If         = Expr *condition, Stmt *thenBranch, Stmt *elseBranch",
+                "While      = Expr *condition, Stmt *body",
+                "Goto       = Token token",
                 "Print      = Expr *expression",
-                "Var        = Token name, Expr *initializer, int scope",
-                "While      = Expr *condition, Stmt *body"]
+                "Var        = Token name, Expr *initializer, int scope"]
 
   defineAst (output_dir, "Stmt", stmt_types)
 

@@ -22,6 +22,7 @@ class Parser
     Stmt* parseStatement ();
     Stmt* parseIfStatement ();
     Stmt* parseWhileStatement ();
+    Stmt* parseGotoStatement ();
     Stmt* parseExprStatement ();
     Stmt* parsePrintStatement ();
     Stmt* parseDeclaration ();

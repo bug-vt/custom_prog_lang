@@ -1,0 +1,23 @@
+var i = 0;
+
+while (i < 10)
+{
+  if (i != 3 && i != 5 && i != 9)
+  {
+    i = i + 1;
+    continue;
+  }
+
+  var j = 0;
+  while (j > -10)
+  {
+    if (j == -2)
+      break;
+    print j;
+    j = j - 1;
+  }
+  
+
+  print i;
+  i = i + 1;
+}
