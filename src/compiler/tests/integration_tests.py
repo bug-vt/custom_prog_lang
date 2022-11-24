@@ -73,7 +73,7 @@ class TestVM (unittest.TestCase):
         out = runProg ("../example/logical.src");
         self.assertEqual (out, expected);
 
-    def testWhile (self):
+    def testWhileLoop (self):
         expected = ("0\n"
                     "1\n"
                     "2\n"
@@ -100,6 +100,15 @@ class TestVM (unittest.TestCase):
                     "-1\n"
                     "9\n")
         out = runProg ("../example/nested_while.src");
+        self.assertEqual (out, expected);
+
+    def testForLoop (self):
+        expected = ("1\n"
+                    "2\n"
+                    "4\n"
+                    "8\n"
+                    "32\n")
+        out = runProg ("../example/for.src");
         self.assertEqual (out, expected);
 
 if __name__ == '__main__':

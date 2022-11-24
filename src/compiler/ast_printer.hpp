@@ -10,9 +10,6 @@
 #include <iostream>
 
 
-using std::cout;
-using std::endl;
-
 struct AstPrinter : public ExprVisitor, public StmtVisitor
 {
   // variable for assigning unique scope number 
@@ -39,7 +36,8 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     }
     catch (std::runtime_error& err)
     {
-      out = std::string (err.what ()) + "\n"; 
+      std::cout << err.what () << std::endl; 
+      exit (-1);
     }
 
     return out;
@@ -65,6 +63,9 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     std::vector<Expr *> exprs = {stmt->condition};
     std::string out = "(While " + parenthesize ("Condition", exprs);
     out += stmt->body->accept (*this) + "\n";
+    // only used when desugaring for loop
+    if (stmt->increment != nullptr)
+      out += stmt->increment->accept (*this) + "\n";
     out += ")\n";
     return out;
   }

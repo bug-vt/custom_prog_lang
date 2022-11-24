@@ -84,10 +84,11 @@ struct If : public Stmt
 
 struct While : public Stmt
 {
-  While (Expr *condition, Stmt *body)
+  While (Expr *condition, Stmt *body, Expression *increment)
   {
     this->condition = condition;
     this->body = body;
+    this->increment = increment;
   }
 
   std::string accept (StmtVisitor &visitor)
@@ -97,6 +98,7 @@ struct While : public Stmt
 
   Expr *condition;
   Stmt *body;
+  Expression *increment;
 };
 
 struct Goto : public Stmt

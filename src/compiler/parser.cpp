@@ -74,6 +74,9 @@ Stmt* Parser::parseStatement ()
     case TOKEN_TYPE_WHILE:
       return parseWhileStatement ();
 
+    case TOKEN_TYPE_FOR:
+      return parseForStatement ();
+
     case TOKEN_TYPE_BREAK:
     case TOKEN_TYPE_CONTINUE:
       return parseGotoStatement ();
@@ -117,7 +120,46 @@ Stmt* Parser::parseWhileStatement ()
   
   Stmt* body = parseStatement ();
 
-  return new While (condition, body);
+  return new While (condition, body, nullptr);
+}
+
+Stmt* Parser::parseForStatement ()
+{
+  readToken (TOKEN_TYPE_OPEN_PAREN);
+
+  Stmt* initializer;
+  Token token = lexer.getNextToken ();
+  if (token.type == TOKEN_TYPE_SEMICOLON)
+    initializer = nullptr;
+  else if (token.type == TOKEN_TYPE_VAR)
+    initializer = parseVar ();
+  else
+    initializer = parseExprStatement ();
+
+  Expr* condition = nullptr;
+  if (lexer.peekNextToken () != TOKEN_TYPE_SEMICOLON)
+    condition = parseExpr ();
+  readToken (TOKEN_TYPE_SEMICOLON);
+
+  Expr* increment = nullptr;
+  if (lexer.peekNextToken () != TOKEN_TYPE_CLOSE_PAREN)
+    increment = parseExpr ();
+  readToken (TOKEN_TYPE_CLOSE_PAREN);
+
+  Stmt* body = parseStatement ();
+  // desugaring begin here 
+
+  // add condition before the body and wrap it around with while loop.
+  // also, add increment after the body
+  if (condition == nullptr)
+    condition = new Literal (Token (TOKEN_TYPE_TRUE, "true"));
+  body = new While (condition, body, new Expression (increment));
+
+  // place initializer at the beginning of the block
+  if (initializer != nullptr)
+    body = new Block (vector<Stmt*> ({initializer, body}));
+
+  return body;
 }
 
 Stmt* Parser::parseGotoStatement ()

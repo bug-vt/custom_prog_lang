@@ -14,13 +14,13 @@ struct Emitter : public ExprVisitor, public StmtVisitor
 {
   struct LoopLabels
   {
-    std::string start;
+    std::string skip;
     std::string end;
 
     LoopLabels () { }
-    LoopLabels (std::string start, std::string end)
+    LoopLabels (std::string skip, std::string end)
     {
-      this->start = start;
+      this->skip = skip;
       this->end = end;
     }
   };
@@ -49,7 +49,8 @@ struct Emitter : public ExprVisitor, public StmtVisitor
     }
     catch (std::runtime_error& err)
     {
-      out = std::string (err.what ()) + "\n"; 
+      std::cout << err.what () << std::endl;
+      exit (-1);
     }
 
     out += "}\n";
@@ -91,6 +92,7 @@ struct Emitter : public ExprVisitor, public StmtVisitor
   {
     std::string out = "";
     std::string start_label = getNextLabel ();
+    std::string skip_label = getNextLabel ();
     std::string end_label = getNextLabel ();
     // place start label to loop back to start
     out += start_label + ":\n";
@@ -101,13 +103,19 @@ struct Emitter : public ExprVisitor, public StmtVisitor
     out += "  je _t0, 0, " + end_label + "\n";
 
     // place innermost loop labels at the top of the stack
-    LoopLabels labels (start_label, end_label);
+    LoopLabels labels (skip_label, end_label);
     loop_stack.push_back (labels);
 
     out += stmt->body->accept (*this) + "\n";
     
     // restore stack back to what it was before 
     loop_stack.pop_back ();
+    
+    // location where continue would jump to
+    out += skip_label + ":\n";
+    // only used when desugaring for loop
+    if (stmt->increment != nullptr)
+      out += stmt->increment->accept (*this) + "\n";
 
     // loop back to start
     out += "  jmp " + start_label + "\n";
@@ -119,13 +127,16 @@ struct Emitter : public ExprVisitor, public StmtVisitor
 
   std::string visitGotoStmt (Goto* stmt)
   {
+    if (loop_stack.empty ())
+      throw std::runtime_error ("Invalid use of " + stmt->token.lexeme + " outside loops");
+
     std::string out = "";
     // get innermost loop labels from stack
     LoopLabels labels = loop_stack.back ();
     if (stmt->token.type == TOKEN_TYPE_BREAK)
       out = "  jmp " + labels.end + "\n";
     if (stmt->token.type == TOKEN_TYPE_CONTINUE)
-      out = "  jmp " + labels.start + "\n";
+      out = "  jmp " + labels.skip + "\n";
 
     return out;
   }
