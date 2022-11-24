@@ -212,6 +212,43 @@ struct Emitter : public ExprVisitor, public StmtVisitor
     return "  push " + expr->value.lexeme + "\n";
   }
 
+  std::string visitLogicalExpr (Logical* expr)
+  {
+    std::string out = "";
+    // place left expression result into _t0
+    out += emit (expr->left);
+    out += "  pop _t0\n";
+
+    std::string short_circuit = getNextLabel ();
+
+    switch (expr->op.type)
+    {
+      case TOKEN_TYPE_LOGICAL_OR:
+        // short circuit when left expression result is true
+        out += "  sne _t1, _t0, 0\n";
+        break;
+      case TOKEN_TYPE_LOGICAL_AND:
+        // short circuit when left expression result is false
+        out += "  seq _t1, _t0, 0\n";
+        break;
+      default:
+        throw std::runtime_error ("Invalid Binary operator");
+    }
+    // skip right expression if short circuit 
+    out += "  je _t1, 1, " + short_circuit + "\n";
+    // place right expression result to _t0 
+    out += emit (expr->right);
+    out += "  pop _t0\n";
+   
+    // place label for short circuiting
+    out += short_circuit + ":\n";
+    // pushing result from left expression if short_circuit,
+    // otherwise pushing result from right expression
+    out += "  push _t0\n";
+
+    return out;
+  }
+
   std::string visitVariableExpr (Variable* expr)
   {
     std::string name = expr->name.lexeme + std::to_string (expr->scope);

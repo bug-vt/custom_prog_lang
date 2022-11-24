@@ -10,6 +10,7 @@ struct Assign;
 struct Binary;
 struct Grouping;
 struct Literal;
+struct Logical;
 struct Unary;
 struct Variable;
 
@@ -19,6 +20,7 @@ struct ExprVisitor
   virtual std::string visitBinaryExpr (Binary *expr) = 0;
   virtual std::string visitGroupingExpr (Grouping *expr) = 0;
   virtual std::string visitLiteralExpr (Literal *expr) = 0;
+  virtual std::string visitLogicalExpr (Logical *expr) = 0;
   virtual std::string visitUnaryExpr (Unary *expr) = 0;
   virtual std::string visitVariableExpr (Variable *expr) = 0;
 };
@@ -97,6 +99,25 @@ struct Literal : public Expr
   }
 
   Token value;
+};
+
+struct Logical : public Expr
+{
+  Logical (Expr *left, Token op, Expr *right)
+  {
+    this->left = left;
+    this->op = op;
+    this->right = right;
+  }
+
+  std::string accept (ExprVisitor &visitor)
+  {
+    return visitor.visitLogicalExpr (this);
+  }
+
+  Expr *left;
+  Token op;
+  Expr *right;
 };
 
 struct Unary : public Expr

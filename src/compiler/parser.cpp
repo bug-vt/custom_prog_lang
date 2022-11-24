@@ -168,7 +168,7 @@ Expr* Parser::parseExpr ()
 
 Expr* Parser::parseAssignment ()
 {
-  Expr* expr = parseEquality ();
+  Expr* expr = parseOr ();
 
   Token op = lexer.getNextToken ();
   if (op.type == TOKEN_TYPE_ASSIGN)
@@ -182,6 +182,38 @@ Expr* Parser::parseAssignment ()
       return new Assign (name, value, 0);
     }
     throw std::runtime_error ("Invalid assignment target.");
+  }
+
+  lexer.undoGetNextToken ();
+  return expr;
+}
+
+Expr* Parser::parseOr ()
+{
+  Expr* expr = parseAnd ();
+
+  Token op = lexer.getNextToken ();
+  while (op.type == TOKEN_TYPE_LOGICAL_OR)
+  {
+    Expr* right = parseAnd ();
+    expr = new Logical (expr, op, right);
+    op = lexer.getNextToken ();
+  }
+
+  lexer.undoGetNextToken ();
+  return expr;
+}
+
+Expr* Parser::parseAnd ()
+{
+  Expr* expr = parseEquality ();
+
+  Token op = lexer.getNextToken ();
+  while (op.type == TOKEN_TYPE_LOGICAL_AND)
+  {
+    Expr* right = parseEquality ();
+    expr = new Logical (expr, op, right);
+    op = lexer.getNextToken ();
   }
 
   lexer.undoGetNextToken ();

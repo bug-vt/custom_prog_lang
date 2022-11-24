@@ -129,6 +129,12 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     return expr->value.lexeme;
   }
 
+  std::string visitLogicalExpr (Logical* expr)
+  {
+    std::vector<Expr *> exprs = {expr->left, expr->right};
+    return parenthesize (expr->op.lexeme, exprs);
+  }
+
   std::string visitVariableExpr (Variable* expr)
   {
     expr->scope = sym_table->getScope (expr->name.lexeme);

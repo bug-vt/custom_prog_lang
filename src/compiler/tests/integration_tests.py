@@ -65,5 +65,13 @@ class TestVM (unittest.TestCase):
         out = runProg ("../example/nested_control_flow.src");
         self.assertEqual (out, expected);
 
+    def testLogical (self):
+        expected = ("hi\n"
+                    "cs4974\n"
+                    "0\n"
+                    "0\n")
+        out = runProg ("../example/logical.src");
+        self.assertEqual (out, expected);
+
 if __name__ == '__main__':
     unittest.main ()

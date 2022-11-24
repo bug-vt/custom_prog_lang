@@ -28,6 +28,8 @@ class Parser
     std::vector<Stmt*> parseBlock ();
     Expr* parseExpr ();
     Expr* parseAssignment ();
+    Expr* parseOr ();
+    Expr* parseAnd ();
     Expr* parseEquality ();
     Expr* parseComparison ();
     Expr* parseTerm ();
