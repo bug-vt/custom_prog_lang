@@ -74,10 +74,11 @@ struct Print : public Stmt
 
 struct Var : public Stmt
 {
-  Var (Token name, Expr *initializer)
+  Var (Token name, Expr *initializer, int scope)
   {
     this->name = name;
     this->initializer = initializer;
+    this->scope = scope;
   }
 
   std::string accept (StmtVisitor &visitor)
@@ -87,6 +88,7 @@ struct Var : public Stmt
 
   Token name;
   Expr *initializer;
+  int scope;
 };
 
 #endif

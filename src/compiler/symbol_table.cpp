@@ -7,20 +7,21 @@ using std::cout;
 using std::endl;
 
 
-Symbol::Symbol (int index, int size, int type) 
+Symbol::Symbol (int type, int size) 
 {
-  this->symbol_index = index;
-  this->size = size;
   this->type = type;
+  this->size = size;
 }
 
-SymbolTable::SymbolTable () : symbol_count (0), symbol_table (), enclosing (nullptr)
+SymbolTable::SymbolTable () : symbol_table (), 
+                              enclosing (nullptr), scope (0)
 {
 }
 
-SymbolTable::SymbolTable (SymbolTable* enclosing) : symbol_count (0), symbol_table ()
+SymbolTable::SymbolTable (SymbolTable* enclosing, int scope) : symbol_table ()
 {
   this->enclosing = enclosing;
+  this->scope = scope;
 }
 
 // Add symbol to the symbol table.
@@ -37,11 +38,9 @@ int SymbolTable::addSymbol (string name)
   }
 
   // add the given function into the table.
-  int index = symbol_count;
-  symbol_table[name] = Symbol (index, 1, SYMBOL_TYPE_VAR);
-  symbol_count++;
+  symbol_table[name] = Symbol (SYMBOL_TYPE_VAR, 1);
 
-  return index;
+  return scope;
 }
 
 Symbol SymbolTable::getSymbol (string name)
@@ -57,14 +56,17 @@ Symbol SymbolTable::getSymbol (string name)
   throw std::runtime_error (msg);
 }
 
-string SymbolTable::at (int index)
+int SymbolTable::getScope (string name)
 {
-  for (auto const& x : symbol_table)
-  {
-    if (x.second.symbol_index == index)
-      return x.first;
-  }
-  throw std::runtime_error ("No such symbol for given index");
+  // see if the symbol is defined in local scope
+  if (symbol_table.count (name))
+    return scope;
+
+  if (enclosing)
+    return enclosing->getScope (name);
+
+  string msg = "Undefined variable '" + name + "'";
+  throw std::runtime_error (msg);
 }
 
 int SymbolTable::getSize (string name)

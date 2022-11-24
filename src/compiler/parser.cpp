@@ -1,7 +1,6 @@
 #include "parser.hpp"
 #include <iostream>
 
-#define GLOBAL_SCOPE 0
 
 using std::string;
 using std::vector;
@@ -27,7 +26,6 @@ Token Parser::readToken (TokenType req_token)
 vector<Stmt*> Parser::parse ()
 {
   lexer.reset ();
-  curr_scope = GLOBAL_SCOPE; 
 
   vector<Stmt*> statements;
 
@@ -124,7 +122,7 @@ Stmt* Parser::parseVar ()
 
   readToken (TOKEN_TYPE_SEMICOLON);
 
-  return new Var (ident, initializer);
+  return new Var (ident, initializer, 0);
 }
 
 vector<Stmt*> Parser::parseBlock ()
@@ -161,7 +159,7 @@ Expr* Parser::parseAssignment ()
     if (dynamic_cast<Variable*> (expr) != nullptr)
     {
       Token name = ((Variable*) expr)->name;
-      return new Assign (name, value);
+      return new Assign (name, value, 0);
     }
     throw std::runtime_error ("Invalid assignment target.");
   }
@@ -281,7 +279,7 @@ Expr* Parser::parsePrimary ()
 
   // Variable
   if (token.type == TOKEN_TYPE_IDENT)
-    return new Variable (token);
+    return new Variable (token, 0);
 
   // Grouping
   if (token.type == TOKEN_TYPE_OPEN_PAREN)

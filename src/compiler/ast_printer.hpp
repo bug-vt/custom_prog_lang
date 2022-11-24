@@ -9,27 +9,28 @@
 #include "symbol_table.hpp"
 #include <iostream>
 
+
 using std::cout;
 using std::endl;
 
 struct AstPrinter : public ExprVisitor, public StmtVisitor
 {
-  // general-purpose registers
-  int tmp0;
-  int tmp1;
+  // variable for assigning unique scope number 
+  int scope;
   SymbolTable* sym_table;  
 
   AstPrinter ()
   {
+    scope = 0;
     sym_table = new SymbolTable ();
-    // Add two temporary variables to simulate general-purpose registers 
-    tmp0 = sym_table->addSymbol ("_T0");
-    tmp1 = sym_table->addSymbol ("_T1");
+    // reserve two temporary variables to simulate general-purpose registers 
+    sym_table->addSymbol ("_t0");
+    sym_table->addSymbol ("_t1");
   }
 
+  // watch out for undefined reference error when base class accept method is not defined.
   std::string print (std::vector<Stmt*> statements)
   {
-    // To do: undefined reference error when base class accept method is not defined.
     std::string out = "";
     try
     {
@@ -62,14 +63,14 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     if (stmt->initializer)
       exprs.push_back (stmt->initializer);
 
-    sym_table->addSymbol (stmt->name.lexeme);
+    stmt->scope = sym_table->addSymbol (stmt->name.lexeme);
     return parenthesize ("Var " + stmt->name.lexeme, exprs);
   }
 
   std::string visitBlockStmt (Block* stmt)
   {
     std::string out = "";
-    SymbolTable* current = new SymbolTable (sym_table);
+    SymbolTable* current = new SymbolTable (sym_table, ++scope);
     SymbolTable* previous = this->sym_table;
     this->sym_table = current;
     
@@ -86,7 +87,7 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
   std::string visitAssignExpr (Assign* expr) 
   {
     std::vector<Expr *> exprs = {expr->value};
-    sym_table->getSymbol (expr->name.lexeme);
+    expr->scope = sym_table->getScope (expr->name.lexeme);
     return parenthesize (expr->name.lexeme + "=", exprs);
   }
 
@@ -115,7 +116,7 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
 
   std::string visitVariableExpr (Variable* expr)
   {
-    sym_table->getSymbol (expr->name.lexeme);
+    expr->scope = sym_table->getScope (expr->name.lexeme);
     return expr->name.lexeme;
   }
 

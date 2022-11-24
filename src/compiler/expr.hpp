@@ -33,10 +33,11 @@ struct Expr
 
 struct Assign : public Expr
 {
-  Assign (Token name, Expr *value)
+  Assign (Token name, Expr *value, int scope)
   {
     this->name = name;
     this->value = value;
+    this->scope = scope;
   }
 
   std::string accept (ExprVisitor &visitor)
@@ -46,6 +47,7 @@ struct Assign : public Expr
 
   Token name;
   Expr *value;
+  int scope;
 };
 
 struct Binary : public Expr
@@ -116,9 +118,10 @@ struct Unary : public Expr
 
 struct Variable : public Expr
 {
-  Variable (Token name)
+  Variable (Token name, int scope)
   {
     this->name = name;
+    this->scope = scope;
   }
 
   std::string accept (ExprVisitor &visitor)
@@ -127,6 +130,7 @@ struct Variable : public Expr
   }
 
   Token name;
+  int scope;
 };
 
 #endif

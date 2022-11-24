@@ -8,19 +8,19 @@ def main (argc, argv):
     return
 
   output_dir = argv[1]
-  expr_types = ["Assign   = Token name, Expr *value",
+  expr_types = ["Assign   = Token name, Expr *value, int scope",
                 "Binary   = Expr *left, Token op, Expr *right",
                 "Grouping = Expr *expression",
                 "Literal  = Token value",
                 "Unary    = Token op, Expr *right",
-                "Variable = Token name"]
+                "Variable = Token name, int scope"]
 
   defineAst (output_dir, "Expr", expr_types)
 
   stmt_types = ["Block      = std::vector<Stmt*> statements",
                 "Expression = Expr *expression",
                 "Print      = Expr *expression",
-                "Var        = Token name, Expr *initializer"]
+                "Var        = Token name, Expr *initializer, int scope"]
 
   defineAst (output_dir, "Stmt", stmt_types)
 

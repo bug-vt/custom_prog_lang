@@ -9,12 +9,11 @@ enum SymbolType {SYMBOL_TYPE_VAR, SYMBOL_TYPE_PARAM};
 
 struct Symbol
 {
-  int symbol_index;   // index within the symbol table
-  int size;           // 1 for variable, n for arrays
   int type;           // type (parameter or variable) 
+  int size;           // 1 for variable, n for arrays
 
   Symbol () { }
-  Symbol (int index, int size, int type);
+  Symbol (int type, int size);
 };
 
 
@@ -22,18 +21,18 @@ class SymbolTable
 {
   public:
     SymbolTable ();
-    SymbolTable (SymbolTable* enclosing);
+    SymbolTable (SymbolTable* enclosing, int scope);
     //int addSymbol (std::string name, int size, int type);
     int addSymbol (std::string name);
     Symbol getSymbol (std::string name);
-    std::string at (int index);
+    int getScope (std::string name);
     int getSize (std::string name);
     void print ();
 
   private:
-    int symbol_count;
     std::unordered_map<std::string, Symbol> symbol_table;
     SymbolTable* enclosing;
+    int scope;
 
   friend class CodeGen;
 };

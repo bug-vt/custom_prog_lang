@@ -14,9 +14,6 @@ class Parser
     std::vector<Stmt*> parse ();
     
   private:
-    // variables for tracking current function
-    int curr_scope;
-
     // lexer
     Lexer lexer;
 

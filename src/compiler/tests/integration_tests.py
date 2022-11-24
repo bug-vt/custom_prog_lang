@@ -24,7 +24,7 @@ class TestVM (unittest.TestCase):
         self.assertEqual (out, expected);
 
     def testArithmetic (self):
-        expected = "132\n"
+        expected = "129\n"
         out = runProg ("../example/arithmetic.src");
         self.assertEqual (out, expected);
 
@@ -36,7 +36,7 @@ class TestVM (unittest.TestCase):
         self.assertEqual (out, expected);
     
     def testGrouping (self):
-        expected = ("-145")
+        expected = ("-174\n")
         out = runProg ("../example/grouping.src");
         self.assertEqual (out, expected);
 
@@ -48,7 +48,7 @@ class TestVM (unittest.TestCase):
         self.assertEqual (out, expected);
 
     def testString (self):
-        expected = ("Hello\n")
+        expected = ("Hello World!\n")
         out = runProg ("../example/string.src");
         self.assertEqual (out, expected);
 

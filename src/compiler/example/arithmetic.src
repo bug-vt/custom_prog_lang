@@ -3,6 +3,6 @@
  */
 
 {
-  var local = 7 + 3 * 42 - 1 / 9;
+  var local = 7 + 3 * 42 - 9 / 2;
   print local;
 }

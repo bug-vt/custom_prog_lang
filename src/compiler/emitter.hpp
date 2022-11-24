@@ -12,17 +12,14 @@
 
 struct Emitter : public ExprVisitor, public StmtVisitor
 {
-  SymbolTable* sym_table;  
 
-  Emitter ()
-  {
-    sym_table = new SymbolTable ();
-  }
+  Emitter () { }
 
+  // watch out for undefined reference error when base class accept method is not defined.
   std::string walkAst (std::vector<Stmt*> statements)
   {
-    // To do: undefined reference error when base class accept method is not defined.
     std::string out = "";
+    // two temporary variables to simulate general-purpose registers 
     out += "var _t0\n";
     out += "var _t1\n";
     out += "func main\n{\n";
@@ -57,14 +54,13 @@ struct Emitter : public ExprVisitor, public StmtVisitor
 
   std::string visitVarStmt (Var* stmt)
   {
-    char scope [100];
-    snprintf (scope, 100, "%p", sym_table);
-    std::string out = "  var " + stmt->name.lexeme + std::string (scope) + "\n";
+    std::string name = stmt->name.lexeme + std::to_string (stmt->scope);
+    std::string out = "  var " + name + "\n";
     if (stmt->initializer)
     {
       out += emit (stmt->initializer);
       out += "  pop _t0\n";
-      out += "  mov " + stmt->name.lexeme + std::string (scope) + ", _t0\n";
+      out += "  mov " + name + ", _t0\n";
     }
 
     return out;
@@ -73,29 +69,21 @@ struct Emitter : public ExprVisitor, public StmtVisitor
   std::string visitBlockStmt (Block* stmt)
   {
     std::string out = "";
-    SymbolTable* current = new SymbolTable (sym_table);
-    SymbolTable* previous = this->sym_table;
-    this->sym_table = current;
     
     for (Stmt* statement : stmt->statements)
       out += statement->accept (*this) + "\n";
-   
-    delete current;
-    this->sym_table = previous;
 
     return out;
   }
 
   std::string visitAssignExpr (Assign* expr) 
   {
-    char scope [100];
-    snprintf (scope, 100, "%p", sym_table);
-
+    std::string name = expr->name.lexeme + std::to_string (expr->scope);
     std::string out = "";
     out += emit (expr->value);
     out += "  pop _t0\n";
-    out += "  mov " + expr->name.lexeme + std::string (scope) + ", _t0\n";
-    out += "  push " + expr->name.lexeme + std::string (scope) + "\n";
+    out += "  mov " + name + ", _t0\n";
+    out += "  push " + name + "\n";
     return out;
   }
 
@@ -185,9 +173,8 @@ struct Emitter : public ExprVisitor, public StmtVisitor
 
   std::string visitVariableExpr (Variable* expr)
   {
-    char scope [100];
-    snprintf (scope, 100, "%p", sym_table);
-    return "  push " + expr->name.lexeme + std::string (scope) + "\n";
+    std::string name = expr->name.lexeme + std::to_string (expr->scope);
+    return "  push " + name + "\n";
   }
 
   std::string emit (Expr* expr)
