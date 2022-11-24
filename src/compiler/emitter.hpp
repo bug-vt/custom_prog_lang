@@ -73,6 +73,28 @@ struct Emitter : public ExprVisitor, public StmtVisitor
     return out;
   }
 
+  std::string visitWhileStmt (While* stmt)
+  {
+    std::string out = "";
+    std::string start_label = getNextLabel ();
+    std::string end_label = getNextLabel ();
+    // place start label to loop back to start
+    out += start_label + ":\n";
+
+    out += emit (stmt->condition);
+    // evaluate condition 
+    out += "  pop _t0\n";
+    out += "  je _t0, 0, " + end_label + "\n";
+
+    out += stmt->body->accept (*this) + "\n";
+    // loop back to start
+    out += "  jmp " + start_label + "\n";
+    
+    // place end label to skip body in false condition
+    out += end_label + ":\n";
+    return out;
+  }
+
   std::string visitExpressionStmt (Expression* stmt)
   {
     return emit (stmt->expression);

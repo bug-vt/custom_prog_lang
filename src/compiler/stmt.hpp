@@ -11,6 +11,7 @@ struct Expression;
 struct If;
 struct Print;
 struct Var;
+struct While;
 
 struct StmtVisitor
 {
@@ -19,6 +20,7 @@ struct StmtVisitor
   virtual std::string visitIfStmt (If *stmt) = 0;
   virtual std::string visitPrintStmt (Print *stmt) = 0;
   virtual std::string visitVarStmt (Var *stmt) = 0;
+  virtual std::string visitWhileStmt (While *stmt) = 0;
 };
 
 struct Stmt
@@ -110,6 +112,23 @@ struct Var : public Stmt
   Token name;
   Expr *initializer;
   int scope;
+};
+
+struct While : public Stmt
+{
+  While (Expr *condition, Stmt *body)
+  {
+    this->condition = condition;
+    this->body = body;
+  }
+
+  std::string accept (StmtVisitor &visitor)
+  {
+    return visitor.visitWhileStmt (this);
+  }
+
+  Expr *condition;
+  Stmt *body;
 };
 
 #endif

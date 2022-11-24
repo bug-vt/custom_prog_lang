@@ -60,6 +60,15 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     return out;
   }
 
+  std::string visitWhileStmt (While* stmt)
+  {
+    std::vector<Expr *> exprs = {stmt->condition};
+    std::string out = "(While " + parenthesize ("Condition", exprs);
+    out += stmt->body->accept (*this) + "\n";
+    out += ")\n";
+    return out;
+  }
+
   std::string visitExpressionStmt (Expression* stmt)
   {
     std::vector<Expr *> exprs = {stmt->expression};

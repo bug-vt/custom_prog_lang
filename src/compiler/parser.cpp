@@ -71,6 +71,9 @@ Stmt* Parser::parseStatement ()
     case TOKEN_TYPE_IF:
       return parseIfStatement ();
 
+    case TOKEN_TYPE_WHILE:
+      return parseWhileStatement ();
+
     case TOKEN_TYPE_PRINT:
       return parsePrintStatement ();
 
@@ -100,6 +103,17 @@ Stmt* Parser::parseIfStatement ()
   }
 
   return new If (condition, thenBranch, elseBranch);
+}
+
+Stmt* Parser::parseWhileStatement ()
+{
+  readToken (TOKEN_TYPE_OPEN_PAREN);
+  Expr* condition = parseExpr ();
+  readToken (TOKEN_TYPE_CLOSE_PAREN);
+  
+  Stmt* body = parseStatement ();
+
+  return new While (condition, body);
 }
 
 Stmt* Parser::parseExprStatement ()

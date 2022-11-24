@@ -22,7 +22,8 @@ def main (argc, argv):
                 "Expression = Expr *expression",
                 "If         = Expr *condition, Stmt *thenBranch, Stmt *elseBranch",
                 "Print      = Expr *expression",
-                "Var        = Token name, Expr *initializer, int scope"]
+                "Var        = Token name, Expr *initializer, int scope",
+                "While      = Expr *condition, Stmt *body"]
 
   defineAst (output_dir, "Stmt", stmt_types)
 
