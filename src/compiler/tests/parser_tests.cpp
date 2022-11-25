@@ -204,6 +204,33 @@ TEST_CASE ("Function call parsing error", "[parser]")
                    "}";
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
+
+  SECTION ("Name conflict with function")
+  {
+    string input = "func myFunc (b)"
+                   "{"  
+                   "  print b;"
+                   "}"
+                   "func main ()"
+                   "{"
+                   "  var myFunc = 123;"
+                   "}";
+    REQUIRE (testParse (input) == EXIT_FAILURE);
+  }
+
+  SECTION ("Name conflict with variable")
+  {
+    string input = "var myFunc = 1;" 
+                   "func myFunc (b)"
+                   "{"  
+                   "  print b;"
+                   "}"
+                   "func main ()"
+                   "{"
+                   "  print 0;"
+                   "}";
+    REQUIRE (testParse (input) == EXIT_FAILURE);
+  }
 }
 
 

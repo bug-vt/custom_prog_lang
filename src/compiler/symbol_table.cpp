@@ -55,6 +55,18 @@ Symbol SymbolTable::getSymbol (string name)
   throw std::runtime_error (msg);
 }
 
+bool SymbolTable::isSymbol (string name)
+{
+  // see if the symbol was declared
+  if (symbol_table.count (name))
+    return true;
+
+  if (enclosing)
+    return enclosing->isSymbol (name);
+
+  return false;
+}
+
 int SymbolTable::getScope (string name)
 {
   // see if the symbol is defined in local scope

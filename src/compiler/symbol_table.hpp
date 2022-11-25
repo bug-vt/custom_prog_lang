@@ -25,6 +25,7 @@ class SymbolTable
     //int addSymbol (std::string name, int size, int type);
     int addSymbol (std::string name);
     Symbol getSymbol (std::string name);
+    bool isSymbol (std::string name);
     int getScope (std::string name);
     int getSize (std::string name);
     void print ();

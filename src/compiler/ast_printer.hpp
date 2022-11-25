@@ -53,7 +53,7 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
       throw std::runtime_error ("Function cannot be declared outside global scope");
     
     // function name
-    func_table.addFunc (stmt->name.lexeme, stmt->params.size ());
+    declareFunc (stmt->name.lexeme, stmt->params.size ());
     std::string out = "(Func " + stmt->name.lexeme;
 
     // parameters
@@ -66,7 +66,7 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     for (Token param : stmt->params)
     {
       out += " " + param.lexeme;
-      stmt->scope = sym_table->addSymbol (param.lexeme);
+      stmt->scope = declareSymbol (param.lexeme);
     }
     out += ")\n";
     
@@ -131,7 +131,7 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     if (stmt->initializer)
       exprs.push_back (stmt->initializer);
 
-    stmt->scope = sym_table->addSymbol (stmt->name.lexeme);
+    stmt->scope = declareSymbol (stmt->name.lexeme);
     return parenthesize ("Var " + stmt->name.lexeme, exprs);
   }
 
@@ -225,6 +225,24 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     out += ")";
 
     return out;
+  }
+
+  int declareSymbol (std::string name)
+  {
+    // check if identifier is used for a function
+    if (func_table.isFunc (name))
+      throw std::runtime_error ("Name conflict with function '" + name + "'");
+
+    return sym_table->addSymbol (name);
+  }
+
+  void declareFunc (std::string name, int param_count)
+  {
+    // check if identifier is used for a variable
+    if (sym_table->isSymbol (name))
+      throw std::runtime_error ("Name conflict with variable '" + name + "'");
+
+    func_table.addFunc (name, param_count);
   }
 };
 
