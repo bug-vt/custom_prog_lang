@@ -79,7 +79,7 @@ Stmt* Parser::parseFunc ()
   {
     do {
       if (parameters.size () >= 127)
-        std::runtime_error ("Number of parameters cannot exceed 127");
+        throw std::runtime_error ("Number of parameters cannot exceed 127");
 
       parameters.push_back (readToken (TOKEN_TYPE_IDENT));
     } while (lexer.getNextToken ().type == TOKEN_TYPE_COMMA);
@@ -442,7 +442,7 @@ Expr* Parser::parseCall ()
         do
         {
           if (arguments.size () >= 127)
-            std::runtime_error ("Number of arguments cannot exceed 127");
+            throw std::runtime_error ("Number of arguments cannot exceed 127");
 
           arguments.push_back (parseExpr ());
         } while (lexer.getNextToken ().type == TOKEN_TYPE_COMMA);

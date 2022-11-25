@@ -191,6 +191,19 @@ TEST_CASE ("Function call parsing error", "[parser]")
                    "}";
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
+
+  SECTION ("Invalid use of function")
+  {
+    string input = "func myFunc (b)"
+                   "{"  
+                   "  print b;"
+                   "}"
+                   "func main ()"
+                   "{"
+                   "  print myFunc;"
+                   "}";
+    REQUIRE (testParse (input) == EXIT_FAILURE);
+  }
 }
 
 

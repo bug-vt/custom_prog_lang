@@ -185,11 +185,10 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
 
   std::string visitCallExpr (Call* expr)
   {
-    std::string out = "(";
-    std::vector<Expr *> exprs = {expr->callee};
-    out += parenthesize ("Callee", exprs);
+    std::string out = "";
+    out += "(Callee " + ((Variable*) expr->callee)->name.lexeme + " ";
     // check whether function was defined
-    int arity = func_table.getFunc (((Variable*)expr->callee)->name.lexeme);
+    int arity = func_table.getFunc (((Variable*) expr->callee)->name.lexeme);
 
     out += parenthesize ("Args", expr->args);
     // check arity (number of expected arguments)
@@ -207,8 +206,11 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
 
   std::string visitVariableExpr (Variable* expr)
   {
-    if (!func_table.isFunc (expr->name.lexeme))
-      expr->scope = sym_table->getScope (expr->name.lexeme);
+    // check if identifier is used for a function
+    if (func_table.isFunc (expr->name.lexeme))
+      throw std::runtime_error ("Invalid use of function '" + expr->name.lexeme + "'");
+    // make sure variable was declared
+    expr->scope = sym_table->getScope (expr->name.lexeme);
     return expr->name.lexeme;
   }
 
