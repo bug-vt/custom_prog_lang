@@ -73,6 +73,21 @@ struct Emitter : public ExprVisitor, public StmtVisitor
     return out;
   }
 
+  std::string visitReturnStmt (Return* stmt)
+  {
+    std::string out = "";
+    // default return value is 0
+    out += "  mov _retVal, 0\n";
+    // otherwise, store return value to _retVal register
+    if (stmt->value != nullptr)
+    {
+      out += emit (stmt->value);
+      out += "  pop _retVal\n";
+    }
+    out += "  ret\n";
+    return out;
+  }
+
   std::string visitIfStmt (If* stmt)
   {
     std::string out = "";
@@ -333,6 +348,7 @@ struct Emitter : public ExprVisitor, public StmtVisitor
       out += emit (expr->args[i]);
 
     out += "  call " + ((Variable*) expr->callee)->name.lexeme + "\n";
+    out += "  push _retVal\n";
     return out;
   }
 

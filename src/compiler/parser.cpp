@@ -132,6 +132,9 @@ Stmt* Parser::parseStatement ()
     case TOKEN_TYPE_EOF:
       throw std::runtime_error ("Unexpected end of file");
 
+    case TOKEN_TYPE_RETURN:
+      return parseReturnStatement ();
+
     case TOKEN_TYPE_IF:
       return parseIfStatement ();
 
@@ -157,6 +160,18 @@ Stmt* Parser::parseStatement ()
 
   lexer.undoGetNextToken ();
   return parseExprStatement ();
+}
+
+Stmt* Parser::parseReturnStatement ()
+{
+  lexer.undoGetNextToken ();
+  Token keyword = lexer.getNextToken ();
+  Expr* value = nullptr;
+  if (lexer.peekNextToken () != TOKEN_TYPE_SEMICOLON)
+    value = parseExpr ();
+
+  readToken (TOKEN_TYPE_SEMICOLON);
+  return new Return (keyword, value);
 }
 
 Stmt* Parser::parseIfStatement ()

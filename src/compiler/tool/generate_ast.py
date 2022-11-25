@@ -23,6 +23,7 @@ def main (argc, argv):
                 "Expression = Expr *expression",
                 "Function   = Token name, std::vector<Token> params, " +
                              "std::vector<Stmt*> body, int scope",
+                "Return     = Token keyword, Expr *value",
                 "If         = Expr *condition, Stmt *thenBranch, Stmt *elseBranch",
                 "While      = Expr *condition, Stmt *body, Stmt *increment",
                 "Goto       = Token token",

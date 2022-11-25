@@ -117,5 +117,24 @@ class TestVM (unittest.TestCase):
         out = runProg ("../example/call.src");
         self.assertEqual (out, expected);
 
+    def testReturn (self):
+        expected = ("4\n")
+        out = runProg ("../example/return.src");
+        self.assertEqual (out, expected);
+
+    def testFib (self):
+        expected = ("0\n"
+                    "1\n"
+                    "1\n"
+                    "2\n"
+                    "3\n"
+                    "5\n"
+                    "8\n"
+                    "13\n"
+                    "21\n"
+                    "34\n")
+        out = runProg ("../example/fib.src");
+        self.assertEqual (out, expected);
+
 if __name__ == '__main__':
     unittest.main ()

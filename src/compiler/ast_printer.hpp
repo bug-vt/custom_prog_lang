@@ -81,6 +81,18 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     return out + ")";
   }
 
+  std::string visitReturnStmt (Return* stmt)
+  {
+    std::string out = "(Return ";
+    if (stmt->value != nullptr)
+    {
+      std::vector<Expr *> exprs = {stmt->value};
+      out += parenthesize ("Expr", exprs);
+    }
+
+    return out + ")";
+  }
+
   std::string visitIfStmt (If* stmt)
   {
     std::vector<Expr *> exprs = {stmt->condition};

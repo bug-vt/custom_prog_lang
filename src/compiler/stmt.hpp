@@ -9,6 +9,7 @@
 struct Block;
 struct Expression;
 struct Function;
+struct Return;
 struct If;
 struct While;
 struct Goto;
@@ -20,6 +21,7 @@ struct StmtVisitor
   virtual std::string visitBlockStmt (Block *stmt) = 0;
   virtual std::string visitExpressionStmt (Expression *stmt) = 0;
   virtual std::string visitFunctionStmt (Function *stmt) = 0;
+  virtual std::string visitReturnStmt (Return *stmt) = 0;
   virtual std::string visitIfStmt (If *stmt) = 0;
   virtual std::string visitWhileStmt (While *stmt) = 0;
   virtual std::string visitGotoStmt (Goto *stmt) = 0;
@@ -84,6 +86,23 @@ struct Function : public Stmt
   std::vector<Token> params;
   std::vector<Stmt*> body;
   int scope;
+};
+
+struct Return : public Stmt
+{
+  Return (Token keyword, Expr *value)
+  {
+    this->keyword = keyword;
+    this->value = value;
+  }
+
+  std::string accept (StmtVisitor &visitor)
+  {
+    return visitor.visitReturnStmt (this);
+  }
+
+  Token keyword;
+  Expr *value;
 };
 
 struct If : public Stmt
