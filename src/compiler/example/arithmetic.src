@@ -2,6 +2,7 @@
  * Test for simple arithmetic
  */
 
+func main ()
 {
   var local = 7 + 3 * 42 - 9 / 2;
   print local;

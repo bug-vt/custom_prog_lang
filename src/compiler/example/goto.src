@@ -1,12 +1,16 @@
-var i = -1;
-while (true)
+
+func main ()
 {
-  i = i + 1;
-  if (i == 0 || i == 2)
-    continue;
+  var i = -1;
+  while (true)
+  {
+    i = i + 1;
+    if (i == 0 || i == 2)
+      continue;
 
-  if (i == 5)
-    break;
+    if (i == 5)
+      break;
 
-  print i;
+    print i;
+  }
 }

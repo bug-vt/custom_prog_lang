@@ -1,0 +1,16 @@
+
+func myFunc (a, b, c)
+{
+  print a + b + c;
+}
+
+func yourFunc (a, b)
+{
+  print a + b;
+}
+
+func main ()
+{
+  myFunc (2, 4 + 1, 0);
+  yourFunc ("hello", " world");
+}

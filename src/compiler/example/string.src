@@ -1,3 +1,7 @@
-var pi = 33;
-pi = "Hello" + " World!";
-print pi;
+
+func main ()
+{
+  var pi = 33;
+  pi = "Hello" + " World!";
+  print pi;
+}
