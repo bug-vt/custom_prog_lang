@@ -223,7 +223,7 @@ void AsmParser::parseVar ()
   // but the top of the stack is reserved for VM.
   // So, offset 1 must be added.
   else
-    stack_index = -1 - (1 + curr_func_local_data_size);
+    stack_index = -1 - (size + curr_func_local_data_size);
 
   // add symbol to the symbol table and check for redefinition
   Symbol symbol (ident, curr_scope); 

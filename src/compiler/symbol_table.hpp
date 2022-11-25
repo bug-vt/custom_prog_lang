@@ -4,8 +4,6 @@
 #include <string>
 #include <unordered_map>
 
-enum SymbolType {SYMBOL_TYPE_VAR, SYMBOL_TYPE_PARAM};
-
 
 struct Symbol
 {
@@ -22,8 +20,7 @@ class SymbolTable
   public:
     SymbolTable ();
     SymbolTable (SymbolTable* enclosing, int scope);
-    //int addSymbol (std::string name, int size, int type);
-    int addSymbol (std::string name);
+    int addSymbol (std::string name, int size);
     Symbol getSymbol (std::string name);
     bool isSymbol (std::string name);
     int getScope (std::string name);

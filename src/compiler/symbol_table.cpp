@@ -27,7 +27,7 @@ SymbolTable::SymbolTable (SymbolTable* enclosing, int scope) : symbol_table ()
 // Add symbol to the symbol table.
 // If the symbol is already exists inside the table, throw exception.
 // Otherwise, return the assigned scope of the symbol
-int SymbolTable::addSymbol (string name)
+int SymbolTable::addSymbol (string name, int size)
 {
   // check if given function is already inside the table.
   if (symbol_table.count (name))
@@ -37,7 +37,7 @@ int SymbolTable::addSymbol (string name)
   }
 
   // add the given symbol into the table.
-  symbol_table[name] = Symbol (SYMBOL_TYPE_VAR, 1);
+  symbol_table[name] = Symbol (0, size);
 
   return scope;
 }

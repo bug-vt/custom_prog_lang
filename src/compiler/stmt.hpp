@@ -175,10 +175,11 @@ struct Print : public Stmt
 
 struct Var : public Stmt
 {
-  Var (Token name, Expr *initializer, int scope)
+  Var (Token name, Expr *initializer, int size, int scope)
   {
     this->name = name;
     this->initializer = initializer;
+    this->size = size;
     this->scope = scope;
   }
 
@@ -189,6 +190,7 @@ struct Var : public Stmt
 
   Token name;
   Expr *initializer;
+  int size;
   int scope;
 };
 

@@ -37,10 +37,11 @@ struct Expr
 
 struct Assign : public Expr
 {
-  Assign (Token name, Expr *value, int scope)
+  Assign (Token name, Expr *value, Expr *offset, int scope)
   {
     this->name = name;
     this->value = value;
+    this->offset = offset;
     this->scope = scope;
   }
 
@@ -51,6 +52,7 @@ struct Assign : public Expr
 
   Token name;
   Expr *value;
+  Expr *offset;
   int scope;
 };
 
@@ -160,9 +162,10 @@ struct Literal : public Expr
 
 struct Variable : public Expr
 {
-  Variable (Token name, int scope)
+  Variable (Token name, Expr *offset, int scope)
   {
     this->name = name;
+    this->offset = offset;
     this->scope = scope;
   }
 
@@ -172,6 +175,7 @@ struct Variable : public Expr
   }
 
   Token name;
+  Expr *offset;
   int scope;
 };
 

@@ -25,8 +25,8 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     global = new SymbolTable ();
     sym_table = global;
     // reserve two temporary variables to simulate general-purpose registers 
-    sym_table->addSymbol ("_t0");
-    sym_table->addSymbol ("_t1");
+    sym_table->addSymbol ("_t0", 1);
+    sym_table->addSymbol ("_t1", 1);
   }
 
   // watch out for undefined reference error when base class accept method is not defined.
@@ -66,7 +66,7 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     for (Token param : stmt->params)
     {
       out += " " + param.lexeme;
-      stmt->scope = declareSymbol (param.lexeme);
+      stmt->scope = declareSymbol (param.lexeme, 1);
     }
     out += ")\n";
     
@@ -143,8 +143,12 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     if (stmt->initializer)
       exprs.push_back (stmt->initializer);
 
-    stmt->scope = declareSymbol (stmt->name.lexeme);
-    return parenthesize ("Var " + stmt->name.lexeme, exprs);
+    stmt->scope = declareSymbol (stmt->name.lexeme, stmt->size);
+    std::string name = stmt->name.lexeme;
+    if (stmt->size > 1)
+      name += "[" + std::to_string (stmt->size) + "]";
+
+    return parenthesize ("Var " + name, exprs);
   }
 
   std::string visitBlockStmt (Block* stmt)
@@ -168,7 +172,14 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
   {
     std::vector<Expr *> exprs = {expr->value};
     expr->scope = sym_table->getScope (expr->name.lexeme);
-    return parenthesize (expr->name.lexeme + "=", exprs);
+    std::string name = expr->name.lexeme;
+    if (expr->offset != nullptr)
+    {
+      std::vector<Expr*> exprs = {expr->offset};
+      name += "[" + parenthesize ("Expr", exprs) + "]";
+    }
+
+    return parenthesize ("Assign " + name, exprs);
   }
 
   std::string visitBinaryExpr (Binary* expr) 
@@ -223,7 +234,14 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
       throw std::runtime_error ("Invalid use of function '" + expr->name.lexeme + "'");
     // make sure variable was declared
     expr->scope = sym_table->getScope (expr->name.lexeme);
-    return expr->name.lexeme;
+    std::string name = expr->name.lexeme;
+    if (expr->offset != nullptr)
+    {
+      std::vector<Expr*> exprs = {expr->offset};
+      name += "[" + parenthesize ("Expr", exprs) + "]";
+    }
+
+    return name;
   }
 
   std::string parenthesize (std::string name, std::vector<Expr*> exprs)
@@ -239,13 +257,13 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     return out;
   }
 
-  int declareSymbol (std::string name)
+  int declareSymbol (std::string name, int size)
   {
     // check if identifier is used for a function
     if (func_table.isFunc (name))
       throw std::runtime_error ("Name conflict with function '" + name + "'");
 
-    return sym_table->addSymbol (name);
+    return sym_table->addSymbol (name, size);
   }
 
   void declareFunc (std::string name, int param_count)

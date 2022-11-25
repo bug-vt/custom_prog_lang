@@ -190,6 +190,8 @@ struct Emitter : public ExprVisitor, public StmtVisitor
   std::string visitVarStmt (Var* stmt)
   {
     std::string name = stmt->name.lexeme + std::to_string (stmt->scope);
+    if (stmt->size > 1)
+      name += "[" + std::to_string (stmt->size) + "]";
     std::string out = "  var " + name + "\n";
     if (stmt->initializer)
     {
@@ -214,8 +216,15 @@ struct Emitter : public ExprVisitor, public StmtVisitor
   std::string visitAssignExpr (Assign* expr) 
   {
     std::string name = expr->name.lexeme + std::to_string (expr->scope);
+
     std::string out = "";
     out += emit (expr->value);
+    if (expr->offset != nullptr)
+    {
+      out += emit (expr->offset);
+      out += "  pop _t1\n";
+      name += "[_t1]";
+    }
     out += "  pop _t0\n";
     out += "  mov " + name + ", _t0\n";
     out += "  push " + name + "\n";
@@ -364,8 +373,17 @@ struct Emitter : public ExprVisitor, public StmtVisitor
 
   std::string visitVariableExpr (Variable* expr)
   {
+    std::string out = "";
     std::string name = expr->name.lexeme + std::to_string (expr->scope);
-    return "  push " + name + "\n";
+    if (expr->offset != nullptr)
+    {
+      out += emit (expr->offset);
+      out += "  pop _t0\n";
+      name += "[_t0]";
+    }
+    out += "  push " + name + "\n";
+
+    return out;
   }
 
   std::string emit (Expr* expr)

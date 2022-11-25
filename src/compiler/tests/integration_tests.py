@@ -136,5 +136,10 @@ class TestVM (unittest.TestCase):
         out = runProg ("../example/fib.src");
         self.assertEqual (out, expected);
 
+    def testArray (self):
+        expected = (" hello world ! cs4974 awesomeness\n")
+        out = runProg ("../example/array.src");
+        self.assertEqual (out, expected);
+
 if __name__ == '__main__':
     unittest.main ()

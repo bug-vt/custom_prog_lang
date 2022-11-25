@@ -115,13 +115,15 @@ Stmt* Parser::parseVar ()
   // initialize when token '=' is present after declaration
   if (lexer.peekNextToken () == TOKEN_TYPE_ASSIGN)
   {
+    if (size > 1)
+      throw std::runtime_error ("Current version lack array initialization support");
     readToken (TOKEN_TYPE_ASSIGN);
     initializer = parseExpr ();
   }
 
   readToken (TOKEN_TYPE_SEMICOLON);
 
-  return new Var (ident, initializer, 0);
+  return new Var (ident, initializer, size, 0);
 }
 
 Stmt* Parser::parseStatement ()
@@ -298,7 +300,8 @@ Expr* Parser::parseAssignment ()
     if (dynamic_cast<Variable*> (expr) != nullptr)
     {
       Token name = ((Variable*) expr)->name;
-      return new Assign (name, value, 0);
+      Expr* offset = ((Variable*) expr)->offset;
+      return new Assign (name, value, offset, 0);
     }
     throw std::runtime_error ("Invalid assignment target.");
   }
@@ -488,7 +491,17 @@ Expr* Parser::parsePrimary ()
 
   // Variable
   if (token.type == TOKEN_TYPE_IDENT)
-    return new Variable (token, 0);
+  {
+    Expr* offset = nullptr;
+    // indexing array if next token is open bracket
+    if (lexer.peekNextToken () == TOKEN_TYPE_OPEN_BRACKET)
+    {
+      readToken (TOKEN_TYPE_OPEN_BRACKET);
+      offset = parseExpr ();
+      readToken (TOKEN_TYPE_CLOSE_BRACKET);
+    }
+    return new Variable (token, offset, 0);
+  }
 
   // Grouping
   if (token.type == TOKEN_TYPE_OPEN_PAREN)

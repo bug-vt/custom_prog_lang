@@ -8,14 +8,14 @@ def main (argc, argv):
     return
 
   output_dir = argv[1]
-  expr_types = ["Assign   = Token name, Expr *value, int scope",
+  expr_types = ["Assign   = Token name, Expr *value, Expr *offset, int scope",
                 "Binary   = Expr *left, Token op, Expr *right",
                 "Logical  = Expr *left, Token op, Expr *right",
                 "Grouping = Expr *expression",
                 "Unary    = Token op, Expr *right",
                 "Call     = Expr *callee, Token paren, std::vector<Expr*> args",
                 "Literal  = Token value",
-                "Variable = Token name, int scope"]
+                "Variable = Token name, Expr *offset, int scope"]
 
   defineAst (output_dir, "Expr", expr_types)
 
@@ -28,7 +28,7 @@ def main (argc, argv):
                 "While      = Expr *condition, Stmt *body, Stmt *increment",
                 "Goto       = Token token",
                 "Print      = Expr *expression",
-                "Var        = Token name, Expr *initializer, int scope"]
+                "Var        = Token name, Expr *initializer, int size, int scope"]
 
   defineAst (output_dir, "Stmt", stmt_types)
 
