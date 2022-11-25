@@ -8,20 +8,22 @@
 
 struct Assign;
 struct Binary;
-struct Grouping;
-struct Literal;
 struct Logical;
+struct Grouping;
 struct Unary;
+struct Call;
+struct Literal;
 struct Variable;
 
 struct ExprVisitor
 {
   virtual std::string visitAssignExpr (Assign *expr) = 0;
   virtual std::string visitBinaryExpr (Binary *expr) = 0;
-  virtual std::string visitGroupingExpr (Grouping *expr) = 0;
-  virtual std::string visitLiteralExpr (Literal *expr) = 0;
   virtual std::string visitLogicalExpr (Logical *expr) = 0;
+  virtual std::string visitGroupingExpr (Grouping *expr) = 0;
   virtual std::string visitUnaryExpr (Unary *expr) = 0;
+  virtual std::string visitCallExpr (Call *expr) = 0;
+  virtual std::string visitLiteralExpr (Literal *expr) = 0;
   virtual std::string visitVariableExpr (Variable *expr) = 0;
 };
 
@@ -71,36 +73,6 @@ struct Binary : public Expr
   Expr *right;
 };
 
-struct Grouping : public Expr
-{
-  Grouping (Expr *expression)
-  {
-    this->expression = expression;
-  }
-
-  std::string accept (ExprVisitor &visitor)
-  {
-    return visitor.visitGroupingExpr (this);
-  }
-
-  Expr *expression;
-};
-
-struct Literal : public Expr
-{
-  Literal (Token value)
-  {
-    this->value = value;
-  }
-
-  std::string accept (ExprVisitor &visitor)
-  {
-    return visitor.visitLiteralExpr (this);
-  }
-
-  Token value;
-};
-
 struct Logical : public Expr
 {
   Logical (Expr *left, Token op, Expr *right)
@@ -120,6 +92,21 @@ struct Logical : public Expr
   Expr *right;
 };
 
+struct Grouping : public Expr
+{
+  Grouping (Expr *expression)
+  {
+    this->expression = expression;
+  }
+
+  std::string accept (ExprVisitor &visitor)
+  {
+    return visitor.visitGroupingExpr (this);
+  }
+
+  Expr *expression;
+};
+
 struct Unary : public Expr
 {
   Unary (Token op, Expr *right)
@@ -135,6 +122,40 @@ struct Unary : public Expr
 
   Token op;
   Expr *right;
+};
+
+struct Call : public Expr
+{
+  Call (Expr *callee, Token paren, std::vector<Expr*> args)
+  {
+    this->callee = callee;
+    this->paren = paren;
+    this->args = args;
+  }
+
+  std::string accept (ExprVisitor &visitor)
+  {
+    return visitor.visitCallExpr (this);
+  }
+
+  Expr *callee;
+  Token paren;
+  std::vector<Expr*> args;
+};
+
+struct Literal : public Expr
+{
+  Literal (Token value)
+  {
+    this->value = value;
+  }
+
+  std::string accept (ExprVisitor &visitor)
+  {
+    return visitor.visitLiteralExpr (this);
+  }
+
+  Token value;
 };
 
 struct Variable : public Expr

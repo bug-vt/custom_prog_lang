@@ -38,6 +38,7 @@ class Parser
     Expr* parseTerm ();
     Expr* parseFactor ();
     Expr* parseUnary ();
+    Expr* parseCall ();
     Expr* parsePrimary ();
 };
 

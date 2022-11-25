@@ -241,45 +241,6 @@ struct Emitter : public ExprVisitor, public StmtVisitor
     return out;
   }
 
-  std::string visitGroupingExpr (Grouping* expr)
-  {
-    return emit (expr->expression);
-  }
-
-  std::string visitUnaryExpr (Unary* expr)
-  {
-    std::string out = "";
-    out += emit (expr->right);
-
-    out += "  pop _t0\n";
-
-    switch (expr->op.type)
-    {
-      case TOKEN_TYPE_LOGICAL_NOT:
-        out += "  not _t0\n";
-        break;
-      case TOKEN_TYPE_SUB:
-        out += "  neg _t0\n";
-        break;
-      default:
-        throw std::runtime_error ("Invalid Unary operator");
-    }
-
-    out += "  push _t0\n";
-
-    return out;
-  }
-
-  std::string visitLiteralExpr (Literal* expr)
-  {
-    if (expr->value.type == TOKEN_TYPE_FALSE)
-      return "  push 0\n";
-    if (expr->value.type == TOKEN_TYPE_TRUE)
-      return "  push 1\n";
-
-    return "  push " + expr->value.lexeme + "\n";
-  }
-
   std::string visitLogicalExpr (Logical* expr)
   {
     std::string out = "";
@@ -315,6 +276,57 @@ struct Emitter : public ExprVisitor, public StmtVisitor
     out += "  push _t0\n";
 
     return out;
+  }
+
+  std::string visitGroupingExpr (Grouping* expr)
+  {
+    return emit (expr->expression);
+  }
+
+  std::string visitUnaryExpr (Unary* expr)
+  {
+    std::string out = "";
+    out += emit (expr->right);
+
+    out += "  pop _t0\n";
+
+    switch (expr->op.type)
+    {
+      case TOKEN_TYPE_LOGICAL_NOT:
+        out += "  not _t0\n";
+        break;
+      case TOKEN_TYPE_SUB:
+        out += "  neg _t0\n";
+        break;
+      default:
+        throw std::runtime_error ("Invalid Unary operator");
+    }
+
+    out += "  push _t0\n";
+
+    return out;
+  }
+
+  std::string visitCallExpr (Call* expr)
+  {
+    std::string out = "";
+    
+    // push arguments to stack
+    for (Expr* arg : expr->args)
+      out += emit (arg);
+
+    out += "  call " + ((Variable*) expr->callee)->name.lexeme + "\n";
+    return out;
+  }
+
+  std::string visitLiteralExpr (Literal* expr)
+  {
+    if (expr->value.type == TOKEN_TYPE_FALSE)
+      return "  push 0\n";
+    if (expr->value.type == TOKEN_TYPE_TRUE)
+      return "  push 1\n";
+
+    return "  push " + expr->value.lexeme + "\n";
   }
 
   std::string visitVariableExpr (Variable* expr)

@@ -384,7 +384,45 @@ Expr* Parser::parseUnary ()
   
   lexer.undoGetNextToken ();
 
-  return parsePrimary ();
+  return parseCall ();
+}
+
+Expr* Parser::parseCall ()
+{
+  Expr* expr = parsePrimary ();
+
+  while (true)
+  {
+    // function call
+    if (lexer.getNextToken ().type == TOKEN_TYPE_OPEN_PAREN)
+    {
+      // function name must be a identifier 
+      if (dynamic_cast<Variable*> (expr) == nullptr)
+        throw std::runtime_error ("Invalid function name");
+
+      // parse all arguments
+      vector<Expr*> arguments;
+      if (lexer.peekNextToken () != TOKEN_TYPE_CLOSE_PAREN)
+      {
+        do
+        {
+          if (arguments.size () >= 127)
+            std::runtime_error ("Number of arguments cannot exceed 127");
+
+          arguments.push_back (parseExpr ());
+        } while (lexer.getNextToken ().type == TOKEN_TYPE_COMMA);
+        lexer.undoGetNextToken ();
+      }
+
+      Token paren = readToken (TOKEN_TYPE_CLOSE_PAREN);
+      expr = new Call (expr, paren, arguments);
+    }
+    else
+      break;
+  }
+  
+  lexer.undoGetNextToken ();
+  return expr;
 }
 
 Expr* Parser::parsePrimary ()

@@ -15,6 +15,7 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
   // variable for assigning unique scope number 
   int scope;
   SymbolTable* sym_table;  
+  std::unordered_map<std::string, int> func_table;
 
   AstPrinter ()
   {
@@ -127,6 +128,12 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     return parenthesize (expr->op.lexeme, exprs);
   }
 
+  std::string visitLogicalExpr (Logical* expr)
+  {
+    std::vector<Expr *> exprs = {expr->left, expr->right};
+    return parenthesize (expr->op.lexeme, exprs);
+  }
+
   std::string visitGroupingExpr (Grouping* expr)
   {
     std::vector<Expr *> exprs = {expr->expression};
@@ -139,15 +146,22 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     return parenthesize (expr->op.lexeme, exprs);
   }
 
+  std::string visitCallExpr (Call* expr)
+  {
+    std::string out = "(";
+    std::vector<Expr *> exprs = {expr->callee};
+    out += parenthesize ("Callee", exprs);
+    // To do: check whether function was defined
+
+    out += parenthesize ("Args", expr->args);
+    // To do: check arity (number of expected arguments)
+
+    return out + ")";
+  }
+
   std::string visitLiteralExpr (Literal* expr)
   {
     return expr->value.lexeme;
-  }
-
-  std::string visitLogicalExpr (Logical* expr)
-  {
-    std::vector<Expr *> exprs = {expr->left, expr->right};
-    return parenthesize (expr->op.lexeme, exprs);
   }
 
   std::string visitVariableExpr (Variable* expr)

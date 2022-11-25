@@ -10,10 +10,11 @@ def main (argc, argv):
   output_dir = argv[1]
   expr_types = ["Assign   = Token name, Expr *value, int scope",
                 "Binary   = Expr *left, Token op, Expr *right",
-                "Grouping = Expr *expression",
-                "Literal  = Token value",
                 "Logical  = Expr *left, Token op, Expr *right",
+                "Grouping = Expr *expression",
                 "Unary    = Token op, Expr *right",
+                "Call     = Expr *callee, Token paren, std::vector<Expr*> args",
+                "Literal  = Token value",
                 "Variable = Token name, int scope"]
 
   defineAst (output_dir, "Expr", expr_types)
@@ -21,7 +22,7 @@ def main (argc, argv):
   stmt_types = ["Block      = std::vector<Stmt*> statements",
                 "Expression = Expr *expression",
                 "If         = Expr *condition, Stmt *thenBranch, Stmt *elseBranch",
-                "While      = Expr *condition, Stmt *body, Expression *increment",
+                "While      = Expr *condition, Stmt *body, Stmt *increment",
                 "Goto       = Token token",
                 "Print      = Expr *expression",
                 "Var        = Token name, Expr *initializer, int scope"]
