@@ -38,10 +38,10 @@ string token2string (TokenType token)
       out = "Close brace";
       break;
     case TOKEN_TYPE_OPEN_PAREN:
-      out = "Open brace";
+      out = "Open paren";
       break;
     case TOKEN_TYPE_CLOSE_PAREN:
-      out = "Close brace";
+      out = "Close paren";
       break;
     case TOKEN_TYPE_SEMICOLON:
       out = "Semi Colon";
@@ -185,7 +185,7 @@ string token2string (TokenType token)
       out = ">=";
       break;
     case TOKEN_TYPE_PRINT:
-      out = "print";
+      out = "print keyword";
       break;
     default:
       out = "Invalid";

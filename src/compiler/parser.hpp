@@ -17,8 +17,11 @@ class Parser
     // lexer
     Lexer lexer;
 
-    // methods
     Token readToken (TokenType req_token);
+    // parsing methods
+    Stmt* parseDeclaration ();
+    Stmt* parseFunc ();
+    Stmt* parseVar ();
     Stmt* parseStatement ();
     Stmt* parseIfStatement ();
     Stmt* parseWhileStatement ();
@@ -26,8 +29,6 @@ class Parser
     Stmt* parseGotoStatement ();
     Stmt* parseExprStatement ();
     Stmt* parsePrintStatement ();
-    Stmt* parseDeclaration ();
-    Stmt* parseVar ();
     std::vector<Stmt*> parseBlock ();
     Expr* parseExpr ();
     Expr* parseAssignment ();

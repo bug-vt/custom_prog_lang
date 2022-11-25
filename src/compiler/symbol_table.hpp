@@ -33,8 +33,6 @@ class SymbolTable
     std::unordered_map<std::string, Symbol> symbol_table;
     SymbolTable* enclosing;
     int scope;
-
-  friend class CodeGen;
 };
 
 

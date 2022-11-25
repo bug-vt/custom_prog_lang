@@ -25,9 +25,8 @@ SymbolTable::SymbolTable (SymbolTable* enclosing, int scope) : symbol_table ()
 }
 
 // Add symbol to the symbol table.
-// If the symbol is already exists inside the table, return -1.
-// Otherwise, return the assigned index that would use to locate 
-// the symbol inside the table.
+// If the symbol is already exists inside the table, throw exception.
+// Otherwise, return the assigned scope of the symbol
 int SymbolTable::addSymbol (string name)
 {
   // check if given function is already inside the table.
@@ -37,7 +36,7 @@ int SymbolTable::addSymbol (string name)
     throw std::runtime_error (msg);
   }
 
-  // add the given function into the table.
+  // add the given symbol into the table.
   symbol_table[name] = Symbol (SYMBOL_TYPE_VAR, 1);
 
   return scope;

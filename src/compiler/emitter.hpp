@@ -41,7 +41,6 @@ struct Emitter : public ExprVisitor, public StmtVisitor
     // two temporary variables to simulate general-purpose registers 
     out += "var _t0\n";
     out += "var _t1\n";
-    out += "func main\n{\n";
     try
     {
       for (Stmt* statement : statements)
@@ -50,8 +49,25 @@ struct Emitter : public ExprVisitor, public StmtVisitor
     catch (std::runtime_error& err)
     {
       std::cout << err.what () << std::endl;
-      exit (-1);
+      exit (EXIT_FAILURE);
     }
+
+    return out;
+  }
+
+  std::string visitFunctionStmt (Function* stmt)
+  {
+    // func directive and function name
+    std::string out = "func " + stmt->name.lexeme + "\n";
+    out += "{\n";
+    
+    // parameters
+    for (Token param : stmt->params)
+      out += "  param " + param.lexeme + std::to_string (stmt->scope) + "\n";
+    
+    // body
+    for (Stmt* statement : stmt->body)
+      out += statement->accept (*this) + "\n";
 
     out += "}\n";
     return out;
@@ -312,8 +328,9 @@ struct Emitter : public ExprVisitor, public StmtVisitor
     std::string out = "";
     
     // push arguments to stack
-    for (Expr* arg : expr->args)
-      out += emit (arg);
+    // should be push in right to left order
+    for (int i = expr->args.size () - 1; i >= 0; i--)
+      out += emit (expr->args[i]);
 
     out += "  call " + ((Variable*) expr->callee)->name.lexeme + "\n";
     return out;

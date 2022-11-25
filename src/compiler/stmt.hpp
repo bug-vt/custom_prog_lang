@@ -8,6 +8,7 @@
 
 struct Block;
 struct Expression;
+struct Function;
 struct If;
 struct While;
 struct Goto;
@@ -18,6 +19,7 @@ struct StmtVisitor
 {
   virtual std::string visitBlockStmt (Block *stmt) = 0;
   virtual std::string visitExpressionStmt (Expression *stmt) = 0;
+  virtual std::string visitFunctionStmt (Function *stmt) = 0;
   virtual std::string visitIfStmt (If *stmt) = 0;
   virtual std::string visitWhileStmt (While *stmt) = 0;
   virtual std::string visitGotoStmt (Goto *stmt) = 0;
@@ -63,6 +65,27 @@ struct Expression : public Stmt
   Expr *expression;
 };
 
+struct Function : public Stmt
+{
+  Function (Token name, std::vector<Token> params, std::vector<Stmt*> body, int scope)
+  {
+    this->name = name;
+    this->params = params;
+    this->body = body;
+    this->scope = scope;
+  }
+
+  std::string accept (StmtVisitor &visitor)
+  {
+    return visitor.visitFunctionStmt (this);
+  }
+
+  Token name;
+  std::vector<Token> params;
+  std::vector<Stmt*> body;
+  int scope;
+};
+
 struct If : public Stmt
 {
   If (Expr *condition, Stmt *thenBranch, Stmt *elseBranch)
@@ -84,7 +107,7 @@ struct If : public Stmt
 
 struct While : public Stmt
 {
-  While (Expr *condition, Stmt *body, Expression *increment)
+  While (Expr *condition, Stmt *body, Stmt *increment)
   {
     this->condition = condition;
     this->body = body;
@@ -98,7 +121,7 @@ struct While : public Stmt
 
   Expr *condition;
   Stmt *body;
-  Expression *increment;
+  Stmt *increment;
 };
 
 struct Goto : public Stmt

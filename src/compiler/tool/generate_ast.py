@@ -21,6 +21,8 @@ def main (argc, argv):
 
   stmt_types = ["Block      = std::vector<Stmt*> statements",
                 "Expression = Expr *expression",
+                "Function   = Token name, std::vector<Token> params, " +
+                             "std::vector<Stmt*> body, int scope",
                 "If         = Expr *condition, Stmt *thenBranch, Stmt *elseBranch",
                 "While      = Expr *condition, Stmt *body, Stmt *increment",
                 "Goto       = Token token",

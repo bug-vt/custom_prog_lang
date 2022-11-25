@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <fstream>
 #include "../ast_printer.hpp"
+#include "../emitter.hpp"
 
 using std::ifstream;
 using std::string;
@@ -19,11 +20,14 @@ int testParse (string input, string expected="")
     Parser parser (input);
     vector<Stmt*> statements = parser.parse ();
 
+    AstPrinter printer;
+    string parse_tree = printer.print (statements);
     if (expected != "")
-    {
-      AstPrinter printer;
-      REQUIRE (expected == printer.print (statements)); 
-    }
+      REQUIRE (expected == parse_tree); 
+
+    Emitter emitter;
+    emitter.walkAst (statements);
+
     exit (EXIT_SUCCESS);
   }
   // parent
@@ -51,8 +55,8 @@ TEST_CASE ("Empty blocks parsing", "[parser]")
   }
 }
 
-/*
-TEST_CASE ("Basic function directive parsing", "[parser]")
+
+TEST_CASE ("Basic function declration parsing", "[parser]")
 {
   SECTION ("No parameter")
   {
@@ -74,9 +78,19 @@ TEST_CASE ("Basic function directive parsing", "[parser]")
 
     REQUIRE (testParse (input) == EXIT_SUCCESS);
   }
+
+  SECTION ("Using parameter inside body")
+  {
+    string input = "func myFunc (param0)"
+                   "{"  
+                   "  var local = param0;"
+                   "}";
+
+    REQUIRE (testParse (input) == EXIT_SUCCESS);
+  }
 }
 
-TEST_CASE ("Function parsing error", "[parser]")
+TEST_CASE ("Function declration parsing error", "[parser]")
 {
   SECTION ("No function name")
   {
@@ -113,8 +127,71 @@ TEST_CASE ("Function parsing error", "[parser]")
     string input = "func myFunc (param0 param1) \n {\n} ";
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
+
+  SECTION ("Declaring outside global")
+  {
+    string input = "{ func myFunc (param0) \n {\n} }";
+    REQUIRE (testParse (input) == EXIT_FAILURE);
+  }
 }
-*/
+
+TEST_CASE ("Function call parsing", "[parser]")
+{
+  SECTION ("Calling function")
+  {
+    string input = "func myFunc ()"
+                   "{"  
+                   "  print 123;"
+                   "}"
+                   "func main ()"
+                   "{"
+                   "  myFunc ();"
+                   "}";
+    REQUIRE (testParse (input) == EXIT_SUCCESS);
+  }
+}
+
+TEST_CASE ("Function call parsing error", "[parser]")
+{
+  SECTION ("Too few arguments")
+  {
+    string input = "func myFunc (a)"
+                   "{"  
+                   "  print a;"
+                   "}"
+                   "func main ()"
+                   "{"
+                   "  myFunc ();"
+                   "}";
+    REQUIRE (testParse (input) == EXIT_FAILURE);
+  }
+
+  SECTION ("Too many arguments")
+  {
+    string input = "func myFunc (b)"
+                   "{"  
+                   "  print b;"
+                   "}"
+                   "func main ()"
+                   "{"
+                   "  myFunc (1, 2, 3);"
+                   "}";
+    REQUIRE (testParse (input) == EXIT_FAILURE);
+  }
+
+  SECTION ("Undefined function")
+  {
+    string input = "func myFunc (b)"
+                   "{"  
+                   "  print b;"
+                   "}"
+                   "func main ()"
+                   "{"
+                   "  yourFunc (1);"
+                   "}";
+    REQUIRE (testParse (input) == EXIT_FAILURE);
+  }
+}
 
 
 TEST_CASE ("Basic var/var[] parsing", "[parser]")
@@ -166,17 +243,26 @@ TEST_CASE ("var/var[] parsing error", "[parser]")
     string input = "  var xyz   \n";
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
+
+  SECTION ("Undefined variable")
+  {
+    string input = "var x;"
+                   "y = 12;";
+    REQUIRE (testParse (input) == EXIT_FAILURE);
+  }
 }
 
 TEST_CASE ("parsing global variable as operand", "[parser]")
 {
   string input = "var GLOBAL_VAR = 42;\n" 
-                 //"func someFunc\n"
+                 "func someFunc ()\n"
                  "{ \n"
                  "  var local = GLOBAL_VAR + 2;\n"
                  "}";
   string expected = "(Var GLOBAL_VAR 42)\n"
-                    "(Var local (+ GLOBAL_VAR 2))\n";
+                    "(Func someFunc (Params)\n"
+                    "(Var local (+ GLOBAL_VAR 2))\n"
+                    ")\n";
 
   REQUIRE (testParse (input, expected) == EXIT_SUCCESS);
 }
@@ -185,25 +271,29 @@ TEST_CASE ("Testing basic parsing", "[parser]")
 {
   SECTION ("Assignments")
   {
-    string input = //"\n\nfunc myFunc\n"
+    string input = "\n\nfunc myFunc ()\n"
                    "{ \n"
                    "  var y;\n"
                    "  var x = y = 123;\n"
                    "}";
 
-    string expected = "(Var y)\n"
-                      "(Var x (y= 123))\n";
+    string expected = "(Func myFunc (Params)\n"
+                      "(Var y)\n"
+                      "(Var x (y= 123))\n"
+                      ")\n";
     REQUIRE (testParse (input, expected) == EXIT_SUCCESS);
   }
 
   SECTION ("Left-associativity")
   {
-    string input = //"\n\nfunc myFunc\n"
+    string input = "\n\nfunc myFunc ()\n"
                    "{ \n"
                    "  1 + 2 + 3 + 4 + 5;\n"
                    "}";
 
-    string expected = "(Expr (+ (+ (+ (+ 1 2) 3) 4) 5))\n";
+    string expected = "(Func myFunc (Params)\n"
+                      "(Expr (+ (+ (+ (+ 1 2) 3) 4) 5))\n"
+                      ")\n";
     REQUIRE (testParse (input, expected) == EXIT_SUCCESS);
   }
 }
@@ -212,7 +302,7 @@ TEST_CASE ("Testing parsing error", "[parser]")
 {
   SECTION ("No semi-colon")
   {
-    string input = //"\n\nfunc myFunc\n"
+    string input = "\n\nfunc myFunc ()\n"
                    "{ \n"
                    "  var abc = 4\n"
                    "}";
@@ -222,7 +312,7 @@ TEST_CASE ("Testing parsing error", "[parser]")
 
   SECTION ("Equality instead of assignment")
   {
-    string input = //"\n\nfunc myFunc\n"
+    string input = "\n\nfunc myFunc ()\n"
                    "{ \n"
                    "  var x == 33;\n"
                    "}";
@@ -232,7 +322,7 @@ TEST_CASE ("Testing parsing error", "[parser]")
 
   SECTION ("Incorrect l-value")
   {
-    string input = //"\n\nfunc myFunc\n"
+    string input = "\n\nfunc myFunc ()\n"
                    "{ \n"
                    "  123 = 6;\n"
                    "}";
@@ -242,7 +332,7 @@ TEST_CASE ("Testing parsing error", "[parser]")
 
   SECTION ("Dangling block")
   {
-    string input = //"\n\nfunc myFunc\n"
+    string input = "\n\nfunc myFunc ()\n"
                    "{ \n"
                    "  var hello = 0;\n";
 
@@ -251,9 +341,22 @@ TEST_CASE ("Testing parsing error", "[parser]")
 
   SECTION ("Expected expression for r-value")
   {
-    string input = //"\n\nfunc myFunc\n"
+    string input = "\n\nfunc myFunc ()\n"
                    "{ \n"
                    "  var x = var y = 1;\n"
+                   "}";
+
+    REQUIRE (testParse (input) == EXIT_FAILURE);
+  }
+}
+
+TEST_CASE ("Testing emitting error", "[parser]")
+{
+  SECTION ("break outside of loop")
+  {
+    string input = "\n\nfunc myFunc ()\n"
+                   "{ \n"
+                   "  break;\n"
                    "}";
 
     REQUIRE (testParse (input) == EXIT_FAILURE);
@@ -271,50 +374,3 @@ TEST_CASE ("Parsing file", "[parser]")
   REQUIRE (testParse (buffer.str ()) == EXIT_SUCCESS);
 }
 
-// ----------------------------------------------------------------
-// Tests for tables
-
-/*
-TEST_CASE ("Test function table", "[func_table]")
-{
-  FuncTable func_table;
-  REQUIRE (func_table.addFunc ("myFunc1") == 1);
-
-  SECTION ("Trying to add function with same name")
-  {
-    REQUIRE (func_table.addFunc ("myFunc1") == -1);
-  }
-
-  SECTION ("Get function that exists inside table")
-  {
-    FuncInfo func_info;
-    REQUIRE_NOTHROW (func_info = func_table.getFunc ("myFunc1"));
-    REQUIRE (func_table.getFuncIndex ("myFunc1") == 1);
-    REQUIRE (func_info.param_count == 0);
-  }
-
-  SECTION ("Get function that does NOT exists inside table")
-  {
-    REQUIRE (func_table.getFuncIndex ("noFunc") == -1);
-  }
-
-  SECTION ("Set parameters and local data size")
-  {
-    func_table.setFunc (1, 2);
-    FuncInfo func_info = func_table.getFunc ("myFunc1");
-    REQUIRE (func_info.param_count == 2);
-  }
-
-  SECTION ("Test situation when caller try to modify content inside table")
-  {
-    FuncInfo target_info;
-    REQUIRE_NOTHROW (target_info = func_table.getFunc ("myFunc1"));
-    REQUIRE (target_info.param_count == 0);
-    target_info.param_count = 77;
-
-    FuncInfo same_info;
-    REQUIRE_NOTHROW (same_info = func_table.getFunc ("myFunc1"));
-    REQUIRE (same_info.param_count == 0);
-  }
-}
-*/

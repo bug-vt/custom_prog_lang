@@ -111,5 +111,11 @@ class TestVM (unittest.TestCase):
         out = runProg ("../example/for.src");
         self.assertEqual (out, expected);
 
+    def testFuncCall (self):
+        expected = ("7\n"
+                    "hello world\n")
+        out = runProg ("../example/call.src");
+        self.assertEqual (out, expected);
+
 if __name__ == '__main__':
     unittest.main ()

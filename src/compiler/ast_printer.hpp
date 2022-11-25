@@ -7,6 +7,7 @@
 #include "stmt.hpp"
 #include "token.hpp"
 #include "symbol_table.hpp"
+#include "func_table.hpp"
 #include <iostream>
 
 
@@ -14,13 +15,15 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
 {
   // variable for assigning unique scope number 
   int scope;
+  SymbolTable* global;
   SymbolTable* sym_table;  
-  std::unordered_map<std::string, int> func_table;
+  FuncTable func_table;
 
   AstPrinter ()
   {
     scope = 0;
-    sym_table = new SymbolTable ();
+    global = new SymbolTable ();
+    sym_table = global;
     // reserve two temporary variables to simulate general-purpose registers 
     sym_table->addSymbol ("_t0");
     sym_table->addSymbol ("_t1");
@@ -38,10 +41,44 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     catch (std::runtime_error& err)
     {
       std::cout << err.what () << std::endl; 
-      exit (-1);
+      exit (EXIT_FAILURE);
     }
 
     return out;
+  }
+
+  std::string visitFunctionStmt (Function* stmt)
+  {
+    if (sym_table != global)
+      throw std::runtime_error ("Function cannot be declared outside global scope");
+    
+    // function name
+    func_table.addFunc (stmt->name.lexeme, stmt->params.size ());
+    std::string out = "(Func " + stmt->name.lexeme;
+
+    // parameters
+    // Assigning new scope for function and adding parameters to symbol table
+    SymbolTable* current = new SymbolTable (sym_table, ++scope);
+    SymbolTable* previous = this->sym_table;
+    this->sym_table = current;
+
+    out += " (Params";
+    for (Token param : stmt->params)
+    {
+      out += " " + param.lexeme;
+      stmt->scope = sym_table->addSymbol (param.lexeme);
+    }
+    out += ")\n";
+    
+    // body
+    for (Stmt* statement : stmt->body)
+      out += statement->accept (*this) + "\n";
+   
+    // restore to global scope
+    delete current;
+    this->sym_table = previous;
+  
+    return out + ")";
   }
 
   std::string visitIfStmt (If* stmt)
@@ -151,10 +188,14 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     std::string out = "(";
     std::vector<Expr *> exprs = {expr->callee};
     out += parenthesize ("Callee", exprs);
-    // To do: check whether function was defined
+    // check whether function was defined
+    int arity = func_table.getFunc (((Variable*)expr->callee)->name.lexeme);
 
     out += parenthesize ("Args", expr->args);
-    // To do: check arity (number of expected arguments)
+    // check arity (number of expected arguments)
+    if (expr->args.size () != arity)
+      throw std::runtime_error ("Expected arity " + std::to_string (arity) + 
+                                " but found " + std::to_string (expr->args.size ()));
 
     return out + ")";
   }
@@ -166,7 +207,8 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
 
   std::string visitVariableExpr (Variable* expr)
   {
-    expr->scope = sym_table->getScope (expr->name.lexeme);
+    if (!func_table.isFunc (expr->name.lexeme))
+      expr->scope = sym_table->getScope (expr->name.lexeme);
     return expr->name.lexeme;
   }
 

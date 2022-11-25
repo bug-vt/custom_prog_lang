@@ -44,13 +44,21 @@ vector<Stmt*> Parser::parse ()
 
 Stmt* Parser::parseDeclaration ()
 {
+  Token first_token = lexer.getNextToken ();
   try
   {
-    if (lexer.getNextToken ().type == TOKEN_TYPE_VAR)
-      return parseVar ();
+    switch (first_token.type)
+    {
+      case TOKEN_TYPE_FUNC:
+        return parseFunc ();
 
-    lexer.undoGetNextToken ();
-    return parseStatement ();
+      case TOKEN_TYPE_VAR:
+        return parseVar ();
+      
+      default:
+        lexer.undoGetNextToken ();
+        return parseStatement ();
+    }
   }
   catch (std::runtime_error &err)
   {
@@ -58,6 +66,62 @@ Stmt* Parser::parseDeclaration ()
   }
 
   throw std::runtime_error ("Should not reach here.");
+}
+
+Stmt* Parser::parseFunc ()
+{
+  // parse function name
+  Token name = readToken (TOKEN_TYPE_IDENT);
+  // parse parameters
+  readToken (TOKEN_TYPE_OPEN_PAREN);
+  vector<Token> parameters;
+  if (lexer.peekNextToken () != TOKEN_TYPE_CLOSE_PAREN)
+  {
+    do {
+      if (parameters.size () >= 127)
+        std::runtime_error ("Number of parameters cannot exceed 127");
+
+      parameters.push_back (readToken (TOKEN_TYPE_IDENT));
+    } while (lexer.getNextToken ().type == TOKEN_TYPE_COMMA);
+    lexer.undoGetNextToken ();
+  }
+
+  readToken (TOKEN_TYPE_CLOSE_PAREN);
+  
+  // parse body
+  readToken (TOKEN_TYPE_OPEN_BRACE);
+  vector<Stmt*> body = parseBlock ();
+
+  return new Function (name, parameters, body, 0);
+}
+
+Stmt* Parser::parseVar ()
+{
+  Token ident = readToken (TOKEN_TYPE_IDENT);
+
+  // for now, consider as a variable (array have size >= 1)
+  int size = 1;
+
+  // if next token is open bracket,
+  // verify if the identifier is an array and change to identified size
+  if (lexer.peekNextToken () == TOKEN_TYPE_OPEN_BRACKET)
+  {
+    readToken (TOKEN_TYPE_OPEN_BRACKET);
+    size = stoi (readToken (TOKEN_TYPE_INT).lexeme);
+    readToken (TOKEN_TYPE_CLOSE_BRACKET);
+  }
+ 
+  Expr* initializer = nullptr;
+  // initialize when token '=' is present after declaration
+  if (lexer.peekNextToken () == TOKEN_TYPE_ASSIGN)
+  {
+    readToken (TOKEN_TYPE_ASSIGN);
+    initializer = parseExpr ();
+  }
+
+  readToken (TOKEN_TYPE_SEMICOLON);
+
+  return new Var (ident, initializer, 0);
 }
 
 Stmt* Parser::parseStatement ()
@@ -183,35 +247,6 @@ Stmt* Parser::parsePrintStatement ()
   Expr* expr = parseExpr ();
   readToken (TOKEN_TYPE_SEMICOLON);
   return new Print (expr);
-}
-
-Stmt* Parser::parseVar ()
-{
-  Token ident = readToken (TOKEN_TYPE_IDENT);
-
-  // for now, consider as a variable (array have size >= 1)
-  int size = 1;
-
-  // if next token is open bracket,
-  // verify if the identifier is an array and change to identified size
-  if (lexer.peekNextToken () == TOKEN_TYPE_OPEN_BRACKET)
-  {
-    readToken (TOKEN_TYPE_OPEN_BRACKET);
-    size = stoi (readToken (TOKEN_TYPE_INT).lexeme);
-    readToken (TOKEN_TYPE_CLOSE_BRACKET);
-  }
- 
-  Expr* initializer = nullptr;
-  // initialize when token '=' is present after declaration
-  if (lexer.peekNextToken () == TOKEN_TYPE_ASSIGN)
-  {
-    readToken (TOKEN_TYPE_ASSIGN);
-    initializer = parseExpr ();
-  }
-
-  readToken (TOKEN_TYPE_SEMICOLON);
-
-  return new Var (ident, initializer, 0);
 }
 
 vector<Stmt*> Parser::parseBlock ()
