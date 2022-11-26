@@ -183,6 +183,10 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     std::string name = expr->name.lexeme;
     if (expr->offset != nullptr)
     {
+      // error when indexing vairable
+      if (sym_table->getSize (expr->name.lexeme) == 1)
+        throw std::runtime_error ("Indexing is not allowed for variables");
+
       std::vector<Expr*> exprs = {expr->offset};
       name += "[" + parenthesize ("Expr", exprs) + "]";
     }
@@ -255,6 +259,10 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     std::string name = expr->name.lexeme;
     if (expr->offset != nullptr)
     {
+      // error when indexing vairable
+      if (sym_table->getSize (expr->name.lexeme) == 1)
+        throw std::runtime_error ("Indexing is not allowed for variables");
+
       std::vector<Expr*> exprs = {expr->offset};
       name += "[" + parenthesize ("Expr", exprs) + "]";
     }

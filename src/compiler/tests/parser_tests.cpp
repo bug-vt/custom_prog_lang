@@ -240,8 +240,8 @@ TEST_CASE ("Basic var/var[] parsing", "[parser]")
                  "    var array[40] ;\n"
                  "  var arr [ 30 ];";
   string expected = "(Var xyz)\n"
-                    "(Var array)\n"
-                    "(Var arr)\n";
+                    "(Var array[40])\n"
+                    "(Var arr[30])\n";
 
   REQUIRE (testParse (input, expected) == EXIT_SUCCESS);
 }
@@ -290,6 +290,20 @@ TEST_CASE ("var/var[] parsing error", "[parser]")
                    "y = 12;";
     REQUIRE (testParse (input) == EXIT_FAILURE);
   }
+
+  SECTION ("Illegal indexing")
+  {
+    string input = "var x;"
+                   "x[1] = 12;";
+    REQUIRE (testParse (input) == EXIT_FAILURE);
+  }
+
+  SECTION ("Illegal indexing 2")
+  {
+    string input = "var x = 10;"
+                   "var y = x[2];";
+    REQUIRE (testParse (input) == EXIT_FAILURE);
+  }
 }
 
 TEST_CASE ("parsing global variable as operand", "[parser]")
@@ -319,7 +333,7 @@ TEST_CASE ("Testing basic parsing", "[parser]")
 
     string expected = "(Func myFunc (Params)\n"
                       "(Var y)\n"
-                      "(Var x (y= 123))\n"
+                      "(Var x (Assign y 123))\n"
                       ")\n";
     REQUIRE (testParse (input, expected) == EXIT_SUCCESS);
   }
