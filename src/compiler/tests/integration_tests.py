@@ -14,55 +14,56 @@ def runProg (input_file, argv=[]):
     proc = Popen (["cs4974", "out.casm"] + argv, stdout=PIPE)
     proc.wait ()
     out, err = proc.communicate ()
-    return str (out, 'utf-8')
+    return str (out, 'utf-8'), proc.returncode
+
 
 class TestVM (unittest.TestCase):
 
     def testAdd (self):
         expected = "6\n"
-        out = runProg ("../example/add.src");
+        out = runProg ("../example/add.src")[0];
         self.assertEqual (out, expected);
 
     def testArithmetic (self):
         expected = "129\n"
-        out = runProg ("../example/arithmetic.src");
+        out = runProg ("../example/arithmetic.src")[0];
         self.assertEqual (out, expected);
 
     def testComparison (self):
         expected = ("1\n"
                     "0\n"
                     "1\n")
-        out = runProg ("../example/comparison.src");
+        out = runProg ("../example/comparison.src")[0];
         self.assertEqual (out, expected);
     
     def testGrouping (self):
         expected = ("-174\n")
-        out = runProg ("../example/grouping.src");
+        out = runProg ("../example/grouping.src")[0];
         self.assertEqual (out, expected);
 
     def testScope (self):
         expected = ("39\n"
                     "32\n"
                     "99\n")
-        out = runProg ("../example/scope.src");
+        out = runProg ("../example/scope.src")[0];
         self.assertEqual (out, expected);
 
     def testString (self):
         expected = ("Hello World!\n")
-        out = runProg ("../example/string.src");
+        out = runProg ("../example/string.src")[0];
         self.assertEqual (out, expected);
 
     def testIfThenElse (self):
         expected = ("inside then branch\n"
                     "42\n")
-        out = runProg ("../example/if_then_else.src");
+        out = runProg ("../example/if_then_else.src")[0];
         self.assertEqual (out, expected);
 
     def testNestedControlFlow (self):
         expected = ("hi\n"
                     "water\n"
                     "windy\n")
-        out = runProg ("../example/nested_control_flow.src");
+        out = runProg ("../example/nested_control_flow.src")[0];
         self.assertEqual (out, expected);
 
     def testLogical (self):
@@ -70,7 +71,7 @@ class TestVM (unittest.TestCase):
                     "cs4974\n"
                     "0\n"
                     "0\n")
-        out = runProg ("../example/logical.src");
+        out = runProg ("../example/logical.src")[0];
         self.assertEqual (out, expected);
 
     def testWhileLoop (self):
@@ -79,14 +80,14 @@ class TestVM (unittest.TestCase):
                     "2\n"
                     "3\n"
                     "4\n")
-        out = runProg ("../example/while.src");
+        out = runProg ("../example/while.src")[0];
         self.assertEqual (out, expected);
 
     def testGoto (self):
         expected = ("1\n"
                     "3\n"
                     "4\n")
-        out = runProg ("../example/goto.src");
+        out = runProg ("../example/goto.src")[0];
         self.assertEqual (out, expected);
 
     def testNestedWhile (self):
@@ -99,7 +100,7 @@ class TestVM (unittest.TestCase):
                     "0\n"
                     "-1\n"
                     "9\n")
-        out = runProg ("../example/nested_while.src");
+        out = runProg ("../example/nested_while.src")[0];
         self.assertEqual (out, expected);
 
     def testForLoop (self):
@@ -108,18 +109,18 @@ class TestVM (unittest.TestCase):
                     "4\n"
                     "8\n"
                     "32\n")
-        out = runProg ("../example/for.src");
+        out = runProg ("../example/for.src")[0];
         self.assertEqual (out, expected);
 
     def testFuncCall (self):
         expected = ("7\n"
                     "hello world\n")
-        out = runProg ("../example/call.src");
+        out = runProg ("../example/call.src")[0];
         self.assertEqual (out, expected);
 
     def testReturn (self):
         expected = ("4\n")
-        out = runProg ("../example/return.src");
+        out = runProg ("../example/return.src")[0];
         self.assertEqual (out, expected);
 
     def testFib (self):
@@ -133,19 +134,31 @@ class TestVM (unittest.TestCase):
                     "13\n"
                     "21\n"
                     "34\n")
-        out = runProg ("../example/fib.src");
+        out = runProg ("../example/fib.src")[0];
         self.assertEqual (out, expected);
 
     def testArray (self):
         expected = (" hello world ! cs4974 awesomeness\n")
-        out = runProg ("../example/array.src");
+        out = runProg ("../example/array.src")[0];
         self.assertEqual (out, expected);
 
     def testRef (self):
         expected = ("99\n"
                     "14\n")
-        out = runProg ("../example/ref.src");
+        out = runProg ("../example/ref.src")[0];
         self.assertEqual (out, expected);
+
+    def testRandInt (self):
+        expected = ("true\n")
+        out = runProg ("../example/rand.src")[0];
+        self.assertEqual (out, expected);
+
+    def testExit (self):
+        expected = ("before exit\n")
+        out, exit_code = runProg ("../example/exit.src");
+        self.assertEqual (out, expected);
+        self.assertEqual (exit_code, 2);
+
 
 if __name__ == '__main__':
     unittest.main ()

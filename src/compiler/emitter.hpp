@@ -370,6 +370,10 @@ struct Emitter : public ExprVisitor, public StmtVisitor
     
     if (expr->callee.lexeme == "time")
       out += "  time\n";
+    else if (expr->callee.lexeme == "randint")
+      out += "  randint\n";
+    else if (expr->callee.lexeme == "exit")
+      out += "  exit\n";
     else
       out += "  call " + expr->callee.lexeme + "\n";
     out += "  push _retVal\n";

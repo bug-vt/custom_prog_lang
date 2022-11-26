@@ -71,6 +71,7 @@ class Script
     void instrExit ();
     void instrPrint ();
     void instrTime ();
+    void instrRandInt ();
 
     // ------------------------------------------
     // internal interface for resolution/coercion

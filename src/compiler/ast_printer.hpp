@@ -27,8 +27,10 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     // reserve two temporary variables to simulate general-purpose registers 
     sym_table->addSymbol ("_t0", 1, false);
     sym_table->addSymbol ("_t1", 1, false);
-    // For now, hard code time function
+    // For now, hard coding native function
+    func_table.addFunc ("exit", 1);
     func_table.addFunc ("time", 0);
+    func_table.addFunc ("randint", 2);
   }
 
   // watch out for undefined reference error when base class accept method is not defined.

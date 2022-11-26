@@ -4,6 +4,8 @@
 #include <iostream>
 #include <cmath>
 #include <cassert>
+#include <ctime>
+#include <cstdlib>
 
 using std::string;
 using std::ifstream;
@@ -12,6 +14,8 @@ using std::ifstream;
 
 Script::Script ()
 {
+  // for randint instruction
+  srand (time (0));
   // register functions to the instruction handler table
   instr_handler[INSTR_MOV] = &Script::instrMov;
   instr_handler[INSTR_REF] = &Script::instrRef;
@@ -50,6 +54,7 @@ Script::Script ()
   instr_handler[INSTR_EXIT] = &Script::instrExit;
   instr_handler[INSTR_PRINT] = &Script::instrPrint;
   instr_handler[INSTR_TIME] = &Script::instrTime;
+  instr_handler[INSTR_RANDINT] = &Script::instrRandInt;
 }
 
 void Script::load (string file_name)
@@ -514,6 +519,8 @@ void Script::instrPause ()
 
 void Script::instrExit ()
 {
+  int exit_code = coerceToInt (stack.pop ());
+  exit (exit_code);
 }
 
 void Script::instrPrint ()
@@ -527,4 +534,11 @@ void Script::instrTime ()
   ret_val.float_literal = (float) clock () / CLOCKS_PER_SEC;
 }
 
+void Script::instrRandInt ()
+{
+  int lower = coerceToInt (stack.pop ());
+  int upper = coerceToInt (stack.pop ());
+  ret_val.type = OP_TYPE_INT;
+  ret_val.int_literal = rand () % (upper - lower) + lower;
+}
 

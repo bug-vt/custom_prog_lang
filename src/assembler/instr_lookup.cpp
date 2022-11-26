@@ -64,9 +64,10 @@ InstrLookupTable::InstrLookupTable ()
   instr_lookup["ret"] =  {32, {}}; 
   // miscellaneous
   instr_lookup["pause"] = {33, {OP_FLAG_TYPE_INT}};
-  instr_lookup["exit"]  = {34, {OP_FLAG_TYPE_INT}};
+  instr_lookup["exit"]  = {34, {}};
   instr_lookup["print"]  = {35, {SOURCE}};
   instr_lookup["time"] =  {36, {}}; 
+  instr_lookup["randint"] =  {37, {}}; 
 }
 
 InstrLookup InstrLookupTable::lookup (string mnemonic)
