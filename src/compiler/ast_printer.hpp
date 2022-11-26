@@ -188,7 +188,7 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     if (expr->offset != nullptr)
     {
       // error when indexing vairable
-      if (sym_table->getSize (expr->name.lexeme) == 1)
+      if (sym_table->getSize (expr->name.lexeme) == 1 && !expr->deref)
         throw std::runtime_error ("Indexing is not allowed for variables");
 
       std::vector<Expr*> exprs = {expr->offset};
@@ -256,20 +256,28 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
       throw std::runtime_error ("Invalid use of function '" + expr->name.lexeme + "'");
     // make sure variable was declared
     expr->scope = sym_table->getScope (expr->name.lexeme);
+    
+    return expr->name.lexeme;
+  }
+
+  std::string visitArrayElemExpr (ArrayElem* expr)
+  {
+    // check if identifier is used for a function
+    if (func_table.isFunc (expr->name.lexeme))
+      throw std::runtime_error ("Invalid use of function '" + expr->name.lexeme + "'");
+    // make sure variable was declared
+    expr->scope = sym_table->getScope (expr->name.lexeme);
     // check if variable is a reference
     if (sym_table->isRef (expr->name.lexeme))
       expr->deref = true;
+    
+    // error when indexing variable
+    if (sym_table->getSize (expr->name.lexeme) == 1 && !expr->deref)
+      throw std::runtime_error ("Indexing is not allowed for variables");
 
     std::string name = expr->name.lexeme;
-    if (expr->offset != nullptr)
-    {
-      // error when indexing vairable
-      if (sym_table->getSize (expr->name.lexeme) == 1)
-        throw std::runtime_error ("Indexing is not allowed for variables");
-
-      std::vector<Expr*> exprs = {expr->offset};
-      name += "[" + parenthesize ("Expr", exprs) + "]";
-    }
+    std::vector<Expr*> exprs = {expr->offset};
+    name += "[" + parenthesize ("Expr", exprs) + "]";
 
     return name;
   }

@@ -16,7 +16,8 @@ def main (argc, argv):
                 "Call     = Token callee, Token paren, std::vector<Expr*> args",
                 "Ref      = Expr *ref",
                 "Literal  = Token value",
-                "Variable = Token name, Expr *offset, int scope, bool deref"]
+                "ArrayElem= Token name, Expr *offset, int scope, bool deref",
+                "Variable = Token name, int scope, bool deref"]
 
   defineAst (output_dir, "Expr", expr_types)
 

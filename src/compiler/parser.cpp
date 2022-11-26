@@ -82,9 +82,9 @@ Stmt* Parser::parseFunc ()
         throw std::runtime_error ("Number of parameters cannot exceed 127");
 
       bool is_ref = false;
-      if (lexer.peekNextToken () == TOKEN_TYPE_BITWISE_AND)
+      if (lexer.peekNextToken () == TOKEN_TYPE_MUL)
       {
-        readToken (TOKEN_TYPE_BITWISE_AND);
+        readToken (TOKEN_TYPE_MUL);
         is_ref = true;
       }
       parameters.push_back (Param (readToken (TOKEN_TYPE_IDENT), is_ref));
@@ -302,11 +302,16 @@ Expr* Parser::parseAssignment ()
   {
     Expr* value = parseAssignment ();
 
-    // l-value must be variable
+    // l-value must be variable or array index
     if (dynamic_cast<Variable*> (expr) != nullptr)
     {
       Token name = ((Variable*) expr)->name;
-      Expr* offset = ((Variable*) expr)->offset;
+      return new Assign (name, value, nullptr, 0, false);
+    }
+    else if (dynamic_cast<ArrayElem*> (expr) != nullptr)
+    {
+      Token name = ((ArrayElem*) expr)->name;
+      Expr* offset = ((ArrayElem*) expr)->offset;
       return new Assign (name, value, offset, 0, false);
     }
     throw std::runtime_error ("Invalid assignment target.");
@@ -515,15 +520,15 @@ Expr* Parser::parsePrimary ()
   // Variable
   if (token.type == TOKEN_TYPE_IDENT)
   {
-    Expr* offset = nullptr;
     // indexing array if next token is open bracket
     if (lexer.peekNextToken () == TOKEN_TYPE_OPEN_BRACKET)
     {
       readToken (TOKEN_TYPE_OPEN_BRACKET);
-      offset = parseExpr ();
+      Expr* offset = parseExpr ();
       readToken (TOKEN_TYPE_CLOSE_BRACKET);
+      return new ArrayElem (token, offset, 0, false);
     }
-    return new Variable (token, offset, 0, false);
+    return new Variable (token, 0, false);
   }
 
   // Grouping

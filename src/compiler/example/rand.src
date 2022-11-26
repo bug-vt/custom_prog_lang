@@ -6,7 +6,7 @@ func printResult (a)
     print "false";
 }
 
-func main (argc, &argv)
+func main ()
 {
   var size = 1000;
   var a = randint (30, 40);

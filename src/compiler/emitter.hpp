@@ -404,25 +404,30 @@ struct Emitter : public ExprVisitor, public StmtVisitor
   {
     std::string out = "";
     std::string name = expr->name.lexeme + std::to_string (expr->scope);
-    // _t1 holds index, initialized to 0
-    out += "  mov _t1, 0\n";
+
+    out += "  push " + name + "\n";
+    return out;
+  }
+
+  std::string visitArrayElemExpr (ArrayElem* expr)
+  {
+    std::string out = "";
+    std::string name = expr->name.lexeme + std::to_string (expr->scope);
     
-    // calcuate index if vairable is an array 
-    if (expr->offset != nullptr)
+    // calcuate array index
+    out += emit (expr->offset);
+    out += "  pop _t1\n";
+    if (!expr->deref)
     {
-      out += emit (expr->offset);
-      out += "  pop _t1\n";
-      if (!expr->deref)
-        name += "[_t1]";
+      name += "[_t1]";
+      out += "  push " + name + "\n";
     }
     // dereference if vairable is a reference
-    if (expr->deref)
+    else
     {
       out += "  lw _t0, " + name + ", _t1\n";
       out += "  push _t0\n";
     }
-    else
-      out += "  push " + name + "\n";
 
     return out;
   }

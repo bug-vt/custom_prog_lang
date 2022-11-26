@@ -1,13 +1,17 @@
-func myFunc (&b)
+func myFunc (*b, count)
 {
-  print b;
-  b = 14;
+  b[0] = b[0] - 1;
+  if (count <= 1)
+    return;
+  
+  myFunc (b, count - 1);
 }
 
 func main ()
 {
-  var a = 99;
-  myFunc (&a);
+  var a = 42;
+  print a;
+  myFunc (&a, 5);
 
   print a;
 }

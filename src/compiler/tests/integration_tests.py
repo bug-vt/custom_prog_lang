@@ -143,9 +143,18 @@ class TestVM (unittest.TestCase):
         self.assertEqual (out, expected);
 
     def testRef (self):
-        expected = ("99\n"
-                    "14\n")
+        expected = ("42\n"
+                    "37\n")
         out = runProg ("../example/ref.src")[0];
+        self.assertEqual (out, expected);
+
+    def testArrayRef (self):
+        expected = ("10\n"
+                    "11\n"
+                    "12\n"
+                    "13\n"
+                    "14\n")
+        out = runProg ("../example/array_ref.src")[0];
         self.assertEqual (out, expected);
 
     def testRandInt (self):

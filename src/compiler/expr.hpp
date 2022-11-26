@@ -15,6 +15,7 @@ struct Unary;
 struct Call;
 struct Ref;
 struct Literal;
+struct ArrayElem;
 struct Variable;
 
 struct ExprVisitor
@@ -27,6 +28,7 @@ struct ExprVisitor
   virtual std::string visitCallExpr (Call *expr) = 0;
   virtual std::string visitRefExpr (Ref *expr) = 0;
   virtual std::string visitLiteralExpr (Literal *expr) = 0;
+  virtual std::string visitArrayElemExpr (ArrayElem *expr) = 0;
   virtual std::string visitVariableExpr (Variable *expr) = 0;
 };
 
@@ -180,12 +182,32 @@ struct Literal : public Expr
   Token value;
 };
 
-struct Variable : public Expr
+struct ArrayElem : public Expr
 {
-  Variable (Token name, Expr *offset, int scope, bool deref)
+  ArrayElem (Token name, Expr *offset, int scope, bool deref)
   {
     this->name = name;
     this->offset = offset;
+    this->scope = scope;
+    this->deref = deref;
+  }
+
+  std::string accept (ExprVisitor &visitor)
+  {
+    return visitor.visitArrayElemExpr (this);
+  }
+
+  Token name;
+  Expr *offset;
+  int scope;
+  bool deref;
+};
+
+struct Variable : public Expr
+{
+  Variable (Token name, int scope, bool deref)
+  {
+    this->name = name;
     this->scope = scope;
     this->deref = deref;
   }
@@ -196,7 +218,6 @@ struct Variable : public Expr
   }
 
   Token name;
-  Expr *offset;
   int scope;
   bool deref;
 };
