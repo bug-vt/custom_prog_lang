@@ -1,0 +1,13 @@
+func myFunc (&b)
+{
+  print b;
+  b = 14;
+}
+
+func main ()
+{
+  var a = 99;
+  myFunc (&a);
+
+  print a;
+}

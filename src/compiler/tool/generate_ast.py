@@ -8,20 +8,21 @@ def main (argc, argv):
     return
 
   output_dir = argv[1]
-  expr_types = ["Assign   = Token name, Expr *value, Expr *offset, int scope",
+  expr_types = ["Assign   = Token name, Expr *value, Expr *offset, int scope, bool deref",
                 "Binary   = Expr *left, Token op, Expr *right",
                 "Logical  = Expr *left, Token op, Expr *right",
                 "Grouping = Expr *expression",
                 "Unary    = Token op, Expr *right",
                 "Call     = Expr *callee, Token paren, std::vector<Expr*> args",
+                "Ref      = Expr *ref",
                 "Literal  = Token value",
-                "Variable = Token name, Expr *offset, int scope"]
+                "Variable = Token name, Expr *offset, int scope, bool deref"]
 
   defineAst (output_dir, "Expr", expr_types)
 
   stmt_types = ["Block      = std::vector<Stmt*> statements",
                 "Expression = Expr *expression",
-                "Function   = Token name, std::vector<Token> params, " +
+                "Function   = Token name, std::vector<Param> params, " +
                              "std::vector<Stmt*> body, int scope",
                 "Return     = Token keyword, Expr *value",
                 "If         = Expr *condition, Stmt *thenBranch, Stmt *elseBranch",
@@ -41,6 +42,7 @@ def defineAst (output_dir, base_name, types):
   output.write ("\n")
   output.write ("#include \"token.hpp\"\n")
   output.write ("#include \"expr.hpp\"\n")
+  output.write ("#include \"func_table.hpp\"\n")
   output.write ("#include <string>\n")
   output.write ("#include <vector>\n")
   output.write ("\n")

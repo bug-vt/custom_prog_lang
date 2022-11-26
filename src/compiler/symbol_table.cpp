@@ -7,10 +7,10 @@ using std::cout;
 using std::endl;
 
 
-Symbol::Symbol (int type, int size) 
+Symbol::Symbol (int size, bool is_ref) 
 {
-  this->type = type;
   this->size = size;
+  this->is_ref = is_ref;
 }
 
 SymbolTable::SymbolTable () : symbol_table (), 
@@ -27,7 +27,7 @@ SymbolTable::SymbolTable (SymbolTable* enclosing, int scope) : symbol_table ()
 // Add symbol to the symbol table.
 // If the symbol is already exists inside the table, throw exception.
 // Otherwise, return the assigned scope of the symbol
-int SymbolTable::addSymbol (string name, int size)
+int SymbolTable::addSymbol (string name, int size, bool is_ref)
 {
   // check if given function is already inside the table.
   if (symbol_table.count (name))
@@ -37,7 +37,7 @@ int SymbolTable::addSymbol (string name, int size)
   }
 
   // add the given symbol into the table.
-  symbol_table[name] = Symbol (0, size);
+  symbol_table[name] = Symbol (size, is_ref);
 
   return scope;
 }
@@ -83,6 +83,11 @@ int SymbolTable::getScope (string name)
 int SymbolTable::getSize (string name)
 {
   return getSymbol (name).size;
+}
+
+bool SymbolTable::isRef (string name)
+{
+  return getSymbol (name).is_ref;
 }
 
 void SymbolTable::print ()

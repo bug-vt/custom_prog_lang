@@ -3,6 +3,7 @@
 
 #include "token.hpp"
 #include "expr.hpp"
+#include "func_table.hpp"
 #include <string>
 #include <vector>
 
@@ -69,7 +70,7 @@ struct Expression : public Stmt
 
 struct Function : public Stmt
 {
-  Function (Token name, std::vector<Token> params, std::vector<Stmt*> body, int scope)
+  Function (Token name, std::vector<Param> params, std::vector<Stmt*> body, int scope)
   {
     this->name = name;
     this->params = params;
@@ -83,7 +84,7 @@ struct Function : public Stmt
   }
 
   Token name;
-  std::vector<Token> params;
+  std::vector<Param> params;
   std::vector<Stmt*> body;
   int scope;
 };

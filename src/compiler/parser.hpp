@@ -5,6 +5,7 @@
 #include "token.hpp"
 #include "expr.hpp"
 #include "stmt.hpp"
+#include "func_table.hpp"
 
 
 class Parser
@@ -42,6 +43,7 @@ class Parser
     Expr* parseFactor ();
     Expr* parseUnary ();
     Expr* parseCall ();
+    Expr* parseRef ();
     Expr* parsePrimary ();
 };
 

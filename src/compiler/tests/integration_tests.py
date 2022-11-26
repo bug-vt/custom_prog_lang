@@ -141,5 +141,11 @@ class TestVM (unittest.TestCase):
         out = runProg ("../example/array.src");
         self.assertEqual (out, expected);
 
+    def testRef (self):
+        expected = ("99\n"
+                    "14\n")
+        out = runProg ("../example/ref.src");
+        self.assertEqual (out, expected);
+
 if __name__ == '__main__':
     unittest.main ()

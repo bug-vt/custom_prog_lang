@@ -3,7 +3,20 @@
 
 #include <string>
 #include <unordered_map>
+#include "token.hpp"
 
+struct Param
+{
+  Token name;
+  bool is_ref;
+
+  Param () { }
+  Param (Token name, bool is_ref)
+  {
+    this->name = name;
+    this->is_ref = is_ref;
+  }
+};
 
 class FuncTable
 {

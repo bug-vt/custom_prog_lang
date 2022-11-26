@@ -74,14 +74,20 @@ Stmt* Parser::parseFunc ()
   Token name = readToken (TOKEN_TYPE_IDENT);
   // parse parameters
   readToken (TOKEN_TYPE_OPEN_PAREN);
-  vector<Token> parameters;
+  vector<Param> parameters;
   if (lexer.peekNextToken () != TOKEN_TYPE_CLOSE_PAREN)
   {
     do {
       if (parameters.size () >= 127)
         throw std::runtime_error ("Number of parameters cannot exceed 127");
 
-      parameters.push_back (readToken (TOKEN_TYPE_IDENT));
+      bool is_ref = false;
+      if (lexer.peekNextToken () == TOKEN_TYPE_BITWISE_AND)
+      {
+        readToken (TOKEN_TYPE_BITWISE_AND);
+        is_ref = true;
+      }
+      parameters.push_back (Param (readToken (TOKEN_TYPE_IDENT), is_ref));
     } while (lexer.getNextToken ().type == TOKEN_TYPE_COMMA);
     lexer.undoGetNextToken ();
   }
@@ -301,7 +307,7 @@ Expr* Parser::parseAssignment ()
     {
       Token name = ((Variable*) expr)->name;
       Expr* offset = ((Variable*) expr)->offset;
-      return new Assign (name, value, offset, 0);
+      return new Assign (name, value, offset, 0, false);
     }
     throw std::runtime_error ("Invalid assignment target.");
   }
@@ -442,7 +448,7 @@ Expr* Parser::parseUnary ()
 
 Expr* Parser::parseCall ()
 {
-  Expr* expr = parsePrimary ();
+  Expr* expr = parseRef ();
 
   while (true)
   {
@@ -478,6 +484,21 @@ Expr* Parser::parseCall ()
   return expr;
 }
 
+Expr* Parser::parseRef ()
+{
+  if (lexer.peekNextToken () == TOKEN_TYPE_BITWISE_AND)
+  {
+    readToken (TOKEN_TYPE_BITWISE_AND);
+    Expr* expr = parsePrimary ();
+    // Only variable can be referenced
+    if (dynamic_cast<Variable*> (expr) == nullptr)
+      throw std::runtime_error ("Cannot reference non-variable");
+    
+    return new Ref (expr);
+  }
+  return parsePrimary ();
+}
+
 Expr* Parser::parsePrimary ()
 {
   Token token = lexer.getNextToken (); 
@@ -500,7 +521,7 @@ Expr* Parser::parsePrimary ()
       offset = parseExpr ();
       readToken (TOKEN_TYPE_CLOSE_BRACKET);
     }
-    return new Variable (token, offset, 0);
+    return new Variable (token, offset, 0, false);
   }
 
   // Grouping

@@ -3,6 +3,7 @@
 
 #include "token.hpp"
 #include "expr.hpp"
+#include "func_table.hpp"
 #include <string>
 #include <vector>
 
@@ -12,6 +13,7 @@ struct Logical;
 struct Grouping;
 struct Unary;
 struct Call;
+struct Ref;
 struct Literal;
 struct Variable;
 
@@ -23,6 +25,7 @@ struct ExprVisitor
   virtual std::string visitGroupingExpr (Grouping *expr) = 0;
   virtual std::string visitUnaryExpr (Unary *expr) = 0;
   virtual std::string visitCallExpr (Call *expr) = 0;
+  virtual std::string visitRefExpr (Ref *expr) = 0;
   virtual std::string visitLiteralExpr (Literal *expr) = 0;
   virtual std::string visitVariableExpr (Variable *expr) = 0;
 };
@@ -37,12 +40,13 @@ struct Expr
 
 struct Assign : public Expr
 {
-  Assign (Token name, Expr *value, Expr *offset, int scope)
+  Assign (Token name, Expr *value, Expr *offset, int scope, bool deref)
   {
     this->name = name;
     this->value = value;
     this->offset = offset;
     this->scope = scope;
+    this->deref = deref;
   }
 
   std::string accept (ExprVisitor &visitor)
@@ -54,6 +58,7 @@ struct Assign : public Expr
   Expr *value;
   Expr *offset;
   int scope;
+  bool deref;
 };
 
 struct Binary : public Expr
@@ -145,6 +150,21 @@ struct Call : public Expr
   std::vector<Expr*> args;
 };
 
+struct Ref : public Expr
+{
+  Ref (Expr *ref)
+  {
+    this->ref = ref;
+  }
+
+  std::string accept (ExprVisitor &visitor)
+  {
+    return visitor.visitRefExpr (this);
+  }
+
+  Expr *ref;
+};
+
 struct Literal : public Expr
 {
   Literal (Token value)
@@ -162,11 +182,12 @@ struct Literal : public Expr
 
 struct Variable : public Expr
 {
-  Variable (Token name, Expr *offset, int scope)
+  Variable (Token name, Expr *offset, int scope, bool deref)
   {
     this->name = name;
     this->offset = offset;
     this->scope = scope;
+    this->deref = deref;
   }
 
   std::string accept (ExprVisitor &visitor)
@@ -177,6 +198,7 @@ struct Variable : public Expr
   Token name;
   Expr *offset;
   int scope;
+  bool deref;
 };
 
 #endif
