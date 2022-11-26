@@ -39,7 +39,8 @@ enum InstrOpcode {INSTR_MOV,      // 0
                   INSTR_RET,      // 32
                   INSTR_PAUSE,    // 33
                   INSTR_EXIT,     // 34
-                  INSTR_PRINT};   // 35
+                  INSTR_PRINT,    // 35
+                  INSTR_TIME};    // 36
 
 
 enum OpType {OP_TYPE_INT,

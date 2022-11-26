@@ -13,7 +13,7 @@ def main (argc, argv):
                 "Logical  = Expr *left, Token op, Expr *right",
                 "Grouping = Expr *expression",
                 "Unary    = Token op, Expr *right",
-                "Call     = Expr *callee, Token paren, std::vector<Expr*> args",
+                "Call     = Token callee, Token paren, std::vector<Expr*> args",
                 "Ref      = Expr *ref",
                 "Literal  = Token value",
                 "Variable = Token name, Expr *offset, int scope, bool deref"]

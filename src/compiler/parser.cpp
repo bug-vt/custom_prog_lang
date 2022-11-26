@@ -459,6 +459,8 @@ Expr* Parser::parseCall ()
       if (dynamic_cast<Variable*> (expr) == nullptr)
         throw std::runtime_error ("Invalid function name");
 
+      Token callee = ((Variable*) expr)->name;
+
       // parse all arguments
       vector<Expr*> arguments;
       if (lexer.peekNextToken () != TOKEN_TYPE_CLOSE_PAREN)
@@ -474,7 +476,7 @@ Expr* Parser::parseCall ()
       }
 
       Token paren = readToken (TOKEN_TYPE_CLOSE_PAREN);
-      expr = new Call (expr, paren, arguments);
+      expr = new Call (callee, paren, arguments);
     }
     else
       break;

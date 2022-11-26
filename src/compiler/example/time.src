@@ -1,0 +1,16 @@
+func main ()
+{
+  var start = time ();
+  for (var i = 0; i < 1000; i = i + 1)
+  {
+  }
+  var end = time ();
+  print end - start;
+
+  start = time ();
+  for (var i = 0; i < 10000; i = i + 1)
+  {
+  }
+  end = time ();
+  print end - start;
+}

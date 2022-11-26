@@ -367,8 +367,11 @@ struct Emitter : public ExprVisitor, public StmtVisitor
     // should be push in right to left order
     for (int i = expr->args.size () - 1; i >= 0; i--)
       out += emit (expr->args[i]);
-
-    out += "  call " + ((Variable*) expr->callee)->name.lexeme + "\n";
+    
+    if (expr->callee.lexeme == "time")
+      out += "  time\n";
+    else
+      out += "  call " + expr->callee.lexeme + "\n";
     out += "  push _retVal\n";
     return out;
   }

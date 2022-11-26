@@ -70,6 +70,7 @@ class Script
     void instrPause ();
     void instrExit ();
     void instrPrint ();
+    void instrTime ();
 
     // ------------------------------------------
     // internal interface for resolution/coercion

@@ -1,7 +1,7 @@
 #include "asm_parser.hpp"
 
 #define GLOBAL_SCOPE 0
-#define DEFAULT_STACK_SIZE 1024
+#define DEFAULT_STACK_SIZE 1048576 
 #define FIRST_PASS 1
 #define SECOND_PASS 2
 

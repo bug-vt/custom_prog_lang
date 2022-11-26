@@ -133,7 +133,7 @@ struct Unary : public Expr
 
 struct Call : public Expr
 {
-  Call (Expr *callee, Token paren, std::vector<Expr*> args)
+  Call (Token callee, Token paren, std::vector<Expr*> args)
   {
     this->callee = callee;
     this->paren = paren;
@@ -145,7 +145,7 @@ struct Call : public Expr
     return visitor.visitCallExpr (this);
   }
 
-  Expr *callee;
+  Token callee;
   Token paren;
   std::vector<Expr*> args;
 };

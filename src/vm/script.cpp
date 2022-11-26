@@ -49,6 +49,7 @@ Script::Script ()
   instr_handler[INSTR_PAUSE] = &Script::instrPause;
   instr_handler[INSTR_EXIT] = &Script::instrExit;
   instr_handler[INSTR_PRINT] = &Script::instrPrint;
+  instr_handler[INSTR_TIME] = &Script::instrTime;
 }
 
 void Script::load (string file_name)
@@ -518,6 +519,12 @@ void Script::instrExit ()
 void Script::instrPrint ()
 {
   std::cout << resolveOpAsString (0);
+}
+
+void Script::instrTime ()
+{
+  ret_val.type = OP_TYPE_FLOAT;
+  ret_val.float_literal = (float) clock () / CLOCKS_PER_SEC;
 }
 
 

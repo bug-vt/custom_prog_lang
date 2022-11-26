@@ -66,6 +66,7 @@ InstrLookupTable::InstrLookupTable ()
   instr_lookup["pause"] = {33, {OP_FLAG_TYPE_INT}};
   instr_lookup["exit"]  = {34, {OP_FLAG_TYPE_INT}};
   instr_lookup["print"]  = {35, {SOURCE}};
+  instr_lookup["time"] =  {36, {}}; 
 }
 
 InstrLookup InstrLookupTable::lookup (string mnemonic)
