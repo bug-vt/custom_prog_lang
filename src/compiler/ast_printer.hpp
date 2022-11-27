@@ -33,6 +33,11 @@ struct AstPrinter : public ExprVisitor, public StmtVisitor
     func_table.addFunc ("randint", 2);
   }
 
+  ~AstPrinter ()
+  {
+    delete global;
+  }
+
   // watch out for undefined reference error when base class accept method is not defined.
   std::string print (std::vector<Stmt*> statements)
   {

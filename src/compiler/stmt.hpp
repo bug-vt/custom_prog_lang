@@ -32,6 +32,7 @@ struct StmtVisitor
 
 struct Stmt
 {
+  virtual ~Stmt () { }
   virtual std::string accept (StmtVisitor &visitor)
   {
     throw std::runtime_error ("Visiting Expr base class");
@@ -44,6 +45,8 @@ struct Block : public Stmt
   {
     this->statements = statements;
   }
+
+  virtual ~Block () { }
 
   std::string accept (StmtVisitor &visitor)
   {
@@ -59,6 +62,8 @@ struct Expression : public Stmt
   {
     this->expression = expression;
   }
+
+  virtual ~Expression () { }
 
   std::string accept (StmtVisitor &visitor)
   {
@@ -77,6 +82,8 @@ struct Function : public Stmt
     this->body = body;
     this->scope = scope;
   }
+
+  virtual ~Function () { }
 
   std::string accept (StmtVisitor &visitor)
   {
@@ -97,6 +104,8 @@ struct Return : public Stmt
     this->value = value;
   }
 
+  virtual ~Return () { }
+
   std::string accept (StmtVisitor &visitor)
   {
     return visitor.visitReturnStmt (this);
@@ -114,6 +123,8 @@ struct If : public Stmt
     this->thenBranch = thenBranch;
     this->elseBranch = elseBranch;
   }
+
+  virtual ~If () { }
 
   std::string accept (StmtVisitor &visitor)
   {
@@ -134,6 +145,8 @@ struct While : public Stmt
     this->increment = increment;
   }
 
+  virtual ~While () { }
+
   std::string accept (StmtVisitor &visitor)
   {
     return visitor.visitWhileStmt (this);
@@ -151,6 +164,8 @@ struct Goto : public Stmt
     this->token = token;
   }
 
+  virtual ~Goto () { }
+
   std::string accept (StmtVisitor &visitor)
   {
     return visitor.visitGotoStmt (this);
@@ -165,6 +180,8 @@ struct Print : public Stmt
   {
     this->expression = expression;
   }
+
+  virtual ~Print () { }
 
   std::string accept (StmtVisitor &visitor)
   {
@@ -183,6 +200,8 @@ struct Var : public Stmt
     this->size = size;
     this->scope = scope;
   }
+
+  virtual ~Var () { }
 
   std::string accept (StmtVisitor &visitor)
   {

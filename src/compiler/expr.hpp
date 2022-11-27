@@ -34,6 +34,7 @@ struct ExprVisitor
 
 struct Expr
 {
+  virtual ~Expr () { }
   virtual std::string accept (ExprVisitor &visitor)
   {
     throw std::runtime_error ("Visiting Expr base class");
@@ -50,6 +51,8 @@ struct Assign : public Expr
     this->scope = scope;
     this->deref = deref;
   }
+
+  virtual ~Assign () { }
 
   std::string accept (ExprVisitor &visitor)
   {
@@ -72,6 +75,8 @@ struct Binary : public Expr
     this->right = right;
   }
 
+  virtual ~Binary () { }
+
   std::string accept (ExprVisitor &visitor)
   {
     return visitor.visitBinaryExpr (this);
@@ -91,6 +96,8 @@ struct Logical : public Expr
     this->right = right;
   }
 
+  virtual ~Logical () { }
+
   std::string accept (ExprVisitor &visitor)
   {
     return visitor.visitLogicalExpr (this);
@@ -108,6 +115,8 @@ struct Grouping : public Expr
     this->expression = expression;
   }
 
+  virtual ~Grouping () { }
+
   std::string accept (ExprVisitor &visitor)
   {
     return visitor.visitGroupingExpr (this);
@@ -123,6 +132,8 @@ struct Unary : public Expr
     this->op = op;
     this->right = right;
   }
+
+  virtual ~Unary () { }
 
   std::string accept (ExprVisitor &visitor)
   {
@@ -142,6 +153,8 @@ struct Call : public Expr
     this->args = args;
   }
 
+  virtual ~Call () { }
+
   std::string accept (ExprVisitor &visitor)
   {
     return visitor.visitCallExpr (this);
@@ -159,6 +172,8 @@ struct Ref : public Expr
     this->ref = ref;
   }
 
+  virtual ~Ref () { }
+
   std::string accept (ExprVisitor &visitor)
   {
     return visitor.visitRefExpr (this);
@@ -173,6 +188,8 @@ struct Literal : public Expr
   {
     this->value = value;
   }
+
+  virtual ~Literal () { }
 
   std::string accept (ExprVisitor &visitor)
   {
@@ -191,6 +208,8 @@ struct ArrayElem : public Expr
     this->scope = scope;
     this->deref = deref;
   }
+
+  virtual ~ArrayElem () { }
 
   std::string accept (ExprVisitor &visitor)
   {
@@ -211,6 +230,8 @@ struct Variable : public Expr
     this->scope = scope;
     this->deref = deref;
   }
+
+  virtual ~Variable () { }
 
   std::string accept (ExprVisitor &visitor)
   {
