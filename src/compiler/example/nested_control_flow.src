@@ -3,26 +3,26 @@ func main ()
 {
   if (3 > 5)
   {
-    print "hello";  
+    print "inside if";  
   }
   else
   {
-    print "hi";
+    print "inside else";
 
     var i = 42;
     if (i == 42)
     {
-      print "water";
-      
+      print "  inside if";
       i = i / 10;
+
       if (i >= 5)
-        print "sunny";
+        print "    inside if";
       else if (i >= 2)
-        print "windy";
+        print "    inside else if";
       else 
-        print "rainy";
+        print "    inside else";
     }
     else
-      print "fire";
+      print "  inside else";
   }
 }

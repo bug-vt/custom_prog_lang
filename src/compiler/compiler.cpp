@@ -33,7 +33,8 @@ int main (int argc, char **argv)
   vector<Stmt*> statements = parser.parse ();
 
   AstPrinter printer;
-  std::cout << printer.print (statements);
+  //std::cout << printer.print (statements);
+  printer.print (statements);
 
   ofstream out_file (out_file_name);
   Emitter emitter;

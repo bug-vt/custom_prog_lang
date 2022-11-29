@@ -42,9 +42,10 @@ class TestVM (unittest.TestCase):
         self.assertEqual (out, expected);
 
     def testScope (self):
-        expected = ("39\n"
-                    "32\n"
-                    "99\n")
+        expected = ("pi in outer scope: 44\n"
+                    "No local pi inside inner scope yet. Changing outer pi to: 99\n"
+                    "pi in inner scope: 32\n"
+                    "pi back in outer scope: 99\n")
         out = runProg ("../example/scope.src")[0];
         self.assertEqual (out, expected);
 
@@ -60,9 +61,9 @@ class TestVM (unittest.TestCase):
         self.assertEqual (out, expected);
 
     def testNestedControlFlow (self):
-        expected = ("hi\n"
-                    "water\n"
-                    "windy\n")
+        expected = ("inside else\n"
+                    "  inside if\n"
+                    "    inside else if\n")
         out = runProg ("../example/nested_control_flow.src")[0];
         self.assertEqual (out, expected);
 
@@ -138,7 +139,7 @@ class TestVM (unittest.TestCase):
         self.assertEqual (out, expected);
 
     def testArray (self):
-        expected = (" hello world ! cs4974 awesomeness\n")
+        expected = ("hello 123 0.001000 world! cs4974 \n")
         out = runProg ("../example/array.src")[0];
         self.assertEqual (out, expected);
 
@@ -149,7 +150,15 @@ class TestVM (unittest.TestCase):
         self.assertEqual (out, expected);
 
     def testArrayRef (self):
-        expected = ("10\n"
+        expected = ("before:\n"
+                    "0\n"
+                    "1\n"
+                    "2\n"
+                    "3\n"
+                    "4\n"
+                    "\n"
+                    "after:\n"
+                    "10\n"
                     "11\n"
                     "12\n"
                     "13\n"

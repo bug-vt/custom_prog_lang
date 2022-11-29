@@ -1,17 +1,16 @@
 
 func main ()
 {
-  var pi = 3;
-  pi = 44;
-  pi = pi - 5;
-  print pi;
+  var pi = 44;
+  print "pi in outer scope: " + pi;
 
   // shadowing
   {
     pi = 99;
+    print "No local pi inside inner scope yet. Changing outer pi to: " + pi;
     var pi = 32;
-    print pi;
+    print "pi in inner scope: " + pi;
   }
 
-  print pi;
+  print "pi back in outer scope: " + pi;
 }

@@ -2,7 +2,7 @@
 func myFunc (param0, param1, param2)
 {
   print (param0);
-  return (parm1 * param2);
+  return (param1 * param2);
 }
 
 // comment about main
