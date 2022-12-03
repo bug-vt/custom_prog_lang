@@ -11,9 +11,10 @@ def main (asm_file, argv):
     if (exit_code > 0):
         exit (1)
 
-    call (["vm", "out.exec"] + argv)
+    exit_code = call (["vm", "out.exec"] + argv)
     call (["rm", "out.exec"])
 
+    exit (exit_code)
 
 if __name__ == '__main__':
     if (len (sys.argv) < 2):

@@ -43,18 +43,19 @@ InstrLookupTable::InstrLookupTable ()
   instr_lookup["not"] = {16, {DESTINATION}};
   instr_lookup["shl"] = {17, {DESTINATION, OP_OFFSET}};
   instr_lookup["shr"] = {18, {DESTINATION, OP_OFFSET}};
-  // string processing
-  instr_lookup["concat"] =  {19, {DESTINATION, OP_STRING}};
-  instr_lookup["getChar"] = {20, {DESTINATION, OP_STRING, OP_OFFSET}};
-  instr_lookup["setChar"] = {21, {DESTINATION, OP_OFFSET, OP_STRING}};
-  // conditional branching
-  instr_lookup["jmp"] = {22, {OP_FLAG_TYPE_LABEL}}; 
-  instr_lookup["je"] =  {23, {SOURCE, SOURCE, OP_FLAG_TYPE_LABEL}}; 
-  instr_lookup["jne"] = {24, {SOURCE, SOURCE, OP_FLAG_TYPE_LABEL}}; 
-  instr_lookup["jg"] =  {25, {SOURCE, SOURCE, OP_FLAG_TYPE_LABEL}}; 
-  instr_lookup["jl"] =  {26, {SOURCE, SOURCE, OP_FLAG_TYPE_LABEL}}; 
-  instr_lookup["jge"] = {27, {SOURCE, SOURCE, OP_FLAG_TYPE_LABEL}}; 
-  instr_lookup["jle"] = {28, {SOURCE, SOURCE, OP_FLAG_TYPE_LABEL}}; 
+  // string processing (+ add instruction for string concatenation)
+  instr_lookup["getChar"] = {19, {DESTINATION, OP_STRING, OP_OFFSET}};
+  instr_lookup["setChar"] = {20, {DESTINATION, OP_OFFSET, OP_STRING}};
+  // comparison
+  instr_lookup["seq"] =  {21, {DESTINATION, SOURCE, SOURCE}}; 
+  instr_lookup["sne"] =  {22, {DESTINATION, SOURCE, SOURCE}}; 
+  instr_lookup["sgt"] =  {23, {DESTINATION, SOURCE, SOURCE}}; 
+  instr_lookup["slt"] =  {24, {DESTINATION, SOURCE, SOURCE}}; 
+  instr_lookup["sge"] =  {25, {DESTINATION, SOURCE, SOURCE}}; 
+  instr_lookup["sle"] =  {26, {DESTINATION, SOURCE, SOURCE}}; 
+  // branching
+  instr_lookup["jmp"] = {27, {OP_FLAG_TYPE_LABEL}}; 
+  instr_lookup["je"] =  {28, {SOURCE, SOURCE, OP_FLAG_TYPE_LABEL}}; 
   // stack interface
   instr_lookup["push"] = {29, {SOURCE}}; 
   instr_lookup["pop"]  = {30, {DESTINATION}}; 
@@ -63,8 +64,10 @@ InstrLookupTable::InstrLookupTable ()
   instr_lookup["ret"] =  {32, {}}; 
   // miscellaneous
   instr_lookup["pause"] = {33, {OP_FLAG_TYPE_INT}};
-  instr_lookup["exit"]  = {34, {OP_FLAG_TYPE_INT}};
+  instr_lookup["exit"]  = {34, {}};
   instr_lookup["print"]  = {35, {SOURCE}};
+  instr_lookup["time"] =  {36, {}}; 
+  instr_lookup["randint"] =  {37, {}}; 
 }
 
 InstrLookup InstrLookupTable::lookup (string mnemonic)

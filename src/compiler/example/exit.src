@@ -1,0 +1,6 @@
+func main ()
+{
+  print "before exit";
+  exit (2);
+  print "after exit";
+}

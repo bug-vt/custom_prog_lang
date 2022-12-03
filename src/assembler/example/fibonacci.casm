@@ -17,14 +17,18 @@ calc_fib:
   print " "
   
   inc i
-  jle i, n, calc_fib
+  var condition
+  sle condition, i, n
+  je condition, 1, calc_fib
   print "\n"
 }
 
 func fib
 {
   param n
-  jg n, 1, recursion
+  var condition
+  sgt condition, n, 1 
+  je condition, 1, recursion
 
 base:
   mov _retVal, n

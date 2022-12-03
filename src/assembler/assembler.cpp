@@ -11,19 +11,21 @@
 
 #include <fstream>
 #include <sstream>
+#include <iostream>
 #include "asm_parser.hpp"
-#include "error.hpp"
 
 using std::ifstream;
 using std::ofstream;
 using std::string;
 using std::stringstream;
+using std::cout;
+using std::endl;
 
 #define VERSION_MAJOR 1
 #define VERSION_MINOR 0
 
 string loadAssemblyFile (char *file_name);
-
+void exitOnError (string msg);
 
 int main (int argc, char **argv)
 {
@@ -69,3 +71,8 @@ string loadAssemblyFile (char *file_name)
   return buffer.str ();
 }
 
+void exitOnError (string msg)
+{
+  cout << "Error: " << msg << endl;
+  exit (EXIT_FAILURE);
+}

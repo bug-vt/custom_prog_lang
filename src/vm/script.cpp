@@ -3,6 +3,9 @@
 #include <fstream>
 #include <iostream>
 #include <cmath>
+#include <cassert>
+#include <ctime>
+#include <cstdlib>
 
 using std::string;
 using std::ifstream;
@@ -11,6 +14,8 @@ using std::ifstream;
 
 Script::Script ()
 {
+  // for randint instruction
+  srand (time (0));
   // register functions to the instruction handler table
   instr_handler[INSTR_MOV] = &Script::instrMov;
   instr_handler[INSTR_REF] = &Script::instrRef;
@@ -31,16 +36,16 @@ Script::Script ()
   instr_handler[INSTR_NOT] = &Script::instrBitwise;
   instr_handler[INSTR_SHL] = &Script::instrBitwise;
   instr_handler[INSTR_SHR] = &Script::instrBitwise;
-  instr_handler[INSTR_CONCAT] = &Script::instrConcat;
   instr_handler[INSTR_GETCHAR] = &Script::instrGetChar;
   instr_handler[INSTR_SETCHAR] = &Script::instrSetChar;
+  instr_handler[INSTR_SEQ] = &Script::instrCmp;
+  instr_handler[INSTR_SNE] = &Script::instrCmp;
+  instr_handler[INSTR_SGT] = &Script::instrCmp;
+  instr_handler[INSTR_SLT] = &Script::instrCmp;
+  instr_handler[INSTR_SGE] = &Script::instrCmp;
+  instr_handler[INSTR_SLE] = &Script::instrCmp;
   instr_handler[INSTR_JMP] = &Script::instrJmp;
   instr_handler[INSTR_JE] = &Script::instrBranch;
-  instr_handler[INSTR_JNE] = &Script::instrBranch;
-  instr_handler[INSTR_JG] = &Script::instrBranch;
-  instr_handler[INSTR_JL] = &Script::instrBranch;
-  instr_handler[INSTR_JGE] = &Script::instrBranch;
-  instr_handler[INSTR_JLE] = &Script::instrBranch;
   instr_handler[INSTR_PUSH] = &Script::instrPush;
   instr_handler[INSTR_POP] = &Script::instrPop;
   instr_handler[INSTR_CALL] = &Script::instrCall;
@@ -48,6 +53,8 @@ Script::Script ()
   instr_handler[INSTR_PAUSE] = &Script::instrPause;
   instr_handler[INSTR_EXIT] = &Script::instrExit;
   instr_handler[INSTR_PRINT] = &Script::instrPrint;
+  instr_handler[INSTR_TIME] = &Script::instrTime;
+  instr_handler[INSTR_RANDINT] = &Script::instrRandInt;
 }
 
 void Script::load (string file_name)
@@ -99,10 +106,11 @@ void Script::reset (int argc, char **argv)
     int str_index = str_table.size ();
     for (int i = argc - 1; i > 1; i--)
     {
-      str_table[str_index + i] = string (argv[i]);
+      assert (!str_table.count (str_index + i - 2));
+      str_table[str_index + i - 2] = string (argv[i]);
       Value arg;
       arg.type = OP_TYPE_STR;
-      arg.string_index = str_index + i;
+      arg.string_index = str_index + i - 2;
       stack.push (arg);
     }
 
@@ -236,6 +244,17 @@ void Script::instrArithmetic ()
         break;
     }
   }
+  else if (dest.type == OP_TYPE_STR && opcode == INSTR_ADD)
+  {
+    // concatenate destination and source string 
+    string new_str = resolveOpAsString (0) + resolveOpAsString (1);
+    int str_index = str_table.size ();
+    assert (!str_table.count (str_index));
+    str_table[str_index] = new_str;
+
+    // update destination operand to new string
+    dest.string_index = str_index;
+  }
   else
     throw std::runtime_error ("Unsupported arithmetic operand type");
 
@@ -280,16 +299,123 @@ void Script::instrBitwise ()
   resolveOpCopy (0, dest);
 }
 
-void Script::instrConcat ()
-{
-}
 
 void Script::instrGetChar ()
 {
+  // make a local copy of destination operand
+  Value dest = resolveOpValue (0);
+
+  string ref_str = resolveOpAsString (1);
+  int index = resolveOpAsInt (2);
+  if (index < 0 || index >= ref_str.length ())
+    throw std::runtime_error ("gerChar: String index out of bound");
+
+  // fetch one character from string located in specified index
+  char get_char = ref_str.at (index);
+  int str_index = str_table.size ();
+  assert (!str_table.count (str_index));
+  str_table[str_index] = string (1, get_char);
+
+  dest.type = OP_TYPE_STR;
+  dest.string_index = str_index;
+  // write the result to destination operand
+  resolveOpCopy (0, dest);
 }
 
 void Script::instrSetChar ()
 {
+}
+
+void Script::instrCmp ()
+{
+  int opcode = instr_stream.at (instr_index).opcode;
+
+  // make a local copy of destination operand
+  Value dest = resolveOpValue (0);
+  
+  // comparison between operand 1 and operand 2
+  Value op1 = resolveOpValue (1);
+  bool condition = false;
+  if (op1.type == OP_TYPE_INT)
+  {
+    switch (opcode)
+    {
+      case INSTR_SEQ:
+        condition = op1.int_literal == resolveOpAsInt (2);
+        break;
+      case INSTR_SNE:
+        condition = op1.int_literal != resolveOpAsInt (2);
+        break;
+      case INSTR_SGT:
+        condition = op1.int_literal > resolveOpAsInt (2);
+        break;
+      case INSTR_SLT:
+        condition = op1.int_literal < resolveOpAsInt (2);
+        break;
+      case INSTR_SGE:
+        condition = op1.int_literal >= resolveOpAsInt (2);
+        break;
+      case INSTR_SLE:
+        condition = op1.int_literal <= resolveOpAsInt (2);
+        break;
+    }
+  }
+  else if (op1.type == OP_TYPE_FLOAT)
+  {
+    switch (opcode)
+    {
+      case INSTR_SEQ:
+        condition = op1.float_literal == resolveOpAsFloat (2);
+        break;
+      case INSTR_SNE:
+        condition = op1.float_literal != resolveOpAsFloat (2);
+        break;
+      case INSTR_SGT:
+        condition = op1.float_literal > resolveOpAsFloat (2);
+        break;
+      case INSTR_SLT:
+        condition = op1.float_literal < resolveOpAsFloat (2);
+        break;
+      case INSTR_SGE:
+        condition = op1.float_literal >= resolveOpAsFloat (2);
+        break;
+      case INSTR_SLE:
+        condition = op1.float_literal <= resolveOpAsFloat (2);
+        break;
+    }
+  }
+  else if (op1.type == OP_TYPE_STR)
+  {
+    string op1_str = str_table.at (op1.string_index);
+    switch (opcode)
+    {
+      case INSTR_SEQ:
+        condition = op1_str == resolveOpAsString (2);
+        break;
+      case INSTR_SNE:
+        condition = op1_str != resolveOpAsString (2);
+        break;
+      case INSTR_SGT:
+        condition = op1_str > resolveOpAsString (2);
+        break;
+      case INSTR_SLT:
+        condition = op1_str < resolveOpAsString (2);
+        break;
+      case INSTR_SGE:
+        condition = op1_str >= resolveOpAsString (2);
+        break;
+      case INSTR_SLE:
+        condition = op1_str <= resolveOpAsString (2);
+        break;
+    }
+  }
+  else
+    throw std::runtime_error ("Unsupported relational operand type");
+  
+  dest.type = OP_TYPE_INT; 
+  dest.int_literal = condition;
+  // write the result to destination operand
+  resolveOpCopy (0, dest);
 }
 
 void Script::instrJmp ()
@@ -316,21 +442,6 @@ void Script::instrBranch ()
       case INSTR_JE:
         branch = op0.int_literal == resolveOpAsInt (1);
         break;
-      case INSTR_JNE:
-        branch = op0.int_literal != resolveOpAsInt (1);
-        break;
-      case INSTR_JG:
-        branch = op0.int_literal > resolveOpAsInt (1);
-        break;
-      case INSTR_JL:
-        branch = op0.int_literal < resolveOpAsInt (1);
-        break;
-      case INSTR_JGE:
-        branch = op0.int_literal >= resolveOpAsInt (1);
-        break;
-      case INSTR_JLE:
-        branch = op0.int_literal <= resolveOpAsInt (1);
-        break;
     }
   }
   else if (op0.type == OP_TYPE_FLOAT)
@@ -339,21 +450,6 @@ void Script::instrBranch ()
     {
       case INSTR_JE:
         branch = op0.float_literal == resolveOpAsFloat (1);
-        break;
-      case INSTR_JNE:
-        branch = op0.float_literal != resolveOpAsFloat (1);
-        break;
-      case INSTR_JG:
-        branch = op0.float_literal > resolveOpAsFloat (1);
-        break;
-      case INSTR_JL:
-        branch = op0.float_literal < resolveOpAsFloat (1);
-        break;
-      case INSTR_JGE:
-        branch = op0.float_literal >= resolveOpAsFloat (1);
-        break;
-      case INSTR_JLE:
-        branch = op0.float_literal <= resolveOpAsFloat (1);
         break;
     }
   }
@@ -364,21 +460,6 @@ void Script::instrBranch ()
     {
       case INSTR_JE:
         branch = op0_str == resolveOpAsString (1);
-        break;
-      case INSTR_JNE:
-        branch = op0_str != resolveOpAsString (1);
-        break;
-      case INSTR_JG:
-        branch = op0_str > resolveOpAsString (1);
-        break;
-      case INSTR_JL:
-        branch = op0_str < resolveOpAsString (1);
-        break;
-      case INSTR_JGE:
-        branch = op0_str >= resolveOpAsString (1);
-        break;
-      case INSTR_JLE:
-        branch = op0_str <= resolveOpAsString (1);
         break;
     }
   }
@@ -438,6 +519,8 @@ void Script::instrPause ()
 
 void Script::instrExit ()
 {
+  int exit_code = coerceToInt (stack.pop ());
+  exit (exit_code);
 }
 
 void Script::instrPrint ()
@@ -445,4 +528,17 @@ void Script::instrPrint ()
   std::cout << resolveOpAsString (0);
 }
 
+void Script::instrTime ()
+{
+  ret_val.type = OP_TYPE_FLOAT;
+  ret_val.float_literal = (float) clock () / CLOCKS_PER_SEC;
+}
+
+void Script::instrRandInt ()
+{
+  int lower = coerceToInt (stack.pop ());
+  int upper = coerceToInt (stack.pop ());
+  ret_val.type = OP_TYPE_INT;
+  ret_val.int_literal = rand () % (upper - lower) + lower;
+}
 

@@ -7,27 +7,27 @@ using std::cout;
 using std::endl;
 
 
-Symbol::Symbol (int index, int size, int type) 
+Symbol::Symbol (int size, bool is_ref) 
 {
-  this->symbol_index = index;
   this->size = size;
-  this->type = type;
+  this->is_ref = is_ref;
 }
 
-SymbolTable::SymbolTable () : symbol_count (0), symbol_table (), enclosing (nullptr)
+SymbolTable::SymbolTable () : symbol_table (), 
+                              enclosing (nullptr), scope (0)
 {
 }
 
-SymbolTable::SymbolTable (SymbolTable* enclosing) : symbol_count (0), symbol_table ()
+SymbolTable::SymbolTable (SymbolTable* enclosing, int scope) : symbol_table ()
 {
   this->enclosing = enclosing;
+  this->scope = scope;
 }
 
 // Add symbol to the symbol table.
-// If the symbol is already exists inside the table, return -1.
-// Otherwise, return the assigned index that would use to locate 
-// the symbol inside the table.
-int SymbolTable::addSymbol (string name)
+// If the symbol is already exists inside the table, throw exception.
+// Otherwise, return the assigned scope of the symbol
+int SymbolTable::addSymbol (string name, int size, bool is_ref)
 {
   // check if given function is already inside the table.
   if (symbol_table.count (name))
@@ -36,12 +36,10 @@ int SymbolTable::addSymbol (string name)
     throw std::runtime_error (msg);
   }
 
-  // add the given function into the table.
-  int index = symbol_count;
-  symbol_table[name] = Symbol (index, 1, SYMBOL_TYPE_VAR);
-  symbol_count++;
+  // add the given symbol into the table.
+  symbol_table[name] = Symbol (size, is_ref);
 
-  return index;
+  return scope;
 }
 
 Symbol SymbolTable::getSymbol (string name)
@@ -57,19 +55,39 @@ Symbol SymbolTable::getSymbol (string name)
   throw std::runtime_error (msg);
 }
 
-string SymbolTable::at (int index)
+bool SymbolTable::isSymbol (string name)
 {
-  for (auto const& x : symbol_table)
-  {
-    if (x.second.symbol_index == index)
-      return x.first;
-  }
-  throw std::runtime_error ("No such symbol for given index");
+  // see if the symbol was declared
+  if (symbol_table.count (name))
+    return true;
+
+  if (enclosing)
+    return enclosing->isSymbol (name);
+
+  return false;
+}
+
+int SymbolTable::getScope (string name)
+{
+  // see if the symbol is defined in local scope
+  if (symbol_table.count (name))
+    return scope;
+
+  if (enclosing)
+    return enclosing->getScope (name);
+
+  string msg = "Undefined variable '" + name + "'";
+  throw std::runtime_error (msg);
 }
 
 int SymbolTable::getSize (string name)
 {
   return getSymbol (name).size;
+}
+
+bool SymbolTable::isRef (string name)
+{
+  return getSymbol (name).is_ref;
 }
 
 void SymbolTable::print ()

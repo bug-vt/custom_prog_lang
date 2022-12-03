@@ -1,6 +1,5 @@
 #include "catch.hpp"
 #include "../asm_lexer.hpp"
-#include "../error.hpp"
 #include <fstream>
 #include <iostream>
 #include <sys/wait.h>
@@ -190,7 +189,7 @@ TEST_CASE ("Lexing multi-line input", "[lexer]")
   string input = "; comment first line\n \
                   var xyz\n \
                   param qqq \n \
-                  jg 4.8, 7.3";
+                  je 4.8, 7.3";
   
   AsmLexer lexer (input);
   CHECK (lexer.getNextToken () == TOKEN_TYPE_NEWLINE);
@@ -208,7 +207,7 @@ TEST_CASE ("Lexing multi-line input", "[lexer]")
   CHECK (lexer.getNextToken () == TOKEN_TYPE_NEWLINE);
   CHECK (lexer.getCurrLexeme () == "\n");
   CHECK (lexer.getNextToken () == TOKEN_TYPE_INSTR);
-  CHECK (lexer.getCurrLexeme () == "jg");
+  CHECK (lexer.getCurrLexeme () == "je");
   CHECK (lexer.getNextToken () == TOKEN_TYPE_FLOAT);
   CHECK (lexer.getCurrLexeme () == "4.8");
   CHECK (lexer.getNextToken () == TOKEN_TYPE_COMMA);
@@ -278,7 +277,7 @@ TEST_CASE ("Test displaying error", "[lexer]")
     while (curr_token != TOKEN_TYPE_EOF)
     {
       if (curr_token == TOKEN_TYPE_INVALID)
-        exitOnCodeError ("code error", lexer);
+        lexer.error ("code error");
 
       curr_token = lexer.getNextToken ();
     }

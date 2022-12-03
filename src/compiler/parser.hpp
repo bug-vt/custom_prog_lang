@@ -5,6 +5,8 @@
 #include "token.hpp"
 #include "expr.hpp"
 #include "stmt.hpp"
+#include "func_table.hpp"
+
 
 class Parser
 {
@@ -14,25 +16,34 @@ class Parser
     std::vector<Stmt*> parse ();
     
   private:
-    // variables for tracking current function
-    int curr_scope;
-
     // lexer
     Lexer lexer;
 
-    // methods
     Token readToken (TokenType req_token);
+    // parsing methods
+    Stmt* parseDeclaration ();
+    Stmt* parseFunc ();
+    Stmt* parseVar ();
     Stmt* parseStatement ();
+    Stmt* parseReturnStatement ();
+    Stmt* parseIfStatement ();
+    Stmt* parseWhileStatement ();
+    Stmt* parseForStatement ();
+    Stmt* parseGotoStatement ();
     Stmt* parseExprStatement ();
     Stmt* parsePrintStatement ();
-    Stmt* parseDeclaration ();
-    Stmt* parseVar ();
     std::vector<Stmt*> parseBlock ();
-    Expr* parseAssignment ();
     Expr* parseExpr ();
+    Expr* parseAssignment ();
+    Expr* parseOr ();
+    Expr* parseAnd ();
+    Expr* parseEquality ();
+    Expr* parseComparison ();
     Expr* parseTerm ();
     Expr* parseFactor ();
     Expr* parseUnary ();
+    Expr* parseCall ();
+    Expr* parseRef ();
     Expr* parsePrimary ();
 };
 

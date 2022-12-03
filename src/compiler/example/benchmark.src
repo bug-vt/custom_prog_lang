@@ -1,0 +1,141 @@
+func fib (n)
+{
+  if (n <= 1)
+    return n;
+
+  return fib (n - 2) + fib (n - 1);
+}
+
+func fibonacci (*arr, size)
+{
+  for (var i = 0; i < size; i = i + 1)
+    arr[i] = fib (i);
+}
+
+func insertionSort (*arr, n)
+{
+  for (var i = 1; i < n; i = i + 1)
+  {
+    var key = arr[i];
+    var j = i - 1;
+    while (j >= 0 && arr[j] > key)
+    {
+      arr[j+1] = arr[j];
+      j = j - 1;
+    }
+    arr[j + 1] = key;
+  }
+}
+
+func merge (*arr, start, mid, end)
+{
+  var left_len = mid - start + 1;
+  var right_len = end - mid;
+  var left[10000];
+  var right[10000];
+  
+  for (var i = 0; i < left_len; i = i + 1)
+    left[i] = arr[start + i];
+
+  for (var j = 0; j < right_len; j = j + 1)
+    right[j] = arr[mid + j + 1];
+
+  var i = 0;
+  var j = 0;
+  var k = start;
+
+  while (i < left_len && j < right_len)
+  {
+    if (left[i] <= right[j])
+    {
+      arr[k] = left[i];
+      i = i + 1;
+    }
+    else
+    {
+      arr[k] = right[j];
+      j = j + 1;
+    }
+    k = k + 1;
+  }
+
+  while (i < left_len)
+  {
+    arr[k] = left[i];
+    i = i + 1;
+    k = k + 1;
+  }
+
+  while (j < right_len)
+  {
+    arr[k] = right[j];
+    j = j + 1;
+    k = k + 1;
+  }
+}
+
+func mergeSort (*arr, start, end)
+{
+  if (start >= end)
+    return;
+
+  var mid = (start + end) / 2;
+  mergeSort (arr, start, mid);
+  mergeSort (arr, mid + 1, end);
+  merge (arr, start, mid, end);
+}
+
+func printArr (*arr, size)
+{
+  var out = "";
+  for (var i = 0; i < size; i = i + 1)
+    out = out + arr[i] + " "; 
+
+  print out;
+}
+
+func main ()
+{
+  print ("--------------------------------------------");
+  print ("      Benchmarks from custom language       ");
+  print ("--------------------------------------------");
+  var arr[10000];
+
+  // fibonacci
+  var size = 25;
+  print "Running Fibonacci sequence from 0 to " + size;
+  var start = time ();
+  fibonacci (&arr, size);
+  var duration = time () - start;
+
+  //printArr (&arr, size);
+  print "Duration: " + duration + " seconds";
+  print ""; 
+  
+  // insertion sort
+  size = 1000;
+  print "Running Insertion sort for array size " + size;
+  for (var i = 0; i < size; i = i + 1)
+    arr[i] = randint (0, 100000);
+
+  start = time ();
+  insertionSort (&arr, size);
+  duration = time () - start;
+
+  //printArr (&arr, size);
+  print "Duration: " + duration + " seconds";
+  print ""; 
+
+  // merge sort
+  size = 10000;
+  print "Running merge sort for array size " + size;
+  for (var i = 0; i < size; i = i + 1)
+    arr[i] = randint (0, 100000);
+
+  start = time ();
+  mergeSort (&arr, 0, size - 1);
+  duration = time () - start;
+
+  //printArr (&arr, size);
+  print "Duration: " + duration + " seconds";
+}

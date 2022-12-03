@@ -1,11 +1,14 @@
 func main
 {
+  var result
   jmp label3
 
 label1:
   print "1\n" 
-  jg "apple", "bear", end
-  jne 6.6, 2, label2
+  sgt result, "apple", "bear"
+  je result, 1, end
+  sne result, 6.6, 2
+  je result, 1, label2
   print "This shouldn't be printed\n"
 
 label2:

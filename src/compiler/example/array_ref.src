@@ -1,0 +1,25 @@
+func ref_array (*arr, count)
+{
+  arr[count] = arr[count] + 10;
+  if (count <= 0)
+    return;
+  ref_array (arr, count - 1);
+}
+
+func main ()
+{
+  var arr[5];
+  print "before:";
+  for (var i = 0; i < 5; i = i + 1)
+  {
+    arr[i] = i;
+    print arr[i];
+  }
+
+  ref_array (&arr, 4);
+
+  print "";
+  print "after:";
+  for (var i = 0; i < 5; i = i + 1)
+    print arr[i];
+}

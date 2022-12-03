@@ -1,0 +1,13 @@
+func main ()
+{
+  for (var b = 1; b < 100; b = b * 2)
+  {
+    if (b > 50)
+      break;
+
+    if (b == 16)
+      continue;
+
+    print b;
+  }
+}

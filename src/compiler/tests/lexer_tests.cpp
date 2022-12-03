@@ -294,11 +294,19 @@ TEST_CASE ("Basic string lexing", "[lexer]")
   
   Lexer lexer (input);
   REQUIRE (lexer.getNextToken ().type == TOKEN_TYPE_STRING);
-  REQUIRE (lexer.getCurrLexeme () == "Hello");
+  REQUIRE (lexer.getCurrLexeme () == "\"Hello\"");
   REQUIRE (lexer.getNextToken ().type == TOKEN_TYPE_STRING);
-  REQUIRE (lexer.getCurrLexeme () == "to \"World\"");
+  REQUIRE (lexer.getCurrLexeme () == "\"to \"World\"\"");
   REQUIRE (lexer.getNextToken ().type == TOKEN_TYPE_STRING);
-  REQUIRE (lexer.getCurrLexeme () == "fall $ number  @sun");
+  REQUIRE (lexer.getCurrLexeme () == "\"fall $ number  @sun\"");
+}
+
+TEST_CASE ("Test string reach EOF without closing quote", "[lexer]")
+{
+  string input = " \"Hello World!";
+  
+  Lexer lexer (input);
+  REQUIRE (lexer.getNextToken ().type == TOKEN_TYPE_INVALID);
 }
 
 TEST_CASE ("String lexing with escape characters", "[lexer]")
@@ -307,7 +315,7 @@ TEST_CASE ("String lexing with escape characters", "[lexer]")
   
   Lexer lexer (input);
   REQUIRE (lexer.getNextToken ().type == TOKEN_TYPE_STRING);
-  REQUIRE (lexer.getCurrLexeme () == "newline\n tab\t quote\" ");
+  REQUIRE (lexer.getCurrLexeme () == "\"newline\n tab\t quote\" \"");
 }
 
 TEST_CASE ("Lexing line comment", "[lexer]")

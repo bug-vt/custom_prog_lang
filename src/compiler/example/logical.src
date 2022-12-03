@@ -1,0 +1,8 @@
+
+func main ()
+{
+  print "hi" || "hello";
+  print false || "cs4974";
+  print 1 && 2 && 3 && 0 && 4;
+  print false || "hello" && false;
+}

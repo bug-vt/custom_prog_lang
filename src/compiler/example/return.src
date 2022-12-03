@@ -1,0 +1,10 @@
+func myFunc (a)
+{
+  return a * 2; 
+}
+
+func main ()
+{
+  var a = myFunc (2);
+  print a;
+}

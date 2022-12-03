@@ -1,8 +1,7 @@
 #include "asm_parser.hpp"
-#include "error.hpp"
 
 #define GLOBAL_SCOPE 0
-#define DEFAULT_STACK_SIZE 1024
+#define DEFAULT_STACK_SIZE 10485760
 #define FIRST_PASS 1
 #define SECOND_PASS 2
 
@@ -42,7 +41,7 @@ void AsmParser::readToken (Token req_token)
   if (lexer.getNextToken () != req_token)
   {
     string msg = token2string (req_token) + " expected";
-    exitOnCodeError (msg, lexer); 
+    lexer.error (msg); 
   }
 }
 
@@ -109,7 +108,7 @@ void AsmParser::parseLine ()
       break;
 
     default:
-      exitOnCodeError ("Unexpected token", lexer);
+      lexer.error ("Unexpected token");
   }
 }
 
@@ -117,7 +116,7 @@ void AsmParser::parseLine ()
 void AsmParser::parseFunc ()
 {
   if (curr_scope != GLOBAL_SCOPE)
-    exitOnCodeError ("Function cannot be defined inside another function", lexer);
+    lexer.error ("Function cannot be defined inside another function");
 
   // function name
   readToken (TOKEN_TYPE_IDENT);
@@ -132,7 +131,7 @@ void AsmParser::parseFunc ()
     // add function to the function table and check for redefinition
     func_index = func_table.addFunc (func_name, entry_point); 
     if (func_index == -1)
-      exitOnCodeError ("Function was already defined somewhere else", lexer);
+      lexer.error ("Function was already defined somewhere else");
 
     if (func_name == "main")
     {
@@ -181,7 +180,7 @@ void AsmParser::parseFunc ()
 void AsmParser::parseBlock ()
 {
   if (curr_scope == GLOBAL_SCOPE)
-    exitOnCodeError ("Code block can only be used for defining function scope", lexer);
+    lexer.error ("Code block can only be used for defining function scope");
 
   while (lexer.peekNextToken () != TOKEN_TYPE_CLOSE_BRACE)
     parseLine ();
@@ -224,12 +223,12 @@ void AsmParser::parseVar ()
   // but the top of the stack is reserved for VM.
   // So, offset 1 must be added.
   else
-    stack_index = -1 - (1 + curr_func_local_data_size);
+    stack_index = -1 - (size + curr_func_local_data_size);
 
   // add symbol to the symbol table and check for redefinition
   Symbol symbol (ident, curr_scope); 
   if (symbol_table.addSymbol (symbol, size, stack_index) == -1)
-    exitOnCodeError ("Identifier with same name already exists inside the same scope", lexer);
+    lexer.error ("Identifier with same name already exists inside the same scope");
 
   // grow the global or local data size
   if (curr_scope == GLOBAL_SCOPE)
@@ -248,7 +247,7 @@ void AsmParser::parseLabel ()
   readToken (TOKEN_TYPE_COLON);
 
   if (curr_scope == GLOBAL_SCOPE)
-    exitOnCodeError ("Line label can be only used inside the function", lexer);
+    lexer.error ("Line label can be only used inside the function");
 
   // instruction immediately after the current one is the target index 
   // which is equal to the current instruction count
@@ -257,14 +256,14 @@ void AsmParser::parseLabel ()
 
   Label label (ident, func_index);
   if (label_table.addLabel (label, target_index) == -1)
-    exitOnCodeError ("Label with same name already exists inside the same scope", lexer);
+    lexer.error ("Label with same name already exists inside the same scope");
 }
 
 // parse at 2nd pass
 void AsmParser::parseParam ()
 {
   if (curr_scope == GLOBAL_SCOPE)
-    exitOnCodeError ("parameter cannot be defined on global scope", lexer);
+    lexer.error ("parameter cannot be defined on global scope");
 
   readToken (TOKEN_TYPE_IDENT);
 
@@ -282,7 +281,7 @@ void AsmParser::parseParam ()
 
     Symbol symbol (ident, curr_scope); 
     if (symbol_table.addSymbol (symbol, 1, stack_index) == -1)
-      exitOnCodeError ("Identifier with same name already exists inside the same scope", lexer);
+      lexer.error ("Identifier with same name already exists inside the same scope");
   }
 
   curr_func_param_size++;
@@ -315,7 +314,7 @@ void AsmParser::parseInstr ()
     // verify operand type match with one of the bit flags
     OpBitFlags curr_op_type = token2bitflag (op_token);
     if (!(op_flags & curr_op_type))
-      exitOnCodeError ("Invalid operand for given instruction", lexer);
+      lexer.error ("Invalid operand for given instruction");
 
     // record type and value
     // which will be used for generating binary
@@ -342,7 +341,7 @@ void AsmParser::parseInstr ()
           Label label (curr_lexeme, curr_scope);
           int target_index = label_table.getTargetIndex (label);
           if (target_index == -1)
-            exitOnCodeError ("Undefined label", lexer);
+            lexer.error ("Undefined label");
           curr_output.op_list[op_index].instr_index = target_index;
         }
         break;
@@ -351,7 +350,7 @@ void AsmParser::parseInstr ()
           Symbol symbol (curr_lexeme, curr_scope);
           int stack_index = symbol_table.getStackIndex (symbol);
           if (stack_index == -1)
-            exitOnCodeError ("Undefined identifier", lexer);
+            lexer.error ("Undefined identifier");
           // if next token is open bracket,
           // verify if the operand is an array and process it 
           if (lexer.peekNextToken () == TOKEN_TYPE_OPEN_BRACKET)
@@ -373,13 +372,13 @@ void AsmParser::parseInstr ()
               Symbol offset_symbol (ident, curr_scope);
               int offset_index = symbol_table.getStackIndex (offset_symbol);
               if (offset_index == -1)
-                exitOnCodeError ("Undefined identifier", lexer);
+                lexer.error ("Undefined identifier");
               // record the stack index that will be added to the base index
               // during runtime
               curr_output.op_list[op_index].offset_index = offset_index;
             }
             else
-              exitOnCodeError ("Invalid token for array indexing", lexer);
+              lexer.error ("Invalid token for array indexing");
             
             readToken (TOKEN_TYPE_CLOSE_BRACKET);
           }
@@ -391,7 +390,7 @@ void AsmParser::parseInstr ()
         {
           int func_index = func_table.getFuncIndex (curr_lexeme);
           if (func_index == -1)
-            exitOnCodeError ("Undefined function", lexer);
+            lexer.error ("Undefined function");
           curr_output.op_list[op_index].func_index = func_index;
         }
         break;
@@ -401,7 +400,7 @@ void AsmParser::parseInstr ()
         break;
 
       default:
-        exitOnCodeError ("Unsupported operand type", lexer);
+        lexer.error ("Unsupported operand type");
     }
     
     if (op_index < op_count - 1)

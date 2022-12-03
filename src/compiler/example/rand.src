@@ -1,0 +1,36 @@
+func printResult (a)
+{
+  if (a == true)
+    print "true";
+  else
+    print "false";
+}
+
+func main ()
+{
+  var size = 1000;
+  var a = randint (30, 40);
+  var init = a;
+  var count = 0;
+  var result = true;
+  for (var i = 0; i < size; i = i + 1)
+  {
+    a = randint (30, 40);
+    if (a < 30 || a >= 40)
+    {
+      print a; 
+      result = false;
+    }
+
+    if (a == init)
+      count = count + 1; 
+  }
+
+  if (count == size)
+  {
+    print "All returned values were same: " + init;
+    result = false;
+  }
+
+  printResult (result);
+}

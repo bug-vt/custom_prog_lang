@@ -136,5 +136,19 @@ class TestVM (unittest.TestCase):
         out = runVM ("../example/pop.casm");
         self.assertEqual (out, expected);
 
+    def testConcat (self):
+        expected = ("Hello \n"
+                    "World\n"
+                    "Hello World\n")
+        out = runVM ("../example/concat.casm");
+        self.assertEqual (out, expected);
+
+    def testStringProcess (self):
+        expected = ("Hello World!\n"
+                    "Hello \n")
+        out = runVM ("../example/str_process.casm");
+        self.assertEqual (out, expected);
+
+
 if __name__ == '__main__':
     unittest.main ()

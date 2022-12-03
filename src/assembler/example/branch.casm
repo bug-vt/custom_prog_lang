@@ -1,11 +1,13 @@
 func main
 {
   var x
+  var result
   mov x, 0
 
 start:
   print x 
   print "\n"
   add x, 1
-  jl x, 5, start
+  slt result, x, 5
+  je result, 1, start
 }

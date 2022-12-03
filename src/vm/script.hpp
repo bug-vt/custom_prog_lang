@@ -58,9 +58,9 @@ class Script
     void instrSw ();
     void instrArithmetic ();
     void instrBitwise ();
-    void instrConcat ();
     void instrGetChar ();
     void instrSetChar ();
+    void instrCmp ();
     void instrJmp ();
     void instrBranch ();
     void instrPush ();
@@ -70,6 +70,8 @@ class Script
     void instrPause ();
     void instrExit ();
     void instrPrint ();
+    void instrTime ();
+    void instrRandInt ();
 
     // ------------------------------------------
     // internal interface for resolution/coercion

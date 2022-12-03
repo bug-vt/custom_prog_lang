@@ -48,7 +48,9 @@ inner_loop:                 ; iterate over the subarray and find the
   add arr_j, elem
 
   je j, -1, skip             
-  jle arr_j, key, skip   
+  var condition
+  sle condition, arr_j, key
+  je condition, 1, skip   
   
   var new_j
   mov new_j, j
@@ -64,7 +66,8 @@ skip:                       ; insert the element into the found position
   sw arr_base, new_j, key
   
   inc i
-  jl i, n, outer_loop       ; move onto next element
+  slt condition, i, n
+  je condition, 1, outer_loop       ; move onto next element
 }
 
 func printArray
@@ -81,6 +84,8 @@ loop:
   print elem 
   print " "
   inc count
-  jl count, size, loop
+  var condition
+  slt condition, count, size
+  je condition, 1, loop
   print "\n"
 }

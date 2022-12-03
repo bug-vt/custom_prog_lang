@@ -1,7 +1,6 @@
 #include "parser.hpp"
 #include <iostream>
 
-#define GLOBAL_SCOPE 0
 
 using std::string;
 using std::vector;
@@ -27,7 +26,6 @@ Token Parser::readToken (TokenType req_token)
 vector<Stmt*> Parser::parse ()
 {
   lexer.reset ();
-  curr_scope = GLOBAL_SCOPE; 
 
   vector<Stmt*> statements;
 
@@ -46,13 +44,21 @@ vector<Stmt*> Parser::parse ()
 
 Stmt* Parser::parseDeclaration ()
 {
+  Token first_token = lexer.getNextToken ();
   try
   {
-    if (lexer.getNextToken ().type == TOKEN_TYPE_VAR)
-      return parseVar ();
+    switch (first_token.type)
+    {
+      case TOKEN_TYPE_FUNC:
+        return parseFunc ();
 
-    lexer.undoGetNextToken ();
-    return parseStatement ();
+      case TOKEN_TYPE_VAR:
+        return parseVar ();
+      
+      default:
+        lexer.undoGetNextToken ();
+        return parseStatement ();
+    }
   }
   catch (std::runtime_error &err)
   {
@@ -62,40 +68,37 @@ Stmt* Parser::parseDeclaration ()
   throw std::runtime_error ("Should not reach here.");
 }
 
-Stmt* Parser::parseStatement ()
+Stmt* Parser::parseFunc ()
 {
-  Token first_token = lexer.getNextToken ();
-  switch (first_token.type)
+  // parse function name
+  Token name = readToken (TOKEN_TYPE_IDENT);
+  // parse parameters
+  readToken (TOKEN_TYPE_OPEN_PAREN);
+  vector<Param> parameters;
+  if (lexer.peekNextToken () != TOKEN_TYPE_CLOSE_PAREN)
   {
-    case TOKEN_TYPE_EOF:
-      throw std::runtime_error ("Unexpected end of file");
+    do {
+      if (parameters.size () >= 127)
+        throw std::runtime_error ("Number of parameters cannot exceed 127");
 
-    case TOKEN_TYPE_PRINT:
-      return parsePrintStatement ();
-
-    case TOKEN_TYPE_OPEN_BRACE:
-      return new Block (parseBlock ());
-
-    default:
-      break;
+      bool is_ref = false;
+      if (lexer.peekNextToken () == TOKEN_TYPE_MUL)
+      {
+        readToken (TOKEN_TYPE_MUL);
+        is_ref = true;
+      }
+      parameters.push_back (Param (readToken (TOKEN_TYPE_IDENT), is_ref));
+    } while (lexer.getNextToken ().type == TOKEN_TYPE_COMMA);
+    lexer.undoGetNextToken ();
   }
 
-  lexer.undoGetNextToken ();
-  return parseExprStatement ();
-}
+  readToken (TOKEN_TYPE_CLOSE_PAREN);
+  
+  // parse body
+  readToken (TOKEN_TYPE_OPEN_BRACE);
+  vector<Stmt*> body = parseBlock ();
 
-Stmt* Parser::parseExprStatement ()
-{
-  Expr* expr = parseExpr ();
-  readToken (TOKEN_TYPE_SEMICOLON);
-  return new Expression (expr);
-}
-
-Stmt* Parser::parsePrintStatement ()
-{
-  Expr* expr = parseExpr ();
-  readToken (TOKEN_TYPE_SEMICOLON);
-  return new Print (expr);
+  return new Function (name, parameters, body, 0);
 }
 
 Stmt* Parser::parseVar ()
@@ -118,13 +121,155 @@ Stmt* Parser::parseVar ()
   // initialize when token '=' is present after declaration
   if (lexer.peekNextToken () == TOKEN_TYPE_ASSIGN)
   {
+    if (size > 1)
+      throw std::runtime_error ("Current version lack array initialization support");
     readToken (TOKEN_TYPE_ASSIGN);
     initializer = parseExpr ();
   }
 
   readToken (TOKEN_TYPE_SEMICOLON);
 
-  return new Var (ident, initializer);
+  return new Var (ident, initializer, size, 0);
+}
+
+Stmt* Parser::parseStatement ()
+{
+  Token first_token = lexer.getNextToken ();
+  switch (first_token.type)
+  {
+    case TOKEN_TYPE_EOF:
+      throw std::runtime_error ("Unexpected end of file");
+
+    case TOKEN_TYPE_RETURN:
+      return parseReturnStatement ();
+
+    case TOKEN_TYPE_IF:
+      return parseIfStatement ();
+
+    case TOKEN_TYPE_WHILE:
+      return parseWhileStatement ();
+
+    case TOKEN_TYPE_FOR:
+      return parseForStatement ();
+
+    case TOKEN_TYPE_BREAK:
+    case TOKEN_TYPE_CONTINUE:
+      return parseGotoStatement ();
+
+    case TOKEN_TYPE_PRINT:
+      return parsePrintStatement ();
+
+    case TOKEN_TYPE_OPEN_BRACE:
+      return new Block (parseBlock ());
+
+    default:
+      break;
+  }
+
+  lexer.undoGetNextToken ();
+  return parseExprStatement ();
+}
+
+Stmt* Parser::parseReturnStatement ()
+{
+  lexer.undoGetNextToken ();
+  Token keyword = lexer.getNextToken ();
+  Expr* value = nullptr;
+  if (lexer.peekNextToken () != TOKEN_TYPE_SEMICOLON)
+    value = parseExpr ();
+
+  readToken (TOKEN_TYPE_SEMICOLON);
+  return new Return (keyword, value);
+}
+
+Stmt* Parser::parseIfStatement ()
+{
+  readToken (TOKEN_TYPE_OPEN_PAREN);
+  Expr* condition = parseExpr ();
+  readToken (TOKEN_TYPE_CLOSE_PAREN);
+
+  Stmt* thenBranch = parseStatement ();
+  Stmt* elseBranch = nullptr;
+  if (lexer.peekNextToken () == TOKEN_TYPE_ELSE)
+  {
+    readToken (TOKEN_TYPE_ELSE);
+    elseBranch = parseStatement ();
+  }
+
+  return new If (condition, thenBranch, elseBranch);
+}
+
+Stmt* Parser::parseWhileStatement ()
+{
+  readToken (TOKEN_TYPE_OPEN_PAREN);
+  Expr* condition = parseExpr ();
+  readToken (TOKEN_TYPE_CLOSE_PAREN);
+  
+  Stmt* body = parseStatement ();
+
+  return new While (condition, body, nullptr);
+}
+
+Stmt* Parser::parseForStatement ()
+{
+  readToken (TOKEN_TYPE_OPEN_PAREN);
+
+  Stmt* initializer;
+  Token token = lexer.getNextToken ();
+  if (token.type == TOKEN_TYPE_SEMICOLON)
+    initializer = nullptr;
+  else if (token.type == TOKEN_TYPE_VAR)
+    initializer = parseVar ();
+  else
+    initializer = parseExprStatement ();
+
+  Expr* condition = nullptr;
+  if (lexer.peekNextToken () != TOKEN_TYPE_SEMICOLON)
+    condition = parseExpr ();
+  readToken (TOKEN_TYPE_SEMICOLON);
+
+  Expr* increment = nullptr;
+  if (lexer.peekNextToken () != TOKEN_TYPE_CLOSE_PAREN)
+    increment = parseExpr ();
+  readToken (TOKEN_TYPE_CLOSE_PAREN);
+
+  Stmt* body = parseStatement ();
+  // desugaring begin here 
+
+  // add condition before the body and wrap it around with while loop.
+  // also, add increment after the body
+  if (condition == nullptr)
+    condition = new Literal (Token (TOKEN_TYPE_TRUE, "true"));
+  body = new While (condition, body, new Expression (increment));
+
+  // place initializer at the beginning of the block
+  if (initializer != nullptr)
+    body = new Block (vector<Stmt*> ({initializer, body}));
+
+  return body;
+}
+
+Stmt* Parser::parseGotoStatement ()
+{
+  lexer.undoGetNextToken ();
+  Token token = lexer.getNextToken ();
+
+  readToken (TOKEN_TYPE_SEMICOLON);
+  return new Goto (token);
+}
+
+Stmt* Parser::parseExprStatement ()
+{
+  Expr* expr = parseExpr ();
+  readToken (TOKEN_TYPE_SEMICOLON);
+  return new Expression (expr);
+}
+
+Stmt* Parser::parsePrintStatement ()
+{
+  Expr* expr = parseExpr ();
+  readToken (TOKEN_TYPE_SEMICOLON);
+  return new Print (expr);
 }
 
 vector<Stmt*> Parser::parseBlock ()
@@ -150,23 +295,105 @@ Expr* Parser::parseExpr ()
 
 Expr* Parser::parseAssignment ()
 {
-  Expr* expr = parseTerm ();
+  Expr* expr = parseOr ();
 
   Token op = lexer.getNextToken ();
   if (op.type == TOKEN_TYPE_ASSIGN)
   {
     Expr* value = parseAssignment ();
 
-    // l-value must be variable
+    // l-value must be variable or array index
     if (dynamic_cast<Variable*> (expr) != nullptr)
     {
       Token name = ((Variable*) expr)->name;
-      return new Assign (name, value);
+      return new Assign (name, value, nullptr, 0, false);
+    }
+    else if (dynamic_cast<ArrayElem*> (expr) != nullptr)
+    {
+      Token name = ((ArrayElem*) expr)->name;
+      Expr* offset = ((ArrayElem*) expr)->offset;
+      return new Assign (name, value, offset, 0, false);
     }
     throw std::runtime_error ("Invalid assignment target.");
   }
 
   lexer.undoGetNextToken ();
+  return expr;
+}
+
+Expr* Parser::parseOr ()
+{
+  Expr* expr = parseAnd ();
+
+  Token op = lexer.getNextToken ();
+  while (op.type == TOKEN_TYPE_LOGICAL_OR)
+  {
+    Expr* right = parseAnd ();
+    expr = new Logical (expr, op, right);
+    op = lexer.getNextToken ();
+  }
+
+  lexer.undoGetNextToken ();
+  return expr;
+}
+
+Expr* Parser::parseAnd ()
+{
+  Expr* expr = parseEquality ();
+
+  Token op = lexer.getNextToken ();
+  while (op.type == TOKEN_TYPE_LOGICAL_AND)
+  {
+    Expr* right = parseEquality ();
+    expr = new Logical (expr, op, right);
+    op = lexer.getNextToken ();
+  }
+
+  lexer.undoGetNextToken ();
+  return expr;
+}
+
+Expr* Parser::parseEquality ()
+{
+  Expr* expr = parseComparison ();
+
+  while (true)
+  {
+    Token op_token = lexer.getNextToken (); 
+    if (op_token.type != TOKEN_TYPE_NOT_EQUAL 
+        && op_token.type != TOKEN_TYPE_EQUAL)
+    {
+      lexer.undoGetNextToken ();
+      break;
+    }
+    
+    Expr *right = parseComparison ();
+    expr = new Binary (expr, op_token, right);
+  }
+
+  return expr;
+}
+
+Expr* Parser::parseComparison ()
+{
+  Expr* expr = parseTerm ();
+
+  while (true)
+  {
+    Token op_token = lexer.getNextToken (); 
+    if (op_token.type != TOKEN_TYPE_GREATER 
+        && op_token.type != TOKEN_TYPE_GREATER_EQUAL
+        && op_token.type != TOKEN_TYPE_LESS 
+        && op_token.type != TOKEN_TYPE_LESS_EQUAL)
+    {
+      lexer.undoGetNextToken ();
+      break;
+    }
+    
+    Expr *right = parseTerm ();
+    expr = new Binary (expr, op_token, right);
+  }
+
   return expr;
 }
 
@@ -212,7 +439,8 @@ Expr* Parser::parseFactor ()
 Expr* Parser::parseUnary ()
 {
   Token op_token = lexer.getNextToken (); 
-  if (op_token.type == TOKEN_TYPE_SUB)
+  if (op_token.type == TOKEN_TYPE_SUB 
+      || op_token.type == TOKEN_TYPE_LOGICAL_NOT)
   {
     Expr *right = parseUnary ();
     return new Unary (op_token, right);
@@ -220,18 +448,90 @@ Expr* Parser::parseUnary ()
   
   lexer.undoGetNextToken ();
 
+  return parseCall ();
+}
+
+Expr* Parser::parseCall ()
+{
+  Expr* expr = parseRef ();
+
+  while (true)
+  {
+    // function call
+    if (lexer.getNextToken ().type == TOKEN_TYPE_OPEN_PAREN)
+    {
+      // function name must be a identifier 
+      if (dynamic_cast<Variable*> (expr) == nullptr)
+        throw std::runtime_error ("Invalid function name");
+
+      Token callee = ((Variable*) expr)->name;
+
+      // parse all arguments
+      vector<Expr*> arguments;
+      if (lexer.peekNextToken () != TOKEN_TYPE_CLOSE_PAREN)
+      {
+        do
+        {
+          if (arguments.size () >= 127)
+            throw std::runtime_error ("Number of arguments cannot exceed 127");
+
+          arguments.push_back (parseExpr ());
+        } while (lexer.getNextToken ().type == TOKEN_TYPE_COMMA);
+        lexer.undoGetNextToken ();
+      }
+
+      Token paren = readToken (TOKEN_TYPE_CLOSE_PAREN);
+      expr = new Call (callee, paren, arguments);
+    }
+    else
+      break;
+  }
+  
+  lexer.undoGetNextToken ();
+  return expr;
+}
+
+Expr* Parser::parseRef ()
+{
+  if (lexer.peekNextToken () == TOKEN_TYPE_BITWISE_AND)
+  {
+    readToken (TOKEN_TYPE_BITWISE_AND);
+    Expr* expr = parsePrimary ();
+    // Only variable can be referenced
+    if (dynamic_cast<Variable*> (expr) == nullptr)
+      throw std::runtime_error ("Cannot reference non-variable");
+    
+    return new Ref (expr);
+  }
   return parsePrimary ();
 }
 
 Expr* Parser::parsePrimary ()
 {
   Token token = lexer.getNextToken (); 
-  if (token.type == TOKEN_TYPE_INT)
+  // Literal
+  if (token.type == TOKEN_TYPE_FALSE 
+      || token.type == TOKEN_TYPE_TRUE
+      || token.type == TOKEN_TYPE_INT 
+      || token.type == TOKEN_TYPE_FLOAT 
+      || token.type == TOKEN_TYPE_STRING)
     return new Literal (token);
 
+  // Variable
   if (token.type == TOKEN_TYPE_IDENT)
-    return new Variable (token);
+  {
+    // indexing array if next token is open bracket
+    if (lexer.peekNextToken () == TOKEN_TYPE_OPEN_BRACKET)
+    {
+      readToken (TOKEN_TYPE_OPEN_BRACKET);
+      Expr* offset = parseExpr ();
+      readToken (TOKEN_TYPE_CLOSE_BRACKET);
+      return new ArrayElem (token, offset, 0, false);
+    }
+    return new Variable (token, 0, false);
+  }
 
+  // Grouping
   if (token.type == TOKEN_TYPE_OPEN_PAREN)
   {
     Expr *expr = parseExpr ();

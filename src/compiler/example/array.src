@@ -1,0 +1,15 @@
+func main ()
+{
+  var array[5];
+  array[0] = "hello";
+  array[1] = 123;
+  array[2] = 0.001;
+  array[3] = "world!";
+  array[4] = "cs4974";
+
+  var str = "";
+  for (var i = 0; i < 5; i = i + 1)
+    str = str + array[i] + " ";
+
+  print str;
+}

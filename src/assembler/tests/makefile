@@ -5,11 +5,11 @@ CFLAGS=-Wall -g
 
 build: asm_tests.cpp lexer_tests.o parser_tests.o code_gen_tests.o \
 			 asm_parser.o func_table.o symbol_table.o label_table.o string_table.o token.o \
-			 asm_lexer.o instr_lookup.o error.o \
+			 asm_lexer.o instr_lookup.o \
 			 code_gen.o decoder.o
 	$(CC) $(CFLAGS) -o asm_tests asm_tests.cpp lexer_tests.o parser_tests.o code_gen_tests.o \
 			 asm_parser.o func_table.o symbol_table.o label_table.o string_table.o token.o \
-			 asm_lexer.o instr_lookup.o error.o \
+			 asm_lexer.o instr_lookup.o \
 			 code_gen.o decoder.o
 
 code_gen_tests.o: code_gen_tests.cpp code_gen.o decoder.cpp
@@ -24,8 +24,8 @@ asm_parser.o: ../asm_parser.cpp ../asm_lexer.cpp ../func_table.cpp ../symbol_tab
 lexer_tests.o: lexer_tests.cpp asm_lexer.o 
 	$(CC) $(CFLAGS) -c lexer_tests.cpp 
 
-asm_lexer.o: ../asm_lexer.cpp ../instr_lookup.cpp ../error.cpp
-	$(CC) $(CFLAGS) -c ../asm_lexer.cpp ../instr_lookup.cpp ../error.cpp
+asm_lexer.o: ../asm_lexer.cpp ../instr_lookup.cpp
+	$(CC) $(CFLAGS) -c ../asm_lexer.cpp ../instr_lookup.cpp
 
 clean:
 	rm asm_tests *.o test_output.*

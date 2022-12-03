@@ -220,7 +220,33 @@ TEST_CASE ("Writing branch instruction", "[code_gen]")
                     "0 2 3 -2 0 0 9 0\n"
                     "0 2 3 -2 0 0 9 0\n"
                     "11 1 3 -2 0\n"
-                    "23 3 3 -2 0 0 5 0 5 2 0\n"
+                    "28 3 3 -2 0 0 5 0 5 2 0\n"
+                    "32 0\n";
+
+  REQUIRE (testCodeGen (input, GEN_INSTR) == EXIT_SUCCESS);
+  ifstream binary (TEST_OUT_FILE);
+
+  REQUIRE (Decoder::readInstrStream (binary) == expected);
+
+  binary.close ();
+}
+
+TEST_CASE ("Writing branch instruction with comparison instruction", "[code_gen]")
+{
+  string input = "\n\nfunc myFunc\n"
+                 "{ \n"
+                 "var x\n"
+                 "var y\n"
+                 "mov x, 9 \n"
+                 "here:\n"
+                 "sne y, 5, x\n"
+                 "je y, 1, here \n"
+                 "}";
+  string expected = "Instruction stream:\n"
+                    "4\n"
+                    "0 2 3 -2 0 0 9 0\n"
+                    "22 3 3 -3 0 0 5 0 3 -2 0\n"
+                    "28 3 3 -3 0 0 1 0 5 1 0\n"
                     "32 0\n";
 
   REQUIRE (testCodeGen (input, GEN_INSTR) == EXIT_SUCCESS);

@@ -1,0 +1,28 @@
+
+func main ()
+{
+  if (3 > 5)
+  {
+    print "inside if";  
+  }
+  else
+  {
+    print "inside else";
+
+    var i = 42;
+    if (i == 42)
+    {
+      print "  inside if";
+      i = i / 10;
+
+      if (i >= 5)
+        print "    inside if";
+      else if (i >= 2)
+        print "    inside else if";
+      else 
+        print "    inside else";
+    }
+    else
+      print "  inside else";
+  }
+}

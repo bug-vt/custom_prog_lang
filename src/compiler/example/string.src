@@ -1,0 +1,7 @@
+
+func main ()
+{
+  var pi = 33;
+  pi = "Hello" + " World!";
+  print pi;
+}

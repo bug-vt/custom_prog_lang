@@ -1,0 +1,16 @@
+
+func main ()
+{
+  var i = -1;
+  while (true)
+  {
+    i = i + 1;
+    if (i == 0 || i == 2)
+      continue;
+
+    if (i == 5)
+      break;
+
+    print i;
+  }
+}

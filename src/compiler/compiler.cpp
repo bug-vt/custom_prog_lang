@@ -6,6 +6,7 @@
 #include <sstream>
 #include "ast_printer.hpp"
 #include "emitter.hpp"
+#include "cleaner.hpp"
 
 using std::ifstream;
 using std::ofstream;
@@ -32,11 +33,15 @@ int main (int argc, char **argv)
   vector<Stmt*> statements = parser.parse ();
 
   AstPrinter printer;
-  std::cout << printer.print (statements);
+  //std::cout << printer.print (statements);
+  printer.print (statements);
 
   ofstream out_file (out_file_name);
   Emitter emitter;
   out_file << emitter.walkAst (statements);
+
+  Cleaner cleaner;
+  cleaner.cleanAst (statements);
 
   out_file.close ();
   return 0;
