@@ -266,6 +266,20 @@ Although adding the assembler between the compiler and virtual machine was not n
 \subsection{Lexer}
 The lexer was the starting point of the assembler implementation, where it transforms the input character stream from the text file to the lexeme/token stream needed for the parser. The lexical analysis process was implemented using a state machine, where the following regular expressions define rules for grouping characters into a lexeme.
 
+\begin{center}
+\begin{tabular}{l l l}
+    \hline
+    State & & Regex \\
+    \hline
+    INT & $\rightarrow$ & [0-9]+ \\
+    FLOAT & $\rightarrow$ & [0-9]?"."[0-9]+ \\
+    IDENT & $\rightarrow$ & [a-zA-Z\_][a-zA-Z\_0-9]* \\
+    DELIM & $\rightarrow$ & (":" | "[" | "]" | "," | "$\{$" | "$\}$" | "\textbackslash n" ) \\
+    STRING & $\rightarrow$ & ``.*`` \\
+    \hline
+\end{tabular}
+\end{center}
+
 \subsection{Parser}
 The parsing process was designed to complete in 2 passes. In the first pass, the parser record labels, identifiers, and function into corresponding tables. Instructions are ignored in the first pass. In the second pass, the parser evaluates the instruction. When an instruction hold operand of type labels, identifiers, or function, the operand gets replaced with the numeric value (either instruction address for labels/function or stack address for identifiers). 2 pass parsing was needed to address forward referencing.
 
@@ -275,6 +289,31 @@ In the end, the parser output a linked list of instructions, string, and functio
 
 \subsection{Code generator}
 The code generator uses the linked list of instructions, string, and function tables outputted by the parser to generate a binary executable. The format of the binary executable is shown below.
+
+\begin{center}
+\begin{tabular}{| c | c |}
+    \hline
+    Header & ID \\
+    ~ & Version major, Version minor \\
+    ~ & Stack size \\
+    ~ & Global data size \\
+    ~ & Main function present flag \\
+    ~ & Main function index \\
+    \hline
+    Instruction Stream & Stream size \\
+    ~ & <opcode, op count, op type, op value, op offset ...> \\
+    ~ & \vdots \\
+    \hline
+    String Table & Table size \\
+    ~ & <string length, string> \\
+    ~ & \vdots \\
+    \hline
+    Function Table & Table size \\
+    ~ & <entry point, parameter count, local data size> \\
+    ~ & \vdots \\
+    \hline
+\end{tabular}
+\end{center}
 
 
 \section{Compiler}
