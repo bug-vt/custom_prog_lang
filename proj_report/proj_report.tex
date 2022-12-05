@@ -46,6 +46,10 @@
 %%%% Generic manuscript mode, required for submission
 %%%% and peer review
 \documentclass[manuscript,screen,nonacm]{acmart}
+\usepackage{amsmath}
+\usepackage{blkarray}
+\usepackage{hyperref}
+\usepackage{float}
 %% Fonts used in the template cannot be substituted; margin 
 %% adjustments are not allowed.
 %%
@@ -264,21 +268,29 @@ The simpler instruction set came with a cost. The Virtual Machine itself is soft
 Although adding the assembler between the compiler and virtual machine was not necessary, the assembler was added for two reasons: (1) to gain more experience in applying compiler theory with a simpler problem domain before implementing the compiler, and (2) to simplify the code generation step for the compiler. The assembler was divided into 3 parts in the following order: lexer, parser, and code generator.
 
 \subsection{Lexer}
-The lexer was the starting point of the assembler implementation, where it transforms the input character stream from the text file to the lexeme/token stream needed for the parser. The lexical analysis process was implemented using a state machine, where the following regular expressions define rules for grouping characters into a lexeme.
+The lexer was the starting point of the assembler implementation, where it transforms the input character stream from the text file to the lexeme/token stream needed for the parser. The lexical analysis process was implemented using a state machine, where the following matrix describes the state transition defined in regular expressions.
+\autoref{state transition matrix}
 
-\begin{center}
-\begin{tabular}{l l l}
-    \hline
-    State & & Regex \\
-    \hline
-    INT & $\rightarrow$ & [0-9]+ \\
-    FLOAT & $\rightarrow$ & [0-9]?"."[0-9]+ \\
-    IDENT & $\rightarrow$ & [a-zA-Z\_][a-zA-Z\_0-9]* \\
-    DELIM & $\rightarrow$ & (":" | "[" | "]" | "," | "$\{$" | "$\}$" | "\textbackslash n" ) \\
-    STRING & $\rightarrow$ & ``.*`` \\
-    \hline
-\end{tabular}
-\end{center}
+\begin{figure}[H]
+\[
+\begin{blockarray}{ccccccccc}
+& START & INT & FLOAT & IDENT & DELIM & STRING & CLOSE\_QUOTE & COMMENT \\
+\begin{block}{c(cccccccc)}
+ START & [\hspace{0.1cm} \textbackslash t] & [0-9] & \textbackslash . & [a-zA-Z\_] & [:[],\{\}\textbackslash n] & \textbackslash " & - & ; \\
+ INT & - & [0-9] & \textbackslash . & - & - & - & - & -\\
+ FLOAT & - & - & [0-9] & - & - & - & - & - \\
+ IDENT & - & - & - & [a-zA-Z\_] & - & - & - & - \\
+ DELIM & - & - & - & - & - & - & - & - \\
+ STRING & - & - & - & - & - & [\textasciicircum \backslash "] & \textbackslash " & - \\
+ CLOSE\_QUOTE & - & - & - & - & - & - & - & -\\
+ COMMENT & \textbackslash n & - & - & - & - & - & - & -\\
+\end{block}
+\end{blockarray}
+\]
+\caption{State transition matrix} 
+\label{state transition matrix}
+\end{figure}
+
 
 \subsection{Parser}
 The parsing process was designed to complete in 2 passes. In the first pass, the parser record labels, identifiers, and function into corresponding tables. Instructions are ignored in the first pass. In the second pass, the parser evaluates the instruction. When an instruction hold operand of type labels, identifiers, or function, the operand gets replaced with the numeric value (either instruction address for labels/function or stack address for identifiers). 2 pass parsing was needed to address forward referencing.
@@ -288,8 +300,9 @@ The parser follows the top-down approach, resembling recursive descent parsing. 
 In the end, the parser output a linked list of instructions, string, and function tables that are used by the code generator to output binary executable.
 
 \subsection{Code generator}
-The code generator uses the linked list of instructions, string, and function tables outputted by the parser to generate a binary executable. The format of the binary executable is shown below.
+The code generator uses the linked list of instructions, string, and function tables outputted by the parser to generate a binary executable. The format of the binary executable is shown below. \autoref{executable format}
 
+\begin{figure}[H]
 \begin{center}
 \begin{tabular}{| c | c |}
     \hline
@@ -314,6 +327,9 @@ The code generator uses the linked list of instructions, string, and function ta
     \hline
 \end{tabular}
 \end{center}
+\caption{Executable format} 
+\label{executable format}
+\end{figure}
 
 
 \section{Compiler}
@@ -326,8 +342,9 @@ To simplify lexer design, the preprocessor was designed to handle line and block
 Like the assembler lexer, it takes a character stream from the source text file and outputs the lexeme/token stream needed for the parser. The same strategy from the assembler lexer, building a state machine where state transitions are described with regular expression, was used for lexical analysis. The difference is that number of unique tokens that the compiler lexer needs to support is much greater than the assembler lexer.
 
 \subsection{Parser}
-There are two main functionalities of the parser: (1) perform syntax analysis and (2) construct AST that represents source code in a more structured form, but not quite ready for code emitter. Like assembler, identifying the first token in the statement was enough to determine the type of statement that the parser was parsing. The following BNF describes the grammar rules of the custom language. 
+There are two main functionalities of the parser: (1) perform syntax analysis and (2) construct AST that represents source code in a more structured form, but not quite ready for code emitter. Like assembler, identifying the first token in the statement was enough to determine the type of statement that the parser was parsing. The following BNF describes the grammar rules of the custom language. \autoref{grammar rules: statements}
 
+\begin{figure}[H]
 \begin{center}
 \begin{tabular}{l l l}
     \hline
@@ -359,6 +376,10 @@ There are two main functionalities of the parser: (1) perform syntax analysis an
     \hline
 \end{tabular}
 \end{center}
+    
+\caption{Grammar rules: statements} 
+\label{grammar rules: statements}
+\end{figure}
 
 However, unlike the assembler parser, now the statements can be formed with expressions instead of all terminals. So, knowing the first token in the statement was no longer enough to disambiguate what remaining tokens must be within the statement. The precedence and associativity also added the complexity of disambiguating expressions to correct grammar rules. 
 As a solution, the parser was designed to use the recursive descent technique. The following BNF describes the expression grammar rules of the custom language. 
