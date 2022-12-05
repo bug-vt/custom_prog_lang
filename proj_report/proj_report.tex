@@ -408,7 +408,8 @@ On the other hand, emitting code for statements resembled more closely to the hi
 
 
 \section{Test strategy}
-Testing was divided into two category: unit testing and integration testing.
+For testing each part of the project, the C++ Catch2 framework and python unittest were used for automated regression testing. The main strategy was to employ Test Driven Development, where test suites and specifications were written first before fully developing the software. Testing was divided into two categories for each project: unit testing and integration testing. See Appendix B for test cases.
+
 
 \section{Benchmark results}
 
@@ -493,7 +494,180 @@ To Dr.Gulzar, for supervising the independent study and providing guidance.
 \subsection{Function Interface}
 \subsection{Directives}
 
+\section{Test suite}
+\subsection{Virtual Machine}
 
+\begin{center}
+\begin{tabular}{|c|c|c|}
+    \hline
+    Test name & Type & Test Framework \\
+    \hline
+    Stack initialization & Unit & C++ Catch2 \\
+    Stack getValue & Unit & C++ Catch2 \\
+    Stack pushFrame & Unit & C++ Catch2 \\
+    Stack popFrame & Unit & C++ Catch2 \\
+    Nested function calls & Unit & C++ Catch2 \\
+    Frame pointer correctness & Unit & C++ Catch2 \\
+    Add & Integration & Python Unittest \\
+    Mov & Integration & Python Unittest \\
+    Call & Integration & Python Unittest \\
+    NestedCall & Integration & Python Unittest \\
+    BasicAdder & Integration & Python Unittest \\
+    Example & Integration & Python Unittest \\
+    Arithmetic & Integration & Python Unittest \\
+    Bitwise & Integration & Python Unittest \\
+    Branch & Integration & Python Unittest \\
+    Jump & Integration & Python Unittest \\
+    CmdLineArgs & Integration & Python Unittest \\
+    Fibonacci & Integration & Python Unittest \\
+    InsertionSort & Integration & Python Unittest \\
+    Global & Integration & Python Unittest \\
+    PassByRef & Integration & Python Unittest \\
+    Pop & Integration & Python Unittest \\
+    Concat & Integration & Python Unittest \\
+    StringProcess & Integration & Python Unittest \\
+    \hline
+\end{tabular}
+\end{center}
+
+\subsection{Assembler}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+    \hline
+    Test name & Type & Test Framework \\
+    \hline
+    Basic instruction lookup & Unit & C++ Catch2 \\
+    Basic integer lexing & Unit & C++ Catch2 \\
+    Basic float lexing & Unit & C++ Catch2 \\
+    Negative intger/float lexing & Unit & C++ Catch2 \\
+    Basic identifier lexing & Unit & C++ Catch2 \\
+    Baisc array lexing & Unit & C++ Catch2 \\
+    Lexing reserved word and instruction mnemonic & Unit & C++ Catch2 \\
+    Basic delim lexing & Unit & C++ Catch2 \\
+    Basic string lexing & Unit & C++ Catch2 \\
+    String lexing with escape characters & Unit & C++ Catch2 \\
+    Lexing comment & Unit & C++ Catch2 \\
+    Lexing multi-line input & Unit & C++ Catch2 \\
+    Peek next token & Unit & C++ Catch2 \\
+    Lexing Invalid token & Unit & C++ Catch2 \\
+    Lexing until EOF & Unit & C++ Catch2 \\
+    Test displaying error & Unit & C++ Catch2 \\
+    Lexing file & Unit & C++ Catch2 \\
+    Basic function directive parsing & Unit & C++ Catch2 \\
+    Function parsing error & Unit & C++ Catch2 \\
+    Basic var/var[] parsing & Unit & C++ Catch2 \\
+    var/var[] parsing error & Unit & C++ Catch2 \\
+    Basic param parsing & Unit & C++ Catch2 \\
+    param parsing error & Unit & C++ Catch2 \\
+    Basic line label parsing & Unit & C++ Catch2 \\
+    Basic instruction parsing & Unit & C++ Catch2 \\
+    parsing global variable as operand & Unit & C++ Catch2 \\
+    Test forward referencing & Unit & C++ Catch2 \\
+    Instruction parsing error & Unit & C++ Catch2 \\
+    Basic input parsing & Unit & C++ Catch2 \\
+    Parsing file & Unit & C++ Catch2 \\
+    Test function table & Unit & C++ Catch2 \\
+    \hline
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{|c|c|c|}
+    \hline
+    Test name & Type & Test Framework \\
+    \hline
+    Writing header & Integration & C++ Catch2 \\
+    Writing a single instruction & Integration & C++ Catch2 \\
+    Writing a instruction with float operand & Integration & C++ Catch2 \\
+    Writing a print instruction & Integration & C++ Catch2 \\
+    Writing a lw instruction & Integration & C++ Catch2 \\
+    Writing a ref instruction & Integration & C++ Catch2 \\
+    Using return value register & Integration & C++ Catch2 \\
+    Writing branch instruction & Integration & C++ Catch2 \\
+    Writing branch instruction with comparison & Integration & C++ Catch2 \\
+    Writing string table & Integration & C++ Catch2 \\
+    Writing function table & Integration & C++ Catch2 \\
+    Writing multiple functions & Integration & C++ Catch2 \\
+    \hline
+\end{tabular}
+\end{center}
+
+\subsection{Compiler}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+    \hline
+    Test name & Type & Test Framework \\
+    \hline
+    Removing line comment & Unit & C++ Catch2 \\
+    Removing line comment2 & Unit & C++ Catch2 \\
+    Removing line comment3 & Unit & C++ Catch2 \\
+    Removing inner block comment & Unit & C++ Catch2 \\
+    Removing multi-line block comment & Unit & C++ Catch2 \\
+    Basic integer lexing & Unit & C++ Catch2 \\
+    Basic float lexing & Unit & C++ Catch2 \\
+    Negative intger/float lexing & Unit & C++ Catch2 \\
+    Basic identifier lexing & Unit & C++ Catch2 \\
+    Baisc array lexing & Unit & C++ Catch2 \\
+    Lexing reserved word & Unit & C++ Catch2 \\
+    lexing Operator & Unit & C++ Catch2 \\
+    Lexing number, identifier, and operators & Unit & C++ Catch2 \\
+    Basic delim lexing & Unit & C++ Catch2 \\
+    Basic string lexing & Unit & C++ Catch2 \\
+    Test string reach EOF without closing quote & Unit & C++ Catch2 \\
+    String lexing with escape characters & Unit & C++ Catch2 \\
+    Lexing line comment & Unit & C++ Catch2 \\
+    Lexing block comment & Unit & C++ Catch2 \\
+    Lexing multi-line input & Unit & C++ Catch2 \\
+    Peek next token & Unit & C++ Catch2 \\
+    Lexing Invalid token & Unit & C++ Catch2 \\
+    Lexing until EOF & Unit & C++ Catch2 \\
+    Test displaying error & Unit & C++ Catch2 \\
+    Lexing file & Unit & C++ Catch2 \\
+    Empty blocks parsing & Unit & C++ Catch2 \\
+    Basic function declration parsing & Unit & C++ Catch2 \\
+    Function declration parsing error & Unit & C++ Catch2 \\
+    Function call parsing & Unit & C++ Catch2 \\
+    Function call parsing error & Unit & C++ Catch2 \\
+    Basic var/var[] parsing & Unit & C++ Catch2 \\
+    var/var[] parsing error & Unit & C++ Catch2 \\
+    parsing global variable as operand & Unit & C++ Catch2 \\
+    Testing basic parsing & Unit & C++ Catch2 \\
+    Testing parsing error & Unit & C++ Catch2 \\
+    Testing emitting error & Unit & C++ Catch2 \\
+    Parsing file & Unit & C++ Catch2 \\
+    \hline
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{|c|c|c|}
+    \hline
+    Test name & Type & Test Framework \\
+    \hline
+    testAdd & Integration & Python unittest \\
+    testArithmetic & Integration & Python unittest \\
+    testComparison & Integration & Python unittest \\
+    testGrouping & Integration & Python unittest \\
+    testScope & Integration & Python unittest \\
+    testString & Integration & Python unittest \\
+    testIfThenElse & Integration & Python unittest \\
+    testNestedControlFlow & Integration & Python unittest \\
+    testLogical & Integration & Python unittest \\
+    testWhileLoop & Integration & Python unittest \\
+    testGoto & Integration & Python unittest \\
+    testNestedWhile & Integration & Python unittest \\
+    testForLoop & Integration & Python unittest \\
+    testFuncCall & Integration & Python unittest \\
+    testReturn & Integration & Python unittest \\
+    testFib & Integration & Python unittest \\
+    testArray & Integration & Python unittest \\
+    testRef & Integration & Python unittest \\
+    testArrayRef & Integration & Python unittest \\
+    testRandInt & Integration & Python unittest \\
+    testExit & Integration & Python unittest \\
+    \hline
+\end{tabular}
+\end{center}
 
 \end{document}
 \endinput
