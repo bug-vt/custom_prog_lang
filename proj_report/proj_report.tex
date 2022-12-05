@@ -234,7 +234,8 @@ On the other hand, the custom compiler also adds additional features:
 \end{itemize}
 The compiler showcased the insight and science behind the introduction of programming languages. As the secret behind the magic black box was revealed, it was incredible to observe how a complex program can be translated into a handful of simple instructions.
 
-Note that the compiler design was adapted from Nystrom JLox interpreter\cite{Nystrom}. However, there are three major differences. First, the custom compiler was coded in C++ instead of Java. Secondly, the custom compiler emits assembly code as an output whereas JLox interprets each statement on the spot. Finally, the custom compiler supports both variables and arrays whereas JLox only supports variables.
+Note that the compiler design was adapted from Nystrom JLox interpreter\cite{Nystrom}. However, there are four major differences. First, the custom compiler was coded in C++ instead of Java. Secondly, the custom compiler emits assembly code as an output whereas JLox interprets each statement on the spot. Thirdly, the custom compiler supports both variables and arrays whereas JLox only supports variables. Finally, the custom compiler supports both pass-by-value and pass-by-reference whereas JLox only supports pass-by-value.
+
 
 \section{Virtual Machine}
 
@@ -268,17 +269,16 @@ The lexer was the starting point of the assembler implementation, where it trans
 \subsection{Parser}
 The parsing process was designed to complete in 2 passes. In the first pass, the parser record labels, identifiers, and function into corresponding tables. Instructions are ignored in the first pass. In the second pass, the parser evaluates the instruction. When an instruction hold operand of type labels, identifiers, or function, the operand gets replaced with the numeric value (either instruction address for labels/function or stack address for identifiers). 2 pass parsing was needed to address forward referencing.
 
-The parser follows the top-down approach, resembling recursive descent parsing. However, due to the grammar structure of the assembly language, identifying the first token on the line was enough to determine the syntax and semantics of the line. When the first token is directive, the parser follows the grammar rules and recurses to the appropriate function. However, for most cases when the first token is an opcode, syntax and semantic analysis are simple as matching the instruction template of the read opcode from the instruction lookup table.
+The parser follows the top-down approach, resembling recursive descent parsing. However, due to the grammar structure of the assembly language, identifying the first token on the line was enough to determine the syntax and semantics of the line. When the first token is directive, the parser follows the grammar rules and recurses to the appropriate function. However, for most cases when the first token is an opcode, syntax and semantic analysis are simple as matching the grammar of the potential instruction with the grammar rule cached inside the instruction lookup table.
 
 In the end, the parser output a linked list of instructions, string, and function tables that are used by the code generator to output binary executable.
 
 \subsection{Code generator}
 The code generator uses the linked list of instructions, string, and function tables outputted by the parser to generate a binary executable. The format of the binary executable is shown below.
 
-\subsection{Error handling}
 
 \section{Compiler}
-The compiler was divided into 4 parts in the following order: preprocessor, lexer, parser, semantic analyzer, and code emitter. The compiler reuse most of the lexer design from the assembler, but comment handling was delegated to the preprocessor. On the other hand, parser design needed a different strategy as the complexity of the grammar rules was more demanding. So, unlike the assembler parser, the compiler parser only takes care of syntax analysis and generates an Abstract syntax tree (AST) as an output. AST is then get used in the remaining phase where the semantic analysis is performed by the semantic analyzer and guide code emitter for generating assembly code in post-traversal order.
+The compiler was divided into 5 parts in the following order: preprocessor, lexer, parser, semantic analyzer, and code emitter. The compiler reuse most of the lexer design from the assembler, but comment handling was delegated to the preprocessor. On the other hand, parser design needed a different strategy as the complexity of the grammar rules was more demanding. So, unlike the assembler parser, the compiler parser only takes care of syntax analysis and generates an almost ready-to-use Abstract syntax tree (AST) as an output. Then, the semantic analyzer performs semantic analysis and completes the AST. As the last step, the code emitter visits the completed AST in post-traversal order and generates assembly code corresponding to the visiting AST node.
 
 \subsection{Preprocessor}
 To simplify lexer design, the preprocessor was designed to handle line and block comments. For line comments, the preprocessor replaces any character starting from // to a newline character with white space. Similarly, for block comments, the preprocessor replaces any character starting from /* until the end of block comment */.
@@ -287,7 +287,7 @@ To simplify lexer design, the preprocessor was designed to handle line and block
 Like the assembler lexer, it takes a character stream from the source text file and outputs the lexeme/token stream needed for the parser. The same strategy from the assembler lexer, building a state machine where state transitions are described with regular expression, was used for lexical analysis. The difference is that number of unique tokens that the compiler lexer needs to support is much greater than the assembler lexer.
 
 \subsection{Parser}
-There are two main functionalities of the parser: (1) perform syntax analysis and (2) construct AST that represents source code in a more structured form. Like assembler, identifying the first token in the statement was enough to determine the type of statement that the parser is parsing. The following BNF describes the grammar rules of the custom language. 
+There are two main functionalities of the parser: (1) perform syntax analysis and (2) construct AST that represents source code in a more structured form, but not quite ready for code emitter. Like assembler, identifying the first token in the statement was enough to determine the type of statement that the parser was parsing. The following BNF describes the grammar rules of the custom language. 
 
 \begin{center}
 \begin{tabular}{l l l}
@@ -330,7 +330,7 @@ As a solution, the parser was designed to use the recursive descent technique. T
     Head & & Body \\
     \hline
     expression & $\rightarrow$ & assignment ; \\
-    assignment & $\rightarrow$ & (IDENT | array) "=" assignment \\
+    assignment & $\rightarrow$ & ( IDENT | ARRAY ) "=" assignment \\
     ~ & ~ & | logic-or ; \\
     logic-or & $\rightarrow$ & logic-and ( "| |" logic-and )* ; \\
     logic-and & $\rightarrow$ & equality ( "\&\&" equality )* ; \\
@@ -339,10 +339,10 @@ As a solution, the parser was designed to use the recursive descent technique. T
     term & $\rightarrow$ & factor ( ("-" | "+" ) factor )* ; \\
     factor & $\rightarrow$ & unary ( ("/" | "*" ) unary )* ; \\
     unary & $\rightarrow$ & ("!" | "-" ) unary | call ; \\
-    call & $\rightarrow$ & array "(" ( "\&"? arguments )? ")" ; \\
-    array & $\rightarrow$ & IDENT "[" expression "]" | primary ; \\
+    call & $\rightarrow$ & ref "(" arguments? ")" ; \\
+    ref & $\rightarrow$ &  "\&" IDENT | primary ; \\
     primary & $\rightarrow$ & "true" | "false" \\
-    ~ & ~ & | INT | FLOAT | STRING | IDENT | "(" expression ")" ; \\
+    ~ & ~ & | INT | FLOAT | STRING | IDENT | ARRAY | "(" expression ")" ; \\
     \hline
 \end{tabular}
 \end{center}
@@ -365,15 +365,25 @@ The above grammar rules were translated directly to the C++ functions using the 
 \end{tabular}
 \end{center}
 
+When the parser parses through the source file, it simultaneously builds the AST. Each rule adds corresponding node representation to AST, shaping the AST exactly the same as how the file was parsed. In the end, the parser output an AST that describes the source code using the grammar rules shown above, almost ready for use by the code emitter. The semantic analyzer fills in the remaining gap.
 
 
 \subsection{Semantic analyzer}
+The semantic analyzer also has two main tasks: (1) finishing up AST construction started in the parser and (2) semantic analysis. Like the parser, both actions happen simultaneously when the semantic analyzer walks through the AST statement by statement, visiting AST nodes in post-traversal order. 
+
+First, the semantic analyzer completes the AST construction by taking care of static scope resolution and dereferencing that could not be handled during the parsing phase. Static scope resolution allows custom language to declare the local variable with a name that was already declared from another scope. This was implemented by shadowing the symbol table described in the following steps:
+\begin{enumerate}
+    \item When the semantic analyzer visits the new block, it assigns a new symbol table to be used for the new scope, pushing behind the previous symbol table as a backup.
+    \item Then, when the semantic analyzer verifies the scope of a variable, it always checks the innermost symbol table first. Move onto the symbol table next in line if the corresponding variable name was not found.
+    \item Semantic analyzer record the variable scope (symbol table ID) inside the AST, which will be used by the code emitter later.
+    \item Once the semantic analyzer finishes visiting the block, it removes the assigned symbol table for the block and restores the symbol table to the previous value. 
+\end{enumerate}
+
+On the other hand, dereferencing was needed to allow the pass-by-reference feature. Similar to C, the star "*" in front of the parameter indicates that the parameter is a pointer instead of a value and is recorded as a reference when added to the symbol table. When the semantic analyzer records the scope of a variable, it also checks if the variable is a reference. Dereferencing flag is set to true if the visiting AST node is the array index. This completes the AST construction to be used for the code emitter.
+
+Now, for the semantic analysis, it is responsible for checking name conflict, validating the arity of functions, and catching any incorrect usage of variables/arrays/functions. The semantic analyzer was designed to disallow name conflict between functions and variables to minimize the coding mistake caused by misusing the function as a variable or vice versa. The verification for name conflict is simple as whether the name was previously defined as a different type by looking up both function and symbol tables. The other verifications also use table lookup and follow similar steps.
 
 \subsection{Code emitter}
-
-\subsection{Syntactic Sugaring}
-
-\subsection{Error handling}
 
 
 \section{Test strategy}
