@@ -278,7 +278,7 @@ The code generator uses the linked list of instructions, string, and function ta
 
 
 \section{Compiler}
-The compiler was divided into 5 parts in the following order: preprocessor, lexer, parser, semantic analyzer, and code emitter. The compiler reuse most of the lexer design from the assembler, but comment handling was delegated to the preprocessor. On the other hand, parser design needed a different strategy as the complexity of the grammar rules was more demanding. So, unlike the assembler parser, the compiler parser only takes care of syntax analysis and generates an almost ready-to-use Abstract syntax tree (AST) as an output. Then, the semantic analyzer performs semantic analysis and completes the AST. As the last step, the code emitter visits the completed AST in post-traversal order and generates assembly code corresponding to the visiting AST node.
+The compiler was divided into 5 parts in the following order: preprocessor, lexer, parser, semantic analyzer, and code emitter. The compiler reuse most of the lexer design from the assembler, but comment handling was delegated to the preprocessor. On the other hand, parser design needed a different strategy as the complexity of the grammar rules was more demanding. So, unlike the assembler parser, the compiler parser only takes care of syntax analysis and generates an almost ready-to-use Abstract syntax tree (AST) as an output. Then, the semantic analyzer performs semantic analysis and completes the AST. As the last step, the code emitter visits the completed AST in post-order traversal and generates assembly code corresponding to the visiting AST node.
 
 \subsection{Preprocessor}
 To simplify lexer design, the preprocessor was designed to handle line and block comments. For line comments, the preprocessor replaces any character starting from // to a newline character with white space. Similarly, for block comments, the preprocessor replaces any character starting from /* until the end of block comment */.
@@ -369,7 +369,7 @@ When the parser parses through the source file, it simultaneously builds the AST
 
 
 \subsection{Semantic analyzer}
-The semantic analyzer also has two main tasks: (1) finishing up AST construction started in the parser and (2) semantic analysis. Like the parser, both actions happen simultaneously when the semantic analyzer walks through the AST statement by statement, visiting AST nodes in post-traversal order. 
+The semantic analyzer also has two main tasks: (1) finishing up AST construction started in the parser and (2) semantic analysis. Like the parser, both actions happen simultaneously. The semantic analyzer used the visitor pattern to walk through the AST statement by statement, visiting AST nodes in the post-order traversal. 
 
 First, the semantic analyzer completes the AST construction by taking care of static scope resolution and dereferencing that could not be handled during the parsing phase. Static scope resolution allows custom language to declare the local variable with a name that was already declared from another scope. This was implemented by shadowing the symbol table described in the following steps:
 \begin{enumerate}
@@ -381,13 +381,34 @@ First, the semantic analyzer completes the AST construction by taking care of st
 
 On the other hand, dereferencing was needed to allow the pass-by-reference feature. Similar to C, the star "*" in front of the parameter indicates that the parameter is a pointer instead of a value and is recorded as a reference when added to the symbol table. When the semantic analyzer records the scope of a variable, it also checks if the variable is a reference. Dereferencing flag is set to true if the visiting AST node is the array index. This completes the AST construction to be used for the code emitter.
 
-Now, for the semantic analysis, it is responsible for checking name conflict, validating the arity of functions, and catching any incorrect usage of variables/arrays/functions. The semantic analyzer was designed to disallow name conflict between functions and variables to minimize the coding mistake caused by misusing the function as a variable or vice versa. The verification for name conflict is simple as whether the name was previously defined as a different type by looking up both function and symbol tables. The other verifications also use table lookup and follow similar steps.
+Now, for the semantic analysis, it is responsible for checking name conflict, validating the number of argument passing and arity of functions, and catching any incorrect usage of variables/arrays/functions. The semantic analyzer was designed to disallow name conflict between functions and variables to minimize the coding mistake caused by misusing the function as a variable or vice versa. The verification for name conflict is simple as whether the name was previously defined as a different type by looking up both function and symbol tables. The other verifications also use table lookup and follow similar steps.
 
 \subsection{Code emitter}
+The code emitter generates assembly code targeted for the custom virtual machine. Like a semantic analyzer, it uses the visitor design pattern to visit each AST node in the post-order traversal.
+For simpler implementation, the code emitter was designed to follow the stack machine model. That is, it heavily utilizes stack to store intermediate results for each instruction. However, to make the generated code compatible with the custom assembler, three registers, \_t0, \_t1, and a return value register were used in addition to the stack. 
+
+In the case of emitting code for expressions, the code emitter needed explicitly write the corresponding operation in assembly. For example, writing the binary expression takes the following steps: 
+\begin{enumerate}
+    \item Pop the operands from the top of the stack to \_t0
+    \item Pop the operands from the top of the stack to \_t1
+    \item Perform operation on \_t0 with \_t1 
+    \item Push the \_t0 to the top of the stack
+\end{enumerate}
+
+On the other hand, emitting code for statements resembled more closely to the high-level counterpart. Most of the work was to think about what part of the code should be emitted first and where should be placed, whereas emitting process was simple as letting the code emitter recursively do the work. For example, writing a while statement takes the following steps. Note that the code for continue/break was omitted for a clearer view.
+\begin{enumerate}
+    \item Start label
+    \item Let code emitter emit conditional expression
+    \item Pop the top of the stack value to \_t0
+    \item Jump to End label if \_t0 is false 
+    \item Let code emitter emit body statement
+    \item Jump to Start label
+    \item End label 
+\end{enumerate} 
 
 
 \section{Test strategy}
-
+Testing was divided into two category: unit testing and integration testing.
 
 \section{Benchmark results}
 
