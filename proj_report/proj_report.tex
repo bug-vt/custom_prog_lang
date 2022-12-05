@@ -172,12 +172,11 @@
 %% This command processes the author and affiliation and title
 %% information and builds the first part of the formatted document.
 \maketitle
-\cite{Nystrom}
 \section{Introduction}
 Over the years, the complexity of compiler design has immensely increased. At the hardware level, there are more diverse and sophisticated instruction sets to consider. At the software level, complex optimization schemes have been introduced for maximal performance, in addition to different language paradigms. As a result, the complexity of the modern compiler design overshadows the fundamentals behind the language construction as well as making the steps between programming language and execution more mysterious. For this reason, this project focused on two aspects: (1) building a simplified version of each component used in programming language construction, and (2) understanding how each component works together to execute a custom programming language. This report describes the semester-long project of building a C-like (C subset) programming language from scratch. 
 
 \section{Project Overview}
-The project was broken down into 4 parts, ordered from lower level to higher level: Virtual Machine, Assembler, Compiler, and Fuzzer. Each level depends on the level right below it, except for Virtual Machine which is a standalone software.
+The project was broken down into 3 parts, ordered from lower level to higher level: Virtual Machine, Assembler, Compiler. Each level depends on the level right below it, except for Virtual Machine which is a standalone software.
 
 \subsection{Virtual Machine}
 The Virtual Machine mimics the generic single-cycle hardware processor. The following describes the similarity:
@@ -197,27 +196,50 @@ The Virtual Machine support 36 instructions (see appendix). The instruction set 
 
 Overall, the role of the Virtual Machine is to set the first point of simplification. Even with the simpler instruction set, however, writing binary executables by hand would be a painful task. Which lead to the implementation of the assembler.
 
-Note that the Virtual Machine design was adapted from the Varanese's XVM\cite{Varanese}. However, unlike XVM, it was simplified to single-threaded and stand-alone software. Also, new instructions were added to support pass-by-reference and print functionality. 
+Note that the Virtual Machine design was adapted from the Varanese's XVM\cite{Varanese}. However, there are three major differences. First, the custom VM was coded in C++ instead of C. Secondly, unlike XVM, it was simplified to single-threaded and stand-alone software. Finally, 6 instructions for string concatenation and conditional jumps support in XVM were removed in the custom VM. Instead, 12 new instructions were added to the custom VM. 
 
 \subsection{Assembler}
-Like other assemblers for specific hardware processors, the main functionality is to allow users to use mnemonics and numeric operands, which then get translated to binary executables. However, the custom assembler supports more advanced features and takes advantage of flexibility from the Virtual Machine:
+Like generic assemblers, the main functionality is to allow users to use mnemonics and numeric operands, which then get translated to binary executables. However, the custom assembler supports more advanced features and takes advantage of flexibility from the Virtual Machine:
 \begin{itemize}
-    \item Differentiate function and label. Use func directive and curly braces to define function. Automatically add ret instruction at the end of the function after assembling.
-    \item Use Var and Param directives to define variables or arrays and automatically reserve space inside the stack.
-    \item Support basic scope resolution. 
+    \item Differentiate function and label. Use \textbf{func} directive and curly braces to define function. Automatically add \textbf{ret} instruction at the end of the function after assembling.
+    \item Use \textbf{var} and \textbf{param} directives to define variables or arrays and automatically reserve space inside the stack.
+    \item Support functional scope. 
     \item Direct support for string type.
-    \item Allow instruction to accept a string, variable, and array (absolute or variable index). Note that type checking is done by a Virtual Machine during the runtime.
+    \item Support for basic string processing.
+    \item Allow instruction to accept a string, variable, and element inside an array (absolute or variable index). Note that type checking is done by the Virtual Machine during the runtime.
 \end{itemize}
-However, the limitation of expressivity and tedium of controlling the runtime stack still make assembly language difficult to work with and error-prone. The next subsection, compiler, improve on this issue.
+However, the limitation of expressivity and tedium of controlling the runtime stack still made assembly language difficult to program with and error-prone. The compiler improves on this issue.
 
-Note that the Assembler design was adapted from the Varanese's XASM\cite{Varanese}. However, there are two major differences compared to XASM. First, the lexer for the custom assembler was implemented using regular expression and state machine whereas XASM used a brute force approach. Secondly, although both the custom assembler and XASM implement a top-down parser, the parser for the custom assembler resembles more closely to recursive descent than XASM. 
+Note that the Assembler design was adapted from the Varanese's XASM\cite{Varanese}. However, there are three major differences compared to XASM. First, the custom assembler was coded in C++ instead of C. Secondly, the lexer for the custom assembler was implemented using regular expression and state machine whereas XASM used a brute force approach. Finally, the parser for the custom assembler resembles more closely to recursive descent more than the brute force parser for XASM. 
 
 \subsection{Compiler}
+The custom compiler was designed for C-like custom language, where the goal was to translate source code into assembly code targeted for the custom virtual machine. The compiler provides a subset of functionality that what C compiler can do, including:
+\begin{itemize}
+    \item Preprocess line and block comments
+    \item Assignment, arithmetic, relational, and logical operations
+    \item Static scoping using block
+    \item Support for array
+    \item Conditional statements
+    \item Loops and break/continue statements
+    \item User-defined functions 
+    \item Pass by value and pass by pointer
+    \item Support for native functions like time, random, print, and exit
+\end{itemize}
+On the other hand, the custom compiler also adds additional features:
+\begin{itemize}
+    \item Typeless language
+    \item Array holding multiple different types of elements
+    \item Direct support for string type
+    \item Support for basic string processing
+\end{itemize}
+The compiler showcased the insight and science behind the introduction of programming languages. As the secret behind the magic black box was revealed, it was incredible to observe how a complex program can be translated into a handful of simple instructions.
+
+Note that the compiler design was adapted from Nystrom JLox interpreter\cite{Nystrom}. However, there are three major differences. First, the custom compiler was coded in C++ instead of Java. Secondly, the custom compiler emits assembly code as an output whereas JLox interprets each statement on the spot. Finally, the custom compiler supports both variables and arrays whereas JLox only supports variables.
 
 \section{Virtual Machine}
 
 \subsection{Runtime Stack}
-The Virtual Machine simulates the runtime stack using the linked list. Each stack position can hold any value type (integer, float, stack index, table index, and register code) and increment by 1, resembling word addressable memory. All values were designed to fit inside a single stack position, simplifying stack access/management. String processing instructions are available when a character must be accessed/modified inside the string
+The Virtual Machine simulates the runtime stack using the linked list. Each stack position can hold any value type (integer, float, stack index, table index, and register code) and increment by 1, resembling word addressable memory. All values were designed to fit inside a single stack position, simplifying stack access/management. 
 
 \subsection{Execution Cycle}
 The execution cycle begins by first loading the entry point from the executable. Once load the entry point, the Virtual Machine takes the following steps for each cycle, which resemble the execution cycle of the hardware processor:
@@ -235,7 +257,7 @@ The execution cycle begins by first loading the entry point from the executable.
 \end{itemize}
 
 \subsection{Flexibility VS Performance}
-The simpler instruction set comes with a cost. The Virtual Machine itself is software that needs to translate virtual instruction to real instruction during execution. Therefore, multiple real instructions are generated under the hood to execute one virtual instruction. This was one tradeoff between flexibility and performance.
+The simpler instruction set came with a cost. The Virtual Machine itself is software that needs to translate virtual instruction to real instruction during execution. Therefore, multiple real instructions were generated under the hood to execute one virtual instruction. This was one tradeoff between flexibility and performance.
 
 \section{Assembler}
 Although adding the assembler between the compiler and virtual machine was not necessary, the assembler was added for two reasons: (1) to gain more experience in applying compiler theory with a simpler problem domain before implementing the compiler, and (2) to simplify the code generation step for the compiler. The assembler was divided into 3 parts in the following order: lexer, parser, and code generator.
@@ -253,19 +275,135 @@ In the end, the parser output a linked list of instructions, string, and functio
 \subsection{Code generator}
 The code generator uses the linked list of instructions, string, and function tables outputted by the parser to generate a binary executable. The format of the binary executable is shown below.
 
+\subsection{Error handling}
+
 \section{Compiler}
+The compiler was divided into 4 parts in the following order: preprocessor, lexer, parser, semantic analyzer, and code emitter. The compiler reuse most of the lexer design from the assembler, but comment handling was delegated to the preprocessor. On the other hand, parser design needed a different strategy as the complexity of the grammar rules was more demanding. So, unlike the assembler parser, the compiler parser only takes care of syntax analysis and generates an Abstract syntax tree (AST) as an output. AST is then get used in the remaining phase where the semantic analysis is performed by the semantic analyzer and guide code emitter for generating assembly code in post-traversal order.
+
+\subsection{Preprocessor}
+To simplify lexer design, the preprocessor was designed to handle line and block comments. For line comments, the preprocessor replaces any character starting from // to a newline character with white space. Similarly, for block comments, the preprocessor replaces any character starting from /* until the end of block comment */.
+
+\subsection{Lexer}
+Like the assembler lexer, it takes a character stream from the source text file and outputs the lexeme/token stream needed for the parser. The same strategy from the assembler lexer, building a state machine where state transitions are described with regular expression, was used for lexical analysis. The difference is that number of unique tokens that the compiler lexer needs to support is much greater than the assembler lexer.
+
+\subsection{Parser}
+There are two main functionalities of the parser: (1) perform syntax analysis and (2) construct AST that represents source code in a more structured form. Like assembler, identifying the first token in the statement was enough to determine the type of statement that the parser is parsing. The following BNF describes the grammar rules of the custom language. 
+
+\begin{center}
+\begin{tabular}{l l l}
+    \hline
+    Head & & Body \\
+    \hline
+    program & $\rightarrow$ & declaration* EOF \\
+    declaration & $\rightarrow$ & func \\
+    ~ & ~ & | var \\
+    ~ & ~ & | statement ; \\
+    func & $\rightarrow$ & "func" function ; \\
+    var & $\rightarrow$ & "var" IDENT ("[" INT "]")? ( "=" expression )? ";" ; \\
+    statement & $\rightarrow$ & exprStmt \\
+    ~ & ~ & | forStmt \\
+    ~ & ~ & | ifStmt \\
+    ~ & ~ & | printStmt \\
+    ~ & ~ & | returnStmt \\
+    ~ & ~ & | whileStmt \\
+    ~ & ~ & | gotoStmt \\
+    ~ & ~ & | block ; \\
+    exprStmt & $\rightarrow$ & expression ";" ; \\
+    forStmt & $\rightarrow$ & "for" "(" ( var | exprStmt | ";" ) expression? ";" expressions? ")" statement ; \\
+    ifStmt & $\rightarrow$ & "if" "(" expression ")" statement \\
+    ~ & ~ & ( "else" statement )? ; \\
+    printStmt & $\rightarrow$ & "print" expression ";" ; \\
+    returnStmt & $\rightarrow$ & "return" expression? ";" ; \\
+    whileStmt & $\rightarrow$ & "while" "(" expression ")" statement ; \\
+    gotoStmt & $\rightarrow$ & ( "break" | "continue" ) ";" ; \\
+    block & $\rightarrow$ & "$\{$" declaration* "$\}$" ; \\
+    \hline
+\end{tabular}
+\end{center}
+
+However, unlike the assembler parser, now the statements can be formed with expressions instead of all terminals. So, knowing the first token in the statement was no longer enough to disambiguate what remaining tokens must be within the statement. The precedence and associativity also added the complexity of disambiguating expressions to correct grammar rules. 
+As a solution, the parser was designed to use the recursive descent technique. The following BNF describes the expression grammar rules of the custom language. 
+
+\begin{center}
+\begin{tabular}{l l l}
+    \hline
+    Head & & Body \\
+    \hline
+    expression & $\rightarrow$ & assignment ; \\
+    assignment & $\rightarrow$ & (IDENT | array) "=" assignment \\
+    ~ & ~ & | logic-or ; \\
+    logic-or & $\rightarrow$ & logic-and ( "| |" logic-and )* ; \\
+    logic-and & $\rightarrow$ & equality ( "\&\&" equality )* ; \\
+    equality & $\rightarrow$ & comparison ( ("!=" | "==" ) comparison )* ; \\
+    comparison & $\rightarrow$ & term ( (">" | ">=" | "<" | "<=" ) term )* ; \\
+    term & $\rightarrow$ & factor ( ("-" | "+" ) factor )* ; \\
+    factor & $\rightarrow$ & unary ( ("/" | "*" ) unary )* ; \\
+    unary & $\rightarrow$ & ("!" | "-" ) unary | call ; \\
+    call & $\rightarrow$ & array "(" ( "\&"? arguments )? ")" ; \\
+    array & $\rightarrow$ & IDENT "[" expression "]" | primary ; \\
+    primary & $\rightarrow$ & "true" | "false" \\
+    ~ & ~ & | INT | FLOAT | STRING | IDENT | "(" expression ")" ; \\
+    \hline
+\end{tabular}
+\end{center}
+
+The precedence is determined from the bottom to the top in the above rules since the recursive descent technique recurses down until it reaches the leaf node of the AST. The associativity is determined by the placement of an operator. Placing before the recursive production like unary makes the rule right-associative whereas placing after the recursive production makes the rule left-associative.
+
+The above grammar rules were translated directly to the C++ functions using the following strategy:
+
+\begin{center}
+\begin{tabular}{|c|c|}
+    \hline
+    Grammar notation & Code representation \\
+    \hline
+    Terminal & Token to match \\
+    Nonterminal & Function call to corresponding rule \\
+    | & \textbf{if} or \textbf{switch} statement \\
+    * or + & \textbf{while} or \textbf{for} loop \\
+    ? & \textbf{if} statement \\
+    \hline
+\end{tabular}
+\end{center}
+
+
+
+\subsection{Semantic analyzer}
+
+\subsection{Code emitter}
+
+\subsection{Syntactic Sugaring}
+
+\subsection{Error handling}
+
 
 \section{Test strategy}
 
 
-\section{Test results}
+\section{Benchmark results}
 
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    Program & Input size & Custom language & Python \\
+    \hline
+    Fibonacci & 25 & 1.3913 seconds & 0.0345 seconds \\
+    Insertion sort & 1000 & 2.1393 seconds & 0.0258 seconds \\
+    Merge sort & 10000 & 2.3585 seconds & 0.0394 seconds \\
+    \hline
+\end{tabular}
+\end{center}
 
 \section{Limitation}
+There are 3 limitations in the custom langague. First, the compiler cannot be extended to support initializing array with variable. The current VM design 
 
+
+The project was under tight time constraint where new concept was introduced and implemented each week. During the design phase, the limitations By the end of the project, some of the limitations of the custom language were observed. 
 
 \section{Future work}
-
+The project leave with many possible extension can be added.
+\subsection{Extending the supporting langauge features}
+\subsection{Optimization}
+\subsection{Fuzzer}
 
 %%
 %% The acknowledgments section is defined using the "acks" environment
