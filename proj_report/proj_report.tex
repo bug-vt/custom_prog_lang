@@ -192,7 +192,7 @@ However, since the Virtual Machine was implemented using C++ instead of transist
     \item Include the function cache that load all the function information from the executable.
     \item Perform type resolution/casting/coercion during runtime.
 \end{itemize}
-The Virtual Machine support 36 instructions (see appendix). The instruction set for Virtual Machine was designed to follow the Complex Instruction Set Computing (CISC) methodology. This is to make the runtime environment faster: doing as much work as possible in C++ instead of leaving implementation to a slower custom language.
+The Virtual Machine support 38 instructions (see appendix A). The instruction set for Virtual Machine was designed to follow the Complex Instruction Set Computing (CISC) methodology. This is to make the runtime environment faster: doing as much work as possible in C++ instead of leaving implementation to a slower custom language.
 
 Overall, the role of the Virtual Machine is to set the first point of simplification. Even with the simpler instruction set, however, writing binary executables by hand would be a painful task. Which lead to the implementation of the assembler.
 
@@ -501,6 +501,9 @@ To Dr.Gulzar, for supervising the independent study and providing guidance.
     Instruction & Opcode & Operand count & Operands \\
     \hline
     mov & 0 & 2 & DESTINATION, SOURCE \\
+    ref & 1 & 2 & DESTINATION, SOURCE \\
+    lw & 2 & 3 & DESTINATION, BASE, OFFSET \\
+    sw & 3 & 3 & BASE, OFFSET, SOURCE \\
     \hline
 \end{tabular}
 \end{center}
@@ -511,25 +514,114 @@ To Dr.Gulzar, for supervising the independent study and providing guidance.
     \hline
     Instruction & Opcode & Operand count & Operands \\
     \hline
-    add & 1 & 2 & DESTINATION, SOURCE \\
-    sub & 2 & 2 & DESTINATION, SOURCE \\
-    mul & 3 & 2 & DESTINATION, SOURCE \\
-    div & 4 & 2 & DESTINATION, SOURCE \\
-    mod & 5 & 2 & DESTINATION, SOURCE \\
-    exp & 6 & 2 & DESTINATION, SOURCE \\
-    neg & 7 & 1 & DESTINATION \\
-    inc & 8 & 1 & DESTINATION \\
-    dec & 9 & 1 & DESTINATION \\
+    add & 4 & 2 & DESTINATION, SOURCE \\
+    sub & 5 & 2 & DESTINATION, SOURCE \\
+    mul & 6 & 2 & DESTINATION, SOURCE \\
+    div & 7 & 2 & DESTINATION, SOURCE \\
+    mod & 8 & 2 & DESTINATION, SOURCE \\
+    exp & 9 & 2 & DESTINATION, SOURCE \\
+    neg & 10 & 1 & DESTINATION \\
+    inc & 11 & 1 & DESTINATION \\
+    dec & 12 & 1 & DESTINATION \\
     \hline
 \end{tabular}
 \end{center}
 
 \subsection{Bitwise}
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    Instruction & Opcode & Operand count & Operands \\
+    \hline
+    and & 13 & 2 & DESTINATION, SOURCE \\
+    or & 14 & 2 & DESTINATION, SOURCE \\
+    xor & 15 & 2 & DESTINATION, SOURCE \\
+    not & 16 & 2 & DESTINATION \\
+    shl & 17 & 2 & DESTINATION, OFFSET \\
+    shr & 18 & 2 & DESTINATION, OFFSET \\
+    \hline
+\end{tabular}
+\end{center}
+
 \subsection{String Processing}
-\subsection{Conditional Branching}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    Instruction & Opcode & Operand count & Operands \\
+    \hline
+    getChar & 19 & 3 & DESTINATION, STRING, OFFSET \\
+    setChar & 20 & 3 & DESTINATION, OFFSET, STRING \\
+    \hline
+\end{tabular}
+\end{center}
+
+\subsection{Comparison}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    Instruction & Opcode & Operand count & Operands \\
+    \hline
+    seq & 21 & 3 & DESTINATION, SOURCE, SOURCE \\
+    sne & 22 & 3 & DESTINATION, SOURCE, SOURCE \\
+    sgt & 23 & 3 & DESTINATION, SOURCE, SOURCE \\
+    slt & 24 & 3 & DESTINATION, SOURCE, SOURCE \\
+    sge & 25 & 3 & DESTINATION, SOURCE, SOURCE \\
+    sle & 26 & 3 & DESTINATION, SOURCE, SOURCE \\
+    \hline
+\end{tabular}
+\end{center}
+
+\subsection{Jump/Branch}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    Instruction & Opcode & Operand count & Operands \\
+    \hline
+    jmp & 27 & 1 & LABEL \\
+    je & 28 & 3 & SOURCE, SOURCE, LABEL \\
+    \hline
+\end{tabular}
+\end{center}
+
 \subsection{Stack Interface}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    Instruction & Opcode & Operand count & Operands \\
+    \hline
+    push & 29 & 1 & SOURCE \\
+    pop & 30 & 1 & DESTINATION \\
+    \hline
+\end{tabular}
+\end{center}
+
 \subsection{Function Interface}
-\subsection{Directives}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    Instruction & Opcode & Operand count & Operands \\
+    \hline
+    call & 31 & 1 & FUNCTION \\
+    ret & 32 & 0 & \\
+    \hline
+\end{tabular}
+\end{center}
+
+\subsection{Miscellaneous}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    Instruction & Opcode & Operand count & Operands \\
+    \hline
+    pause & 33 & 1 & INT \\
+    exit & 34 & 0 & \\
+    print & 35 & 1 & SOURCE \\
+    time & 36 & 0 & \\
+    randint & 37 & 0 & \\
+    \hline
+\end{tabular}
+\end{center}
 
 \section{Test suite}
 \subsection{Virtual Machine}
