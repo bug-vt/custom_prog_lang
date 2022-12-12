@@ -144,7 +144,7 @@
 %% The abstract is a short summary of the work to be presented in the
 %% article.
 \begin{abstract}
-
+Project repository: \url{https://git.cs.vt.edu/bug19/cs4974_independent_study}
 \end{abstract}
 
 %%
@@ -240,6 +240,61 @@ The compiler showcased the insight and science behind the introduction of progra
 
 Note that the compiler design was adapted from Nystrom JLox interpreter\cite{Nystrom}. However, there are four major differences. First, the custom compiler was coded in C++ instead of Java. Secondly, the custom compiler emits assembly code as an output whereas JLox interprets each statement on the spot. Thirdly, the custom compiler supports both variables and arrays whereas JLox only supports variables. Finally, the custom compiler supports both pass-by-value and pass-by-reference whereas JLox only supports pass-by-value.
 
+\section{Project schedule}
+\subsection{Phase 1: Assembler}
+\begin{center}
+\begin{tabular}{| c | c | c |}
+    \hline
+    Week \# & Topic & Reading\\
+    \hline
+    1 & Instruction set and assembly framework & Varanese Chapter 8\\
+    2 & lexer, state machine, and regular expressions & Nystrom Chapter 4\\
+    4 & Top-down parsing & Varanese Chapter 15\\
+    3 & Instruction and operand parsing & Varanese Chapter 9\\
+    5 & Forward referencing and code generation & Varanese Chapter 9\\
+    \hline
+\end{tabular}
+\end{center}
+
+\subsection{Phase 2: Virtual Machine}
+\begin{center}
+\begin{tabular}{| c | c | c |}
+    \hline
+    Week \# & Topic & Reading\\
+    \hline
+    6 & Runtime stack interface & Varanese Chapter 10\\
+    7 & Operand type resolution and coercion & Nystrom Chapter 10\\
+    8 & VM execution cycle & Varanese Chapter 11\\
+    \hline
+\end{tabular}
+\end{center}
+
+\subsection{Phase 3: Compiler}
+\begin{center}
+\begin{tabular}{| c | c | c |}
+    \hline
+    Week \# & Topic & Reading\\
+    \hline
+    9 & Loader, preprocessor, and lexical analysis & Varanese Chapter 12, Nystrom Chapter 4\\
+    10 & Abstract syntax tree and parsing expressions/statements & Nystrom Chapter 5-6\\
+    11 & Semantic analysis and code emission using Visitor pattern & Nystrom Chapter 7-8, 11\\
+    12 & Control flow & Nystrom Chapter 9\\
+    13 & Functions, pass-by-reference & Nystrom 10\\
+    \hline
+\end{tabular}
+\end{center}
+
+\subsection{Phase 4: Wrap-up}
+\begin{center}
+\begin{tabular}{| c | c | c |}
+    \hline
+    Week \# & Topic & Reading\\
+    \hline
+    14 & Demo & \\
+    15 & Project report and end of semester discussion & ACM Conference Article Template \\
+    \hline
+\end{tabular}
+\end{center}
 
 \section{Virtual Machine}
 
@@ -382,8 +437,9 @@ There are two main functionalities of the parser: (1) perform syntax analysis an
 \end{figure}
 
 However, unlike the assembler parser, now the statements can be formed with expressions instead of all terminals. So, knowing the first token in the statement was no longer enough to disambiguate what remaining tokens must be within the statement. The precedence and associativity also added the complexity of disambiguating expressions to correct grammar rules. 
-As a solution, the parser was designed to use the recursive descent technique. The following BNF describes the expression grammar rules of the custom language. 
+As a solution, the parser was designed to use the recursive descent technique. The following BNF describes the expression grammar rules of the custom language. \autoref{grammar rules: expressions}
 
+\begin{figure}[H]
 \begin{center}
 \begin{tabular}{l l l}
     \hline
@@ -406,11 +462,15 @@ As a solution, the parser was designed to use the recursive descent technique. T
     \hline
 \end{tabular}
 \end{center}
+\caption{Grammar rules: expressions}
+\label{grammar rules: expressions}
+\end{figure}
 
 The precedence is determined from the bottom to the top in the above rules since the recursive descent technique recurses down until it reaches the leaf node of the AST. The associativity is determined by the placement of an operator. Placing before the recursive production like unary makes the rule right-associative whereas placing after the recursive production makes the rule left-associative.
 
-The above grammar rules were translated directly to the C++ functions using the following strategy:
+The above grammar rules were translated directly to the C++ functions using the following strategy: \autoref{grammar rules to implementation}
 
+\begin{figure}[H]
 \begin{center}
 \begin{tabular}{|c|c|}
     \hline
@@ -424,6 +484,10 @@ The above grammar rules were translated directly to the C++ functions using the 
     \hline
 \end{tabular}
 \end{center}
+\caption{Grammar rules to implementation}
+\label{grammar rules to implementation}
+\end{figure}
+
 
 When the parser parses through the source file, it simultaneously builds the AST. Each rule adds corresponding node representation to AST, shaping the AST exactly the same as how the file was parsed. In the end, the parser output an AST that describes the source code using the grammar rules shown above, almost ready for use by the code emitter. The semantic analyzer fills in the remaining gap.
 
@@ -473,6 +537,7 @@ For testing each part of the project, the C++ Catch2 framework and python unitte
 
 \section{Benchmark results}
 
+\begin{figure}[H]
 \begin{center}
 \begin{tabular}{|c|c|c|c|}
     \hline
@@ -484,16 +549,32 @@ For testing each part of the project, the C++ Catch2 framework and python unitte
     \hline
 \end{tabular}
 \end{center}
+\caption{Benchmark results}
+\label{benchmark results}
+\end{figure}
+
 
 \section{Limitations/Challenges}
-Although the finished project satisfies all the functionality proposed in the syllabus, there are design choices that need improvement or even reconsideration. First, the compiler does not support array initialization nor initialize array size with variables. The current VM design, where array size must be known ahead to allocate enough space inside the stack frame, has hindered further extension of the array. Next, the current compilation process contains minor memory leaks. During debugging, several memory leaks were caught, such as not freeing the symbol table and AST after their usage, but not all memory leaks were fixed on time. Fortunately, no memory leaks were found inside the virtual machine, so running the executable generated by the compiler is found to be safe. Lastly, both compiler and runtime errors are too minimal to be useful for debugging the error. The syntax error output the error message with line and error location, whereas only error messages are available for semantic and runtime error. 
+Although the finished project satisfies all the functionality proposed in the syllabus, there are design choices that need improvement or even reconsideration. First, the compiler does not support array initialization nor initialize array size with variables. The current VM design, where array size must be known ahead to allocate enough space inside the stack frame, has hindered further extension of the array. Next, the current compilation process contains minor memory leaks. During debugging, several memory leaks were caught, such as not freeing the symbol table and AST after their usage, but not all memory leaks were fixed on time. Fortunately, no memory leaks were found inside the virtual machine, so running the executable generated by the compiler is found to be safe. Lastly, both compiler and runtime error messages are too minimal to be useful for debugging the error. The syntax error output the error message with line and error location, whereas only error messages are available for semantic and runtime error. 
 
+\section{Learning outcomes}
+Despite the importance and rich history of compilers and programming languages, not many understand the mystery behind the compiler and how one can build their own. In this project, I have focused on building a simplified version of the virtual machine, assembler, and compiler to support C-like custom language. By end of the project, not only did I understand how each component worked together to translate a high-level language all the way down to bytecode, I became more confident in learning other programming languages as I gained a deeper understanding of both theory and implementation.
+In addition, the following layout the technologies and skills I have learned throughout the project:
+\begin{enumerate}
+    \item Preparing and presenting technical presentations every week.
+    \item Using component design pattern for allowing the object to implement "has-a" relationship between objects without coupling to each other.
+    \item Theory behind the compiler including regular and formal language and how programming language can be specified using state machines, context-free grammar, and Backus-Naur Form.
+    \item Introduction to language-building tools like Flex and Bison.
+    \item Using metaprogramming to automate generating classes with pre-defined patterns.
+    \item Adding a layer of indirection using a visitor design pattern. Approximate the functional language style within an OOP language.
+    \item Applying syntactic sugaring to reuse code pattern in front-end, and simplify back-end support, similar to end-to-end principle in computer networking design.
+    \item Programming in C++ and Python.
+    \item C++ Catch2 and Python uninttest framework for Test-Driven Development.
+    \item Writing a technical report using LaTeX.
+\end{enumerate} 
 
-\section{Conclusions and Future work}
-Despite the importance and rich history of compilers and programming languages, not many understand the mystery behind the compiler and how one can build their own. In this project, we have focused on building a simplified version of the virtual machine, assembler, and compiler to support C-like custom language. By end of the project, not only did I understand how each component worked together to translate a high-level language all the way down to bytecode, I became more confident in learning other programming languages as I gained a deeper understanding of both theory and implementation. 
-
-The project has set a good foundation for future work and I have many ideas for the next step on virtual machine and compiler. The first idea is to make the custom programming language more friendly to work with by adding support for initializing an array with variables, a better mechanism for pass-by-reference, a way to import other source code, and outputting more helpful error messages. Another idea is to learn about compiler optimization. Extending the language features with first-class, closure, and object orientation is also at the top of the consideration.
-
+\section{Future work}
+The project has set a good foundation for future work and I have many ideas for the next step on virtual machine and compiler. The first idea is to make the custom programming language more friendly to work with. This includes adding support for initializing an array with variables, a better mechanism for pass-by-reference, a way to import other source code, and outputting more helpful error messages. Furthermore, extending the language features with first-class, closure, and object orientation is also at the top of the consideration. The next idea is to learn about compiler optimization and improve benchmark results. The final idea is to build more comprehensive test cases by incorporating Fuzzer and automating test code generation.
 
 %%
 %% The acknowledgments section is defined using the "acks" environment
