@@ -19,5 +19,5 @@ lexer.o: lexer.cpp preprocess.cpp
 	$(CC) $(CFLAGS) -c lexer.cpp preprocess.cpp 
 
 clean:
-	rm compiler *.o
+	rm *.o
 
