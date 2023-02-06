@@ -19,6 +19,7 @@ Below is a snippet of the [project report](proj_report/proj_report.pdf).
 Over the years, the complexity of compiler design has immensely increased. At the hardware level, there are more diverse and sophisticated instruction sets to consider. At the software level, complex optimization schemes have been introduced for maximal performance, in addition to different language paradigms. As a result, the complexity of the modern compiler design overshadows the fundamentals behind the language construction as well as making the steps between programming language and execution more mysterious. For this reason, this project focused on two aspects: (1) building a simplified version of each component used in programming language construction, and (2) understanding how each component works together to execute a custom programming language. This report describes the semester-long project of building a C-like (C subset) programming language from scratch. 
 
 ## Project Overview
+![Roadmap](meeting/road_map.png)
 The project was broken down into 3 parts, ordered from lower level to higher level: Virtual Machine, Assembler, Compiler. Each level depends on the level right below it, except for Virtual Machine which is a standalone software.
 
 ### Virtual Machine
