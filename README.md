@@ -13,6 +13,7 @@
     - [Assembler](#assembler)
     - [Compiler](#compiler)
   - [Building the project](#building-the-project)
+  - [Examples](#examples)
 
 Below is a snippet of the [project report](proj_report/proj_report.pdf).
 ## Introduction
@@ -85,3 +86,6 @@ Go to the root directory (where README.md is located) and then run
 ./init.sh
 ```
 Once build, binaries for `vm`, `assembler`, and `compiler` are located inside the `<root-directory>/bin` directory.
+
+## Examples
+Example source codes for the custom language are located in `src/compiler/example` directory whereas example assembly codes are located in `src/assembler/example` directory.
